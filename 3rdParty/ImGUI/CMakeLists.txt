@@ -1,0 +1,45 @@
+cmake_minimum_required(VERSION 3.14)
+
+project(ImGUI LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+add_library(${PROJECT_NAME} STATIC
+	src/imgui.cpp
+	src/imgui_demo.cpp
+	src/imgui_draw.cpp
+	src/imgui_impl_sdl2.cpp
+	src/imgui_impl_sdlrenderer2.cpp
+	src/imgui_plot.cpp
+	src/imgui_tables.cpp
+	src/imgui_widgets.cpp
+	src/implot.cpp
+	src/implot_items.cpp
+)
+
+target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+
+include(FetchContent)
+if (WIN32)
+	FetchContent_Declare(
+		URL https://www.libsdl.org/release/SDL2-devel-2.28.5-VC.zip
+		DOWNLOAD_NO_PROGRESS ON
+		DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/downloads
+	)
+    FetchContent_GetProperties(SDL2)
+	if (NOT sdl2_POPULATED)
+		FetchContent_Populate(SDL2)
+		set(SDL2_INCLUDE_DIR ${sdl2_SOURCE_DIR}/include)
+		if (${CMAKE_SIZEOF_VOID_P} MATCHES 8)
+			set(SDL2_LIBRARIES "${sdl2_SOURCE_DIR}/lib/x64/SDL2.lib;${sdl2_SOURCE_DIR}/lib/x64/SDL2main.lib")
+			set(SDL2_LIBRARY_DLL "${sdl2_SOURCE_DIR}/lib/x64/SDL2.dll")
+		else ()
+			set(SDL2_LIBRARIES "${sdl2_SOURCE_DIR}/lib/x86/SDL2.lib;${sdl2_SOURCE_DIR}/lib/x86/SDL2main.lib")
+			set(SDL2_LIBRARY_DLL "${sdl2_SOURCE_DIR}/lib/x86/SDL2.dll")
+		endif ()
+	endif ()
+
+	target_include_directories(${PROJECT_NAME} PRIVATE ${sdl2_SOURCE_DIR}/include)
+	target_link_libraries(${PROJECT_NAME} PUBLIC ${SDL2_LIBRARIES})
+endif()
