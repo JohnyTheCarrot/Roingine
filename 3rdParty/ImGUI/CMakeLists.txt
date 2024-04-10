@@ -42,4 +42,27 @@ if (WIN32)
 
 	target_include_directories(${PROJECT_NAME} PRIVATE ${sdl2_SOURCE_DIR}/include)
 	target_link_libraries(${PROJECT_NAME} PUBLIC ${SDL2_LIBRARIES})
+elseif (EMSCRIPTEN)
+	set(EMSCRIPTEN_COMPILE_FLAGS "${EMSCRIPTEN_LINK_FLAGS} -sUSE_SDL=2 -sUSE_SDL_IMAGE=2 -sUSE_SDL_TTF=2 -g")
+	set(EMSCRIPTEN_LINK_FLAGS "${EMSCRIPTEN_LINK_FLAGS} -sUSE_SDL=2 -sUSE_SDL_IMAGE=2 -sUSE_SDL_TTF=2 -g -sALLOW_MEMORY_GROWTH --preload-file \"${CMAKE_SOURCE_DIR}/Data@/\" -sSDL2_IMAGE_FORMATS=['tga','png']")
+
+	# work around https://github.com/emscripten-core/emscripten/issues/11513
+	set(EMSCRIPTEN_LINK_FLAGS "${EMSCRIPTEN_LINK_FLAGS} -fno-stack-protector")
+
+	# Use the Emscripten toolchain
+	set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/EmscriptenToolchain.cmake)
+
+	# Additional settings for Emscripten build
+	set_target_properties(${TARGET_NAME} PROPERTIES
+		    COMPILE_FLAGS "${EMSCRIPTEN_COMPILE_FLAGS}"
+			LINK_FLAGS "${EMSCRIPTEN_LINK_FLAGS}"
+		)
+
+	# Have emscripten generate a html page too.
+	set(CMAKE_EXECUTABLE_SUFFIX ".html")
 endif()
+
+target_compile_options(${PROJECT_NAME} PRIVATE
+	    $<$<CXX_COMPILER_ID:MSVC>:/W0>
+		$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-w>
+)

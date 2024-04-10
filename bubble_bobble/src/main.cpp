@@ -1,9 +1,10 @@
-#include <iostream>
-#include <roingus.h>
+#include <roingine.h>
 
-using namespace roingus;
+using namespace roingine;
 
 int main() {
-	roingus::Engine::Settings roingineSettings{.gameTitle = "Bubble Bobble", .windowWidth = 640, .windowHeight = 480};
-	roingus::Engine           roingine{roingineSettings};
+	roingine::Engine::Settings roingineSettings{.gameTitle = "Bubble Bobble", .windowWidth = 640, .windowHeight = 480};
+	roingine::Engine           roingine{roingineSettings};
+
+	roingine.Run();
 }

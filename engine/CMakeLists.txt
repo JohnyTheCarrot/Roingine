@@ -10,11 +10,15 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library(RoingusEngine STATIC
-  src/roingus_engine.cpp
-
+  src/roingine.cpp
+  src/game_time.cpp
+  include/game_time.h
+  include/input.h
+  src/input.cpp
+  internal_headers/input_internal.h
 )
 
-target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> PRIVATE internal_headers)
 
 target_compile_definitions(RoingusEngine PRIVATE ROINGUSENGINE_LIBRARY)
 
@@ -22,6 +26,10 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	target_compile_options(${PROJECT_NAME} PRIVATE /diagnostics:caret)
 endif()
 
+target_compile_options(${PROJECT_NAME} PRIVATE
+	    $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
+		$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic -Werror>
+)
 
 # Libraries
 include(FetchContent)
@@ -42,8 +50,8 @@ if (NOT glm_POPULATED)
 	FetchContent_Populate(glm)
 endif ()
 
+find_package(OpenGL REQUIRED)
 
-# SDL2
 # add SDL2
 if (WIN32)
 	FetchContent_Declare(
@@ -131,6 +139,7 @@ if (WIN32)
 		${SDL2_LIBRARIES}
 		${SDL2_IMAGE_LIBRARIES}
 		${SDL2_TTF_LIBRARIES}
+		${OPENGL_LIBRARIES}
 		${VLD_LIBRARY}
 	)
 
@@ -176,7 +185,23 @@ endif ()
 
 
 if (EMSCRIPTEN)
-	message(FATAL_ERROR "TODO")
+	set(EMSCRIPTEN_COMPILE_FLAGS "${EMSCRIPTEN_LINK_FLAGS} -sUSE_SDL=2 -sUSE_SDL_IMAGE=2 -sUSE_SDL_TTF=2 -g")
+	set(EMSCRIPTEN_LINK_FLAGS "${EMSCRIPTEN_LINK_FLAGS} -sUSE_SDL=2 -sUSE_SDL_IMAGE=2 -sUSE_SDL_TTF=2 -g -sALLOW_MEMORY_GROWTH --preload-file \"${CMAKE_SOURCE_DIR}/Data@/\" -sSDL2_IMAGE_FORMATS=['tga','png']")
+
+	# work around https://github.com/emscripten-core/emscripten/issues/11513
+	set(EMSCRIPTEN_LINK_FLAGS "${EMSCRIPTEN_LINK_FLAGS} -fno-stack-protector")
+
+	# Use the Emscripten toolchain
+	set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/EmscriptenToolchain.cmake)
+
+	# Additional settings for Emscripten build
+	set_target_properties(${TARGET_NAME} PROPERTIES
+		    COMPILE_FLAGS "${EMSCRIPTEN_COMPILE_FLAGS}"
+			LINK_FLAGS "${EMSCRIPTEN_LINK_FLAGS}"
+		)
+
+	# Have emscripten generate a html page too.
+	set(CMAKE_EXECUTABLE_SUFFIX ".html")
 elseif(WIN32)
 	# add post build commands
 	add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

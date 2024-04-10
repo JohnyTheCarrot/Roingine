@@ -1,12 +1,11 @@
-#ifndef ROINGUS_H
-#define ROINGUS_H
+#ifndef ROINGINE_H
+#define ROINGINE_H
 
 #include <memory>
 #include <optional>
 #include <string_view>
 
-
-namespace roingus {
+namespace roingine {
 	class Engine final {
 	public:
 		struct Settings final {
@@ -21,10 +20,12 @@ namespace roingus {
 		Engine(Engine &&);
 		Engine &operator=(Engine &&);
 
+		void Run();
+
 	private:
 		class Impl;
 		std::unique_ptr<Impl> m_pImpl;
 	};
-}// namespace roingus
+}// namespace roingine
 
-#endif // ROINGUS_H
+#endif

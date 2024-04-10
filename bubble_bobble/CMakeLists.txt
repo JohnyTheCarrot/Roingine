@@ -11,3 +11,8 @@ target_link_libraries(${PROJECT_NAME} PUBLIC RoingusEngine)
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	target_compile_options(${PROJECT_NAME} PRIVATE /diagnostics:caret)
 endif()
+
+target_compile_options(${PROJECT_NAME} PRIVATE
+	    $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
+		$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic -Werror>
+)
