@@ -1,8 +1,8 @@
 #ifndef GAME_TIME_INTERNAL_H
 #define GAME_TIME_INTERNAL_H
 
-#include "game_time.h"
 #include <chrono>
+#include <roingine/game_time.h>
 
 namespace roingine {
 	constexpr size_t DURATION_FRACTION{1};

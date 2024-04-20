@@ -1,5 +1,5 @@
-#include "gameobject.h"
 #include "scene_impl.h"
+#include <roingine/gameobject.h>
 
 namespace roingine {
 	GameObject::GameObject(Scene &scene)

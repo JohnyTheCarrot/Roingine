@@ -1,8 +1,8 @@
-#include "roingine.h"
-#include "game_time.h"
 #include "game_time_impl.h"
-#include "input.h"
 #include "input_impl.h"
+#include <roingine/game_time.h>
+#include <roingine/input.h>
+#include <roingine/roingine.h>
 // clang-format off
 #include <windows.h>
 #include <SDL_opengl.h>
@@ -10,7 +10,7 @@
 // clang-format on
 #include <SDL.h>
 #include <cassert>
-#include <scene_manager.h>
+#include <roingine/scene_manager.h>
 #include <stdexcept>
 #include <string>
 

@@ -1,8 +1,8 @@
-#include <components/rect_renderer.h>
-#include <components/transform.h>
-#include <roingine.h>
-#include <scene.h>
-#include <scene_manager.h>
+#include <roingine/components/rect_renderer.h>
+#include <roingine/components/transform.h>
+#include <roingine/roingine.h>
+#include <roingine/scene.h>
+#include <roingine/scene_manager.h>
 
 using namespace roingine;
 

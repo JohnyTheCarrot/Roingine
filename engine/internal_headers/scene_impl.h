@@ -1,9 +1,9 @@
 #ifndef SCENE_IMPL_H
 #define SCENE_IMPL_H
 
-#include "gameobject_types.h"
-#include "scene.h"
 #include <forward_list>
+#include <roingine/gameobject_types.h>
+#include <roingine/scene.h>
 
 namespace roingine {
 	class GameObject;

@@ -1,9 +1,9 @@
 #ifndef SCENE_MANAGER_IMPL_H
 #define SCENE_MANAGER_IMPL_H
 
-#include "scene.h"
-#include "scene_manager.h"
 #include <optional>
+#include <roingine/scene.h>
+#include <roingine/scene_manager.h>
 
 namespace roingine {
 	class SceneManager::Impl final {

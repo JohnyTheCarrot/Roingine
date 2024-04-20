@@ -12,26 +12,26 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_subdirectory(3rdParty)
 
 set (INCLUDE_HEADERS_COMPONENTS
-	include/components/component.h
-	include/components/rect_renderer.h
-	include/components/transform.h
+	include/roingine/components/component.h
+	include/roingine/components/rect_renderer.h
+	include/roingine/components/transform.h
 )
 
 set (INCLUDE_HEADERS_MATH
-	include/math/vec2.h
-	include/math/precision.h
+	include/roingine/math/vec2.h
+	include/roingine/math/precision.h
 )
 
 set (INCLUDE_HEADERS
-	include/game_time.h
-	include/input.h
-	include/scene.h
-	include/scene_manager.h
-	include/gameobject.h
-	include/roingine.h
-	include/singleton.h
-	include/gameobject_types.h
-	include/pair_hash.h
+	include/roingine/game_time.h
+	include/roingine/input.h
+	include/roingine/scene.h
+	include/roingine/scene_manager.h
+	include/roingine/gameobject.h
+	include/roingine/roingine.h
+	include/roingine/singleton.h
+	include/roingine/gameobject_types.h
+	include/roingine/pair_hash.h
 )
 
 set (SRC_FILES

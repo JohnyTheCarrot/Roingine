@@ -1,7 +1,7 @@
 #ifndef INPUT_INTERNAL_H
 #define INPUT_INTERNAL_H
 
-#include "input.h"
+#include <roingine/input.h>
 
 namespace roingine {
 	class Input::Impl final {

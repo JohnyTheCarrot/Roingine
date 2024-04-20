@@ -1,7 +1,7 @@
-#include "components/rect_renderer.h"
-#include "components/transform.h"
-#include "gameobject.h"
 #include <SDL_opengl.h>
+#include <roingine/components/rect_renderer.h>
+#include <roingine/components/transform.h>
+#include <roingine/gameobject.h>
 
 namespace roingine {
 	RectRenderer::RectRenderer(gsl::not_null<GameObject *> pGameObject, int width, int height)
