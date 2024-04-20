@@ -1,4 +1,4 @@
-#include "game_time_internal.h"
+#include "game_time_impl.h"
 #include <thread>
 
 using namespace std::literals::chrono_literals;

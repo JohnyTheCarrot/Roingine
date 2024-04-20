@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.26)
 
-project(RoingusEngine LANGUAGES CXX)
+project(Roingine LANGUAGES CXX)
 
 if (EMSCRIPTEN)
 	message("Using Emscripten!")
@@ -9,18 +9,67 @@ endif ()
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_library(RoingusEngine STATIC
-  src/roingine.cpp
-  src/game_time.cpp
-  include/game_time.h
-  include/input.h
-  src/input.cpp
-  internal_headers/input_internal.h
+add_subdirectory(3rdParty)
+
+set (INCLUDE_HEADERS_COMPONENTS
+	include/components/component.h
+	include/components/rect_renderer.h
+	include/components/transform.h
 )
 
-target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> PRIVATE internal_headers)
+set (INCLUDE_HEADERS_MATH
+	include/math/vec2.h
+	include/math/precision.h
+)
 
-target_compile_definitions(RoingusEngine PRIVATE ROINGUSENGINE_LIBRARY)
+set (INCLUDE_HEADERS
+	include/game_time.h
+	include/input.h
+	include/scene.h
+	include/scene_manager.h
+	include/gameobject.h
+	include/roingine.h
+	include/singleton.h
+	include/gameobject_types.h
+	include/pair_hash.h
+)
+
+set (SRC_FILES
+	src/roingine.cpp
+	src/game_time.cpp
+	src/input.cpp
+	src/scene.cpp
+	src/scene_manager.cpp
+	src/gameobject.cpp
+	src/components/rect_renderer.cpp
+	src/components/transform.cpp
+)
+
+set (INTERNAL_HEADERS
+	internal_headers/input_impl.h
+	internal_headers/scene_impl.h
+	internal_headers/game_time_impl.h
+	internal_headers/scene_manager_impl.h
+)
+
+add_library(${PROJECT_NAME} STATIC
+	${INTERNAL_HEADERS}
+	${SRC_FILES}
+	${INCLUDE_HEADERS}
+	${INCLUDE_HEADERS_COMPONENTS}
+	${INCLUDE_HEADERS_MATH}
+)
+
+target_include_directories(${PROJECT_NAME}
+	PUBLIC
+	    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+		$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+
+	PRIVATE
+	    internal_headers
+)
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE ROINGUSENGINE_LIBRARY)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	target_compile_options(${PROJECT_NAME} PRIVATE /diagnostics:caret)
@@ -35,22 +84,18 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 include(FetchContent)
 
 # ImGUI
-target_link_libraries(${PROJECT_NAME} PUBLIC ImGUI)
+target_link_libraries(${PROJECT_NAME} PRIVATE "$<BUILD_LOCAL_INTERFACE:ImGUI>")
 
 # GLM
-FetchContent_Declare(
-	    glm
-		URL https://github.com/g-truc/glm/releases/download/0.9.9.8/glm-0.9.9.8.zip
-		DOWNLOAD_NO_PROGRESS ON
-		DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/downloads
+find_package(OpenGL REQUIRED)
+
+FetchContent_Declare(GSL
+	GIT_REPOSITORY "https://github.com/microsoft/GSL"
+	GIT_TAG "v4.0.0"
+	GIT_SHALLOW ON
 )
 
-FetchContent_GetProperties(glm)
-if (NOT glm_POPULATED)
-	FetchContent_Populate(glm)
-endif ()
-
-find_package(OpenGL REQUIRED)
+FetchContent_MakeAvailable(GSL)
 
 # add SDL2
 if (WIN32)
@@ -63,14 +108,15 @@ if (WIN32)
     FetchContent_GetProperties(SDL2)
 	if (NOT sdl2_POPULATED)
 		FetchContent_Populate(SDL2)
-		set(SDL2_INCLUDE_DIR ${sdl2_SOURCE_DIR}/include)
-		if (${CMAKE_SIZEOF_VOID_P} MATCHES 8)
-			set(SDL2_LIBRARIES "${sdl2_SOURCE_DIR}/lib/x64/SDL2.lib;${sdl2_SOURCE_DIR}/lib/x64/SDL2main.lib")
-			set(SDL2_LIBRARY_DLL "${sdl2_SOURCE_DIR}/lib/x64/SDL2.dll")
-		else ()
-			set(SDL2_LIBRARIES "${sdl2_SOURCE_DIR}/lib/x86/SDL2.lib;${sdl2_SOURCE_DIR}/lib/x86/SDL2main.lib")
-			set(SDL2_LIBRARY_DLL "${sdl2_SOURCE_DIR}/lib/x86/SDL2.dll")
-		endif ()
+	endif ()
+
+	set(SDL2_INCLUDE_DIR ${sdl2_SOURCE_DIR}/include)
+	if (${CMAKE_SIZEOF_VOID_P} MATCHES 8)
+		set(SDL2_LIBRARIES "${sdl2_SOURCE_DIR}/lib/x64/SDL2.lib;${sdl2_SOURCE_DIR}/lib/x64/SDL2main.lib")
+		set(SDL2_LIBRARY_DLL "${sdl2_SOURCE_DIR}/lib/x64/SDL2.dll")
+	else ()
+		set(SDL2_LIBRARIES "${sdl2_SOURCE_DIR}/lib/x86/SDL2.lib;${sdl2_SOURCE_DIR}/lib/x86/SDL2main.lib")
+		set(SDL2_LIBRARY_DLL "${sdl2_SOURCE_DIR}/lib/x86/SDL2.dll")
 	endif ()
 
 	# add SDL2_image
@@ -141,6 +187,7 @@ if (WIN32)
 		${SDL2_TTF_LIBRARIES}
 		${OPENGL_LIBRARIES}
 		${VLD_LIBRARY}
+		Microsoft.GSL::GSL
 	)
 
 elseif (NOT EMSCRIPTEN)
@@ -178,11 +225,10 @@ elseif (NOT EMSCRIPTEN)
 		${sdl2_image_SOURCE_DIR}/include
 		${sdl2_ttf_SOURCE_DIR}
 	)
-    target_link_libraries("${PROJECT_NAME}" PUBLIC
-		SDL2::SDL2main SDL2::SDL2 SDL2_image::SDL2_image SDL2_ttf::SDL2_ttf
+    target_link_libraries("${PROJECT_NAME}" PRIVATE
+		SDL2::SDL2main SDL2::SDL2 SDL2_image::SDL2_image SDL2_ttf::SDL2_ttf Microsoft.GSL::GSL
 	)
 endif ()
-
 
 if (EMSCRIPTEN)
 	set(EMSCRIPTEN_COMPILE_FLAGS "${EMSCRIPTEN_LINK_FLAGS} -sUSE_SDL=2 -sUSE_SDL_IMAGE=2 -sUSE_SDL_TTF=2 -g")

@@ -1,14 +1,16 @@
 #include "roingine.h"
 #include "game_time.h"
-#include "game_time_internal.h"
+#include "game_time_impl.h"
 #include "input.h"
-#include "input_internal.h"
+#include "input_impl.h"
 // clang-format off
+#include <windows.h>
 #include <SDL_opengl.h>
 #include <GL/GLU.h>
 // clang-format on
 #include <SDL.h>
 #include <cassert>
+#include <scene_manager.h>
 #include <stdexcept>
 #include <string>
 
@@ -99,29 +101,15 @@ namespace roingine {
 			accumulator += gameTime.GetDeltaTime();
 
 			m_Quit = !Input::GetInstance().m_pImpl->ProcessInput();
+			auto &sceneManager{SceneManager::GetInstance()};
 
 			while (accumulator >= GameTime::Impl::FIXED_TIME_DELTA) {
 				accumulator -= GameTime::Impl::FIXED_TIME_DELTA;
-				// fixed update
+				sceneManager.FixedUpdate();
 			}
 
-			// Update
-			// Render
-
-			// temp render
-			{
-				//Clear color buffer
-				glClear(GL_COLOR_BUFFER_BIT);
-				glColor3f(1.0f, 1.0f, 1.0f);
-
-				glBegin(GL_POLYGON);
-				{
-					glVertex2f(0.f, 0.f);
-					glVertex2f(100.f, 0.f);
-					glVertex2f(50.f, 100.f);
-				}
-				glEnd();
-			}
+			sceneManager.Update();
+			sceneManager.Render();
 
 			SDL_GL_SwapWindow(m_rpWindow);
 

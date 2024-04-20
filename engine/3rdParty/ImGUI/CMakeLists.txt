@@ -23,6 +23,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURR
 include(FetchContent)
 if (WIN32)
 	FetchContent_Declare(
+		SDL2
 		URL https://www.libsdl.org/release/SDL2-devel-2.28.5-VC.zip
 		DOWNLOAD_NO_PROGRESS ON
 		DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/downloads
@@ -42,6 +43,7 @@ if (WIN32)
 
 	target_include_directories(${PROJECT_NAME} PRIVATE ${sdl2_SOURCE_DIR}/include)
 	target_link_libraries(${PROJECT_NAME} PUBLIC ${SDL2_LIBRARIES})
+
 elseif (EMSCRIPTEN)
 	set(EMSCRIPTEN_COMPILE_FLAGS "${EMSCRIPTEN_LINK_FLAGS} -sUSE_SDL=2 -sUSE_SDL_IMAGE=2 -sUSE_SDL_TTF=2 -g")
 	set(EMSCRIPTEN_LINK_FLAGS "${EMSCRIPTEN_LINK_FLAGS} -sUSE_SDL=2 -sUSE_SDL_IMAGE=2 -sUSE_SDL_TTF=2 -g -sALLOW_MEMORY_GROWTH --preload-file \"${CMAKE_SOURCE_DIR}/Data@/\" -sSDL2_IMAGE_FORMATS=['tga','png']")

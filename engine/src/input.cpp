@@ -1,4 +1,4 @@
-#include "input_internal.h"
+#include "input_impl.h"
 
 #include <SDL_events.h>
 
@@ -16,4 +16,7 @@ namespace roingine {
 
 		return true;
 	}
+
+	Input::Input()  = default;
+	Input::~Input() = default;
 }// namespace roingine
