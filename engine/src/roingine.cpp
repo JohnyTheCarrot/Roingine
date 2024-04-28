@@ -9,7 +9,6 @@
 #include <GL/GLU.h>
 // clang-format on
 #include <SDL.h>
-#include <cassert>
 #include <roingine/scene_manager.h>
 #include <stdexcept>
 #include <string>
@@ -93,7 +92,6 @@ namespace roingine {
 		void RunOneFrame() {
 			GameTime &gameTime{GameTime::GetInstance()};
 
-			gameTime.m_pImpl->EndDeltaTimeMeasurement();
 			gameTime.m_pImpl->StartDeltaTimeMeasurement();
 
 			static GameTime::DurationPrecision accumulator{0};
@@ -109,11 +107,14 @@ namespace roingine {
 			}
 
 			sceneManager.Update();
+
+			glClear(GL_COLOR_BUFFER_BIT);
 			sceneManager.Render();
 
 			SDL_GL_SwapWindow(m_rpWindow);
 
 			gameTime.m_pImpl->Sleep();
+			gameTime.m_pImpl->EndDeltaTimeMeasurement();
 		}
 	};
 

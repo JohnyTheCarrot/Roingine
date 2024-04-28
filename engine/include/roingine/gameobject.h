@@ -1,23 +1,24 @@
 #ifndef GAMEOBJECT_H
 #define GAMEOBJECT_H
 
-#include "components/component.h"
-#include "gameobject_types.h"
-#include <gsl/gsl>
+#include <roingine/components/component.h>
+#include <roingine/gameobject_types.h>
 
 namespace roingine {
 	class Scene;
 
 	class ComponentNotFoundException final : public std::exception {
 	public:
-		gsl::czstring what() const override {
+		char const *what() const override {
 			return "component not found";
 		}
 	};
 
 	class GameObject final {
 	public:
-		explicit GameObject(Scene &scene);
+		using Handle = size_t;
+
+		GameObject(Scene &scene, Handle hGoHandle);
 
 		[[nodiscard]]
 		bool
@@ -25,9 +26,8 @@ namespace roingine {
 
 		template<
 		        ComponentImpl TComponent, class... Args,
-		        std::enable_if_t<std::is_constructible_v<TComponent, gsl::not_null<GameObject *>, Args &&...>, bool> =
-		                true>
-		gsl::not_null<TComponent *> AddComponent(Args &&...args) {
+		        std::enable_if_t<std::is_constructible_v<TComponent, GameObject *, Args &&...>, bool> = true>
+		TComponent *AddComponent(Args &&...args) {
 			if (auto *existing{GetOptionalComponent<TComponent>()}; existing != nullptr)
 				return existing;
 
@@ -35,15 +35,15 @@ namespace roingine {
 			TComponent                 *rpComponent{pComponent.get()};
 
 			Component::Handle hComponent{GetComponentHandle<TComponent>()};
-			auto             &sceneComponent{GetSceneComponents()};
+			auto             &sceneComponents{GetSceneComponents()};
 
-			sceneComponent.insert({hComponent, std::move(pComponent)});
+			sceneComponents.insert({hComponent, std::move(pComponent)});
 			return rpComponent;
 		}
 
 		template<ComponentImpl TComponent>
 		[[nodiscard]]
-		gsl::not_null<TComponent *> GetComponent() {
+		TComponent *GetComponent() {
 			Component::Handle hComponent{GetComponentHandle<TComponent>()};
 			auto             &sceneComponent{GetSceneComponents()};
 
@@ -74,7 +74,6 @@ namespace roingine {
 		}
 
 	private:
-		using Handle = size_t;
 
 		template<ComponentImpl TComponent>
 		[[nodiscard]]

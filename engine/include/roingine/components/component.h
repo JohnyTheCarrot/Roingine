@@ -1,7 +1,6 @@
 #ifndef COMPONENT_H
 #define COMPONENT_H
 
-#include <gsl/pointers>
 #include <type_traits>
 #include <utility>
 
@@ -12,7 +11,7 @@ namespace roingine {
 	public:
 		using Handle = std::pair<std::size_t, std::size_t>;
 
-		explicit Component(gsl::not_null<GameObject *> pGameObject)
+		explicit Component(GameObject *pGameObject)
 		    : m_pGameObject{pGameObject} {
 		}
 
@@ -26,12 +25,12 @@ namespace roingine {
 
 	protected:
 		[[nodiscard]]
-		gsl::not_null<GameObject *> GetGameObject() {
+		GameObject *GetGameObject() {
 			return m_pGameObject;
 		}
 
 	private:
-		gsl::not_null<GameObject *> m_pGameObject;
+		GameObject *m_pGameObject;
 	};
 
 	template<class T>

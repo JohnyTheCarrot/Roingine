@@ -1,14 +1,13 @@
 #ifndef TRANSFORM_H
 #define TRANSFORM_H
 
-#include "../math/vec2.h"
-#include "component.h"
-#include <gsl/pointers>
+#include <glm/mat3x3.hpp>
+#include <roingine/components/component.h>
 
 namespace roingine {
 	class Transform final : public Component {
 	public:
-		Transform(gsl::not_null<GameObject *> pGameObject, math::Vec2 position, math::FloatingPoint rotation);
+		Transform(GameObject *pGameObject, glm::vec2 position, float rotation);
 
 		void Update() override;
 
@@ -16,22 +15,49 @@ namespace roingine {
 
 		void Render() const override;
 
-		[[nodiscard]]
-		math::Vec2 GetLocalPosition();
+		void Rotate(float angle) noexcept;
+
+		void Translate(glm::vec2 translation) noexcept;
+
+		void Translate(float x, float y) noexcept;
 
 		[[nodiscard]]
-		math::FloatingPoint GetRotation();
+		glm::vec2 GetLocalPosition() const noexcept;
+
+		[[nodiscard]]
+		glm::vec2 GetWorldPosition() const noexcept;
+
+		[[nodiscard]]
+
+		[[nodiscard]]
+		float GetRotation() const noexcept;
+
+		[[nodiscard]]
+		glm::vec2 GetPivot() const noexcept;
+
+		void SetPivot(glm::vec2 pivot) noexcept;
+
+		void SetPivot(float x, float y) noexcept;
+
+		void SetParent(Transform *pParent);
+
+		[[nodiscard]]
+		Transform *GetParent() const noexcept;
+
+		[[nodiscard]]
+		glm::mat4 GetTransformationMatrix() const noexcept;
 
 	private:
 		Transform          *m_pParent{nullptr};
-		math::Vec2          m_Position{};
-		math::FloatingPoint m_Rotation{};
+		glm::vec2           m_Position{};
+		glm::vec2           m_Pivot{};
+		float               m_Rotation{};
 	};
 
 	class TransformContext final {
 	public:
-		TransformContext(Transform &);
-		~TransformContext();
+		TransformContext(Transform const &) noexcept;
+		~TransformContext() noexcept;
 
 		TransformContext(TransformContext const &)            = delete;
 		TransformContext(TransformContext &&)                 = delete;

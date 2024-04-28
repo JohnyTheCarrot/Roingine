@@ -4,7 +4,7 @@
 #include <roingine/gameobject.h>
 
 namespace roingine {
-	RectRenderer::RectRenderer(gsl::not_null<GameObject *> pGameObject, int width, int height)
+	RectRenderer::RectRenderer(GameObject *pGameObject, float width, float height)
 	    : Component{pGameObject}
 	    , m_pTransform{pGameObject->GetComponent<Transform>()}
 	    , m_Width{width}
@@ -20,15 +20,14 @@ namespace roingine {
 	void RectRenderer::Render() const {
 		TransformContext context{*m_pTransform};
 
-		glClear(GL_COLOR_BUFFER_BIT);
 		glColor3f(1.0f, 1.0f, 1.0f);
 
 		glBegin(GL_POLYGON);
 		{
 			glVertex2f(0.f, 0.f);
-			glVertex2f(100.f, 0.f);
-			glVertex2f(100.f, 100.f);
-			glVertex2f(0.f, 100.f);
+			glVertex2f(m_Width, 0.f);
+			glVertex2f(m_Width, m_Height);
+			glVertex2f(0.f, m_Height);
 		}
 		glEnd();
 	}

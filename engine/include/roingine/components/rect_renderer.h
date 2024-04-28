@@ -2,14 +2,13 @@
 #define RECT_RENDERER_H
 
 #include "component.h"
-#include <gsl/pointers>
 
 namespace roingine {
 	class Transform;
 
 	class RectRenderer final : public Component {
 	public:
-		RectRenderer(gsl::not_null<GameObject *> pGameObject, int width, int height);
+		RectRenderer(GameObject *pGameObject, float width, float height);
 
 		~RectRenderer() override = default;
 
@@ -20,8 +19,8 @@ namespace roingine {
 		void Render() const override;
 
 	private:
-		gsl::not_null<Transform *> m_pTransform;
-		int                        m_Width, m_Height;
+		Transform                 *m_pTransform;
+		float                      m_Width, m_Height;
 	};
 }// namespace roingine
 

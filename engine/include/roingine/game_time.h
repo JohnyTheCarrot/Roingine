@@ -7,7 +7,7 @@
 namespace roingine {
 	class GameTime final : public Singleton<GameTime> {
 	public:
-		using DurationPrecision = double;
+		using DurationPrecision = float;
 
 		GameTime();
 		~GameTime();

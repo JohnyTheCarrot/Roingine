@@ -2,8 +2,9 @@
 #include <roingine/gameobject.h>
 
 namespace roingine {
-	GameObject::GameObject(Scene &scene)
-	    : m_rpScene{&scene} {
+	GameObject::GameObject(Scene &scene, GameObject::Handle hGoHandle)
+	    : m_rpScene{&scene}
+	    , m_hGameObject{hGoHandle} {
 	}
 
 	bool GameObject::operator==(GameObject const &other) const noexcept {

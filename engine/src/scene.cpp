@@ -15,7 +15,8 @@ namespace roingine {
 	}
 
 	GameObject Scene::Impl::AddGameObject(Scene &scene) {
-		GameObject const go{scene};
+		static GameObject::Handle currentHandle{0};
+		GameObject const          go{scene, currentHandle++};
 
 		AddGameObject(go);
 

@@ -1,4 +1,5 @@
 #include "game_time_impl.h"
+#include <iostream>
 #include <thread>
 
 using namespace std::literals::chrono_literals;
@@ -15,9 +16,10 @@ namespace roingine {
 		++m_Frames;
 
 		if (m_FpsTimeProgress >= 1s) {
-			m_Fps             = m_Frames * static_cast<double>(DURATION_FRACTION) / m_FpsTimeProgress.count();
+			m_Fps             = m_Frames * static_cast<float>(DURATION_FRACTION) / m_FpsTimeProgress.count();
 			m_FpsTimeProgress = 0_t;
 			m_Frames          = 0;
+			std::cout << m_Fps << " FPS" << std::endl;
 		}
 	}
 

@@ -17,11 +17,6 @@ set (INCLUDE_HEADERS_COMPONENTS
 	include/roingine/components/transform.h
 )
 
-set (INCLUDE_HEADERS_MATH
-	include/roingine/math/vec2.h
-	include/roingine/math/precision.h
-)
-
 set (INCLUDE_HEADERS
 	include/roingine/game_time.h
 	include/roingine/input.h
@@ -57,7 +52,6 @@ add_library(${PROJECT_NAME} STATIC
 	${SRC_FILES}
 	${INCLUDE_HEADERS}
 	${INCLUDE_HEADERS_COMPONENTS}
-	${INCLUDE_HEADERS_MATH}
 )
 
 target_include_directories(${PROJECT_NAME}
@@ -87,15 +81,20 @@ include(FetchContent)
 target_link_libraries(${PROJECT_NAME} PRIVATE "$<BUILD_LOCAL_INTERFACE:ImGUI>")
 
 # GLM
-find_package(OpenGL REQUIRED)
-
-FetchContent_Declare(GSL
-	GIT_REPOSITORY "https://github.com/microsoft/GSL"
-	GIT_TAG "v4.0.0"
-	GIT_SHALLOW ON
+FetchContent_Declare(
+	glm
+	GIT_REPOSITORY	https://github.com/g-truc/glm.git
+	GIT_TAG 	bf71a834948186f4097caa076cd2663c69a10e1e #refs/tags/1.0.1
 )
 
-FetchContent_MakeAvailable(GSL)
+FetchContent_MakeAvailable(glm)
+
+target_compile_options(glm INTERFACE
+	    $<$<CXX_COMPILER_ID:MSVC>:/W0>
+		$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-w>
+)
+
+find_package(OpenGL REQUIRED)
 
 # add SDL2
 if (WIN32)
@@ -187,7 +186,7 @@ if (WIN32)
 		${SDL2_TTF_LIBRARIES}
 		${OPENGL_LIBRARIES}
 		${VLD_LIBRARY}
-		Microsoft.GSL::GSL
+		glm::glm
 	)
 
 elseif (NOT EMSCRIPTEN)
@@ -226,7 +225,7 @@ elseif (NOT EMSCRIPTEN)
 		${sdl2_ttf_SOURCE_DIR}
 	)
     target_link_libraries("${PROJECT_NAME}" PRIVATE
-		SDL2::SDL2main SDL2::SDL2 SDL2_image::SDL2_image SDL2_ttf::SDL2_ttf Microsoft.GSL::GSL
+		SDL2::SDL2main SDL2::SDL2 SDL2_image::SDL2_image SDL2_ttf::SDL2_ttf
 	)
 endif ()
 
