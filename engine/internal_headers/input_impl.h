@@ -8,6 +8,9 @@ namespace roingine {
 	public:
 		[[nodiscard]]
 		bool ProcessInput();
+
+		[[nodiscard]]
+		bool IsPressingAssignmentButton() const;
 	};
 }// namespace roingine
 

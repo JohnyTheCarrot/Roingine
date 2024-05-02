@@ -10,6 +10,9 @@ namespace roingine {
 		Input();
 		~Input();
 
+		[[nodiscard]]
+		bool IsPressingAssignmentButton() const;
+
 	private:
 		// Allowing Engine to access the Impl directly to enable use of internal functions.
 		friend class Engine;

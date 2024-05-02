@@ -1,6 +1,7 @@
 #ifndef ROINGINE_H
 #define ROINGINE_H
 
+#include <functional>
 #include <memory>
 #include <optional>
 #include <string_view>
@@ -20,7 +21,7 @@ namespace roingine {
 		Engine(Engine &&);
 		Engine &operator=(Engine &&);
 
-		void Run();
+		void Run(std::function<void()> const &fn);
 
 	private:
 		class Impl;

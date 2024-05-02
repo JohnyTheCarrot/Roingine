@@ -9,6 +9,10 @@
 #include <GL/GLU.h>
 // clang-format on
 #include <SDL.h>
+#include <SDL_mixer.h>
+#include <engine_event_queue.h>
+#include <iostream>
+#include <roingine/event_queue.h>
 #include <roingine/scene_manager.h>
 #include <stdexcept>
 #include <string>
@@ -17,8 +21,12 @@ namespace roingine {
 	class Engine::Impl final {
 	public:
 		Impl(Engine::Settings const &settings) {
-			if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+			if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
 				std::runtime_error{std::string{"SDL_Init error: "} + SDL_GetError()};
+			}
+
+			if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) != 0) {
+				std::runtime_error{std::string{"SDL_mixer could not initialize! SDL_mixer Error: "} + SDL_GetError()};
 			}
 
 			int const windowPosX{settings.windowPosX.value_or(SDL_WINDOWPOS_CENTERED)};
@@ -69,6 +77,10 @@ namespace roingine {
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 			glClearColor(0.f, 0.f, 0.f, 0.f);
+
+			event_queue::EventQueue::GetInstance().AttachEventHandler<event_queue::EventType::PlaySoundRequest>(
+			        [](event_queue::PlaySoundRequestData const &data) { std::cout << data.a << '\n'; }
+			);
 		}
 
 		~Impl() {
@@ -76,9 +88,9 @@ namespace roingine {
 			SDL_Quit();
 		}
 
-		void Run() {
+		void Run(std::function<void()> const &fn) {
 #ifndef __EMSCRIPTEN__
-			while (!m_Quit) RunOneFrame();
+			while (!m_Quit) RunOneFrame(fn);
 #else
 #error TODO
 #endif
@@ -87,9 +99,9 @@ namespace roingine {
 	private:
 		SDL_Window   *m_rpWindow;
 		SDL_GLContext m_rpContext;
-		bool        m_Quit{false};
+		bool          m_Quit{false};
 
-		void RunOneFrame() {
+		void RunOneFrame(std::function<void()> const &fn) {
 			GameTime &gameTime{GameTime::GetInstance()};
 
 			gameTime.m_pImpl->StartDeltaTimeMeasurement();
@@ -107,6 +119,8 @@ namespace roingine {
 			}
 
 			sceneManager.Update();
+			event_queue::EventQueue::GetInstance().Update();
+			fn();
 
 			glClear(GL_COLOR_BUFFER_BIT);
 			sceneManager.Render();
@@ -128,7 +142,7 @@ namespace roingine {
 
 	Engine &Engine::operator=(Engine &&) = default;
 
-	void Engine::Run() {
-		m_pImpl->Run();
+	void Engine::Run(std::function<void()> const &fn) {
+		m_pImpl->Run(fn);
 	}
 }// namespace roingine

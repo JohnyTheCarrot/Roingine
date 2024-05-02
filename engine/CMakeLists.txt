@@ -27,6 +27,10 @@ set (INCLUDE_HEADERS
 	include/roingine/singleton.h
 	include/roingine/gameobject_types.h
 	include/roingine/pair_hash.h
+	include/roingine/event_queue.h
+	include/roingine/service_locator.h
+	include/roingine/audio_service.h
+	include/roingine/sound_clip.h
 )
 
 set (SRC_FILES
@@ -38,6 +42,7 @@ set (SRC_FILES
 	src/gameobject.cpp
 	src/components/rect_renderer.cpp
 	src/components/transform.cpp
+	src/sound_impl.cpp
 )
 
 set (INTERNAL_HEADERS
@@ -45,6 +50,8 @@ set (INTERNAL_HEADERS
 	internal_headers/scene_impl.h
 	internal_headers/game_time_impl.h
 	internal_headers/scene_manager_impl.h
+	internal_headers/engine_event_queue.h
+	internal_headers/sound_impl.h
 )
 
 add_library(${PROJECT_NAME} STATIC
@@ -57,7 +64,6 @@ add_library(${PROJECT_NAME} STATIC
 target_include_directories(${PROJECT_NAME}
 	PUBLIC
 	    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-		$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 
 	PRIVATE
 	    internal_headers
@@ -85,14 +91,11 @@ FetchContent_Declare(
 	glm
 	GIT_REPOSITORY	https://github.com/g-truc/glm.git
 	GIT_TAG 	bf71a834948186f4097caa076cd2663c69a10e1e #refs/tags/1.0.1
+	GIT_SHALLOW TRUE
+	SYSTEM
 )
 
 FetchContent_MakeAvailable(glm)
-
-target_compile_options(glm INTERFACE
-	    $<$<CXX_COMPILER_ID:MSVC>:/W0>
-		$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-w>
-)
 
 find_package(OpenGL REQUIRED)
 
@@ -116,6 +119,25 @@ if (WIN32)
 	else ()
 		set(SDL2_LIBRARIES "${sdl2_SOURCE_DIR}/lib/x86/SDL2.lib;${sdl2_SOURCE_DIR}/lib/x86/SDL2main.lib")
 		set(SDL2_LIBRARY_DLL "${sdl2_SOURCE_DIR}/lib/x86/SDL2.dll")
+	endif ()
+
+	FetchContent_Declare(
+		SDL2_mixer
+		URL https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-devel-2.0.4-VC.zip
+		DOWNLOAD_NO_PROGRESS ON
+		DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/downloads
+	)
+    FetchContent_GetProperties(SDL2_mixer)
+	if (NOT sdl2_mixer_POPULATED)
+		FetchContent_Populate(SDL2_mixer)
+		set(SDL2_MIXER_INCLUDE_DIR ${sdl2_mixer_SOURCE_DIR}/include)
+		if (${CMAKE_SIZEOF_VOID_P} MATCHES 8)
+			set(SDL2_MIXER_LIBRARIES "${sdl2_mixer_SOURCE_DIR}/lib/x64/SDL2_mixer.lib")
+			set(SDL2_MIXER_LIBRARY_DLL "${sdl2_mixer_SOURCE_DIR}/lib/x64/SDL2_mixer.dll")
+		else ()
+			set(SDL2_MIXER_LIBRARIES "${sdl2_mixer_SOURCE_DIR}/lib/x86/SDL2_mixer.lib")
+			set(SDL2_MIXER_LIBRARY_DLL "${sdl2_mixer_SOURCE_DIR}/lib/x86/SDL2_mixer.dll")
+		endif ()
 	endif ()
 
 	# add SDL2_image
@@ -176,6 +198,7 @@ if (WIN32)
 		${sdl2_SOURCE_DIR}/include
 		${sdl2_image_SOURCE_DIR}/include
 		${SDL2_TTF_INCLUDE_DIR}
+		${sdl2_mixer_SOURCE_DIR}/include
 		3rdParty
 	)
 
@@ -184,6 +207,7 @@ if (WIN32)
 		${SDL2_LIBRARIES}
 		${SDL2_IMAGE_LIBRARIES}
 		${SDL2_TTF_LIBRARIES}
+		${SDL2_MIXER_LIBRARIES}
 		${OPENGL_LIBRARIES}
 		${VLD_LIBRARY}
 		glm::glm
@@ -248,17 +272,4 @@ if (EMSCRIPTEN)
 	# Have emscripten generate a html page too.
 	set(CMAKE_EXECUTABLE_SUFFIX ".html")
 elseif(WIN32)
-	# add post build commands
-	add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-		COMMAND "${CMAKE_COMMAND}" -E copy "${SDL2_LIBRARY_DLL}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-	)
-    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-		COMMAND "${CMAKE_COMMAND}" -E copy "${SDL2_IMAGE_LIBRARY_DLL}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-	)
-    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-		COMMAND "${CMAKE_COMMAND}" -E copy "${SDL2_TTF_LIBRARY_DLL}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-	)
-    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-		COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/EngineResources" "$<TARGET_FILE_DIR:${PROJECT_NAME}>/EngineResources"
-	)
 endif()
