@@ -1,5 +1,4 @@
 #include "game_time_impl.h"
-#include "input_impl.h"
 #include <roingine/game_time.h>
 #include <roingine/input.h>
 #include <roingine/roingine.h>
@@ -10,17 +9,20 @@
 // clang-format on
 #include <SDL.h>
 #include <SDL_mixer.h>
-#include <engine_event_queue.h>
 #include <iostream>
+#include <roingine/engine_event_queue.h>
 #include <roingine/event_queue.h>
+#include <roingine/game_info.h>
 #include <roingine/scene_manager.h>
+#include <roingine/service_locator.h>
 #include <stdexcept>
 #include <string>
 
 namespace roingine {
 	class Engine::Impl final {
 	public:
-		Impl(Engine::Settings const &settings) {
+		Impl(std::string_view windowTitle, int windowWidth, int windowHeight, std::optional<int> windowX,
+		     std::optional<int> windowY) {
 			if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
 				std::runtime_error{std::string{"SDL_Init error: "} + SDL_GetError()};
 			}
@@ -29,15 +31,14 @@ namespace roingine {
 				std::runtime_error{std::string{"SDL_mixer could not initialize! SDL_mixer Error: "} + SDL_GetError()};
 			}
 
-			int const windowPosX{settings.windowPosX.value_or(SDL_WINDOWPOS_CENTERED)};
-			int const windowPosY{settings.windowPosY.value_or(SDL_WINDOWPOS_CENTERED)};
+			int const windowPosX{windowX.value_or(SDL_WINDOWPOS_CENTERED)};
+			int const windowPosY{windowY.value_or(SDL_WINDOWPOS_CENTERED)};
 
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 
 			m_rpWindow = SDL_CreateWindow(
-			        settings.gameTitle.data(), windowPosX, windowPosY, settings.windowWidth, settings.windowHeight,
-			        SDL_WINDOW_OPENGL
+			        windowTitle.data(), windowPosX, windowPosY, windowWidth, windowHeight, SDL_WINDOW_OPENGL
 			);
 
 			if (m_rpWindow == nullptr) {
@@ -62,8 +63,8 @@ namespace roingine {
 				throw std::runtime_error{std::string{"OpenGL error: "} + errStr};
 			}
 
-			glOrtho(0, settings.windowWidth, 0, settings.windowHeight, -1, 1);
-			glViewport(0, 0, settings.windowWidth, settings.windowHeight);
+			glOrtho(0, windowWidth, 0, windowHeight, -1, 1);
+			glViewport(0, 0, windowWidth, windowHeight);
 
 			glMatrixMode(GL_MODELVIEW);
 			glLoadIdentity();
@@ -77,10 +78,6 @@ namespace roingine {
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 			glClearColor(0.f, 0.f, 0.f, 0.f);
-
-			event_queue::EventQueue::GetInstance().AttachEventHandler<event_queue::EventType::PlaySoundRequest>(
-			        [](event_queue::PlaySoundRequestData const &data) { std::cout << data.a << '\n'; }
-			);
 		}
 
 		~Impl() {
@@ -89,17 +86,21 @@ namespace roingine {
 		}
 
 		void Run(std::function<void()> const &fn) {
+			auto const &gameInfo{GameInfo::GetInstance()};
+			try {
 #ifndef __EMSCRIPTEN__
-			while (!m_Quit) RunOneFrame(fn);
+				while (gameInfo.IsRunning()) RunOneFrame(fn);
 #else
 #error TODO
 #endif
+			} catch (std::exception const &exception) {
+				std::cerr << "[ERROR] " << exception.what() << std::endl;
+			} catch (...) { std::cerr << "Unknown error" << std::endl; }
 		}
 
 	private:
 		SDL_Window   *m_rpWindow;
 		SDL_GLContext m_rpContext;
-		bool          m_Quit{false};
 
 		void RunOneFrame(std::function<void()> const &fn) {
 			GameTime &gameTime{GameTime::GetInstance()};
@@ -110,7 +111,7 @@ namespace roingine {
 
 			accumulator += gameTime.GetDeltaTime();
 
-			m_Quit = !Input::GetInstance().m_pImpl->ProcessInput();
+			KeyboardInput::GetService().ProcessInput();
 			auto &sceneManager{SceneManager::GetInstance()};
 
 			while (accumulator >= GameTime::Impl::FIXED_TIME_DELTA) {
@@ -132,8 +133,11 @@ namespace roingine {
 		}
 	};
 
-	Engine::Engine(Engine::Settings const &settings)
-	    : m_pImpl{std::make_unique<Engine::Impl>(settings)} {
+	Engine::Engine(
+	        std::string_view windowTitle, int windowWidth, int windowHeight, std::optional<int> windowX,
+	        std::optional<int> windowY
+	)
+	    : m_pImpl{std::make_unique<Engine::Impl>(windowTitle, windowWidth, windowHeight, windowX, windowY)} {
 	}
 
 	Engine::~Engine() = default;

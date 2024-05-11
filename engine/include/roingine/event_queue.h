@@ -1,7 +1,6 @@
 #ifndef EVENT_QUEUE_H
 #define EVENT_QUEUE_H
 
-#include <algorithm>
 #include <array>
 #include <functional>
 #include <roingine/Singleton.h>

@@ -1,7 +1,10 @@
 #include <roingine/audio_service.h>
+#include <roingine/commands/command.h>
 #include <roingine/components/rect_renderer.h>
 #include <roingine/components/transform.h>
+#include <roingine/engine_event_queue.h>
 #include <roingine/event_queue.h>
+#include <roingine/game_info.h>
 #include <roingine/input.h>
 #include <roingine/roingine.h>
 #include <roingine/scene.h>
@@ -32,6 +35,32 @@ private:
 	Transform *m_pTransform;
 };
 
+class KeyPressedCommand final : public roingine::Command {
+public:
+	~KeyPressedCommand() override = default;
+
+	void Execute() override {
+		std::cout << "key pressed" << std::endl;
+	}
+};
+
+class KeyReleasedCommand final : public roingine::Command {
+public:
+	~KeyReleasedCommand() override = default;
+
+	void Execute() override {
+		std::cout << "key released" << std::endl;
+	}
+};
+
+class KeyHeldCommand final : public roingine::Command {
+public:
+	~KeyHeldCommand() override = default;
+
+	void Execute() override {
+		std::cout << "key held" << std::endl;
+	}
+};
 
 enum class Sounds { TestSound };
 
@@ -53,14 +82,23 @@ using Audio               = AudioSystem<Sounds>;
 using AudioServiceLocator = ServiceLocator<AudioService<Sounds>>;
 
 int main() {
-	roingine::Engine::Settings roingineSettings{.gameTitle = "Bubble Bobble", .windowWidth = 640, .windowHeight = 480};
-	roingine::Engine           roingine{roingineSettings};
+	roingine::Engine roingine{"Bubble Bobble", 640, 480};
 
 	std::unordered_map<Sounds, std::string> soundMap{};
 	soundMap.emplace(Sounds::TestSound, "sound.wav");
 
-	Audio audio{std::move(soundMap)};
-	AudioServiceLocator::Provide(&audio);
+	AudioServiceLocator::Provide(std::make_unique<Audio>(std::move(soundMap)));
+
+	KeyboardInput::Provide(std::make_unique<SDLKeyboardInputService>());
+	KeyboardInput::GetService().AddCommand(
+	        roingine::InputKeys::A, roingine::KeyEventType::Down, std::make_unique<KeyPressedCommand>()
+	);
+	KeyboardInput::GetService().AddCommand(
+	        roingine::InputKeys::A, roingine::KeyEventType::Up, std::make_unique<KeyReleasedCommand>()
+	);
+	KeyboardInput::GetService().AddCommand(
+	        roingine::InputKeys::A, roingine::KeyEventType::Held, std::make_unique<KeyHeldCommand>()
+	);
 
 	SoundClip sound{SoundClip::FileType::WAV, "sound.wav"};
 	sound.Play();
@@ -84,12 +122,12 @@ int main() {
 		AudioServiceLocator::GetService().Play(data.sound);
 	});
 
+	event_queue::EventQueue::GetInstance().AttachEventHandler<event_queue::EventType::CleanShutdown>([](auto const &) {
+		std::cout << "Shutting down" << std::endl;
+	});
+
 	SceneManager::GetInstance().SetActive(std::move(scene));
 	roingine.Run([]() {
 		GameEventQueue::GetInstance().Update();
-
-		// TEMPORARY FOR ASSIGNMENT WHILE I RECREATE THE INPUT MANGER, BEAR WITH ME
-		if (Input::GetInstance().IsPressingAssignmentButton())
-			GameEventQueue::GetInstance().FireEvent<EventType::PlaySoundRequest>(Sounds::TestSound);
 	});
 }

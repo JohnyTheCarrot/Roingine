@@ -17,6 +17,11 @@ set (INCLUDE_HEADERS_COMPONENTS
 	include/roingine/components/transform.h
 )
 
+set (INCLUDE_HEADERS_COMMANDS
+	include/roingine/commands/command.h
+	include/roingine/commands/gameobject_command.h
+)
+
 set (INCLUDE_HEADERS
 	include/roingine/game_time.h
 	include/roingine/input.h
@@ -31,6 +36,8 @@ set (INCLUDE_HEADERS
 	include/roingine/service_locator.h
 	include/roingine/audio_service.h
 	include/roingine/sound_clip.h
+	include/roingine/game_info.h
+	include/roingine/engine_event_queue.h
 )
 
 set (SRC_FILES
@@ -40,9 +47,11 @@ set (SRC_FILES
 	src/scene.cpp
 	src/scene_manager.cpp
 	src/gameobject.cpp
+	src/sound_impl.cpp
 	src/components/rect_renderer.cpp
 	src/components/transform.cpp
-	src/sound_impl.cpp
+	src/commands/gameobject_command.cpp
+	src/game_info.cpp
 )
 
 set (INTERNAL_HEADERS
@@ -50,7 +59,6 @@ set (INTERNAL_HEADERS
 	internal_headers/scene_impl.h
 	internal_headers/game_time_impl.h
 	internal_headers/scene_manager_impl.h
-	internal_headers/engine_event_queue.h
 	internal_headers/sound_impl.h
 )
 
@@ -59,6 +67,7 @@ add_library(${PROJECT_NAME} STATIC
 	${SRC_FILES}
 	${INCLUDE_HEADERS}
 	${INCLUDE_HEADERS_COMPONENTS}
+	${INCLUDE_HEADERS_COMMANDS}
 )
 
 target_include_directories(${PROJECT_NAME}

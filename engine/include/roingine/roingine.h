@@ -4,18 +4,17 @@
 #include <functional>
 #include <memory>
 #include <optional>
+#include <roingine/input.h>
+#include <roingine/service_locator.h>
 #include <string_view>
 
 namespace roingine {
+	using KeyboardInput = ServiceLocator<KeyboardInputService>;
+
 	class Engine final {
 	public:
-		struct Settings final {
-			std::string_view   gameTitle;
-			std::optional<int> windowPosX{std::nullopt}, windowPosY{std::nullopt};
-			int                windowWidth, windowHeight;
-		};
-
-		Engine(Settings const &);
+		Engine(std::string_view windowTitle, int windowWidth, int windowHeight,
+		       std::optional<int> windowX = std::nullopt, std::optional<int> windowY = std::nullopt);
 		~Engine();
 
 		Engine(Engine &&);
