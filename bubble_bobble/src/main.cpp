@@ -1,5 +1,6 @@
 #include <roingine/audio_service.h>
 #include <roingine/commands/command.h>
+#include <roingine/components/rect.h>
 #include <roingine/components/rect_renderer.h>
 #include <roingine/components/transform.h>
 #include <roingine/engine_event_queue.h>
@@ -105,12 +106,14 @@ int main() {
 	std::reference_wrapper<Transform> pParentTransform{
 	        parentGameObject.AddComponent<Transform>(glm::vec2{200.0f, 100.0f}, 0.0f)
 	};
-	parentGameObject.AddComponent<RectRenderer>(100.f, 100.f);
+	parentGameObject.AddComponent<Rect>(50.f, 50.f);
+	parentGameObject.AddComponent<RectRenderer>();
 
 	for (int i{0}; i < 5; ++i) {
 		GameObject go2{scene.AddGameObject()};
 		auto      &pChildTransform{go2.AddComponent<Transform>(glm::vec2{50.0f, 50.0f}, 0.0f)};
-		go2.AddComponent<RectRenderer>(50.f, 50.f);
+		go2.AddComponent<Rect>(50.f, 50.f);
+		go2.AddComponent<RectRenderer>();
 		go2.AddComponent<Rotator>();
 		pChildTransform.SetParent(pParentTransform.get());
 		pParentTransform = pChildTransform;

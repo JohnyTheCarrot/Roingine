@@ -4,13 +4,13 @@
 #include "component.h"
 
 namespace roingine {
+	struct Rect;
+
 	class Transform;
 
 	class RectRenderer final : public Component {
 	public:
-		RectRenderer(GameObject &gameObject, float width, float height);
-
-		~RectRenderer() override = default;
+		RectRenderer(GameObject &gameObject);
 
 		void Update() override;
 
@@ -19,8 +19,8 @@ namespace roingine {
 		void Render() const override;
 
 	private:
-		Transform                 &m_Transform;
-		float                      m_Width, m_Height;
+		Transform &m_Transform;
+		Rect      &m_Rect;
 	};
 }// namespace roingine
 

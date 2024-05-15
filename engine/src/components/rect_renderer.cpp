@@ -1,14 +1,14 @@
 #include <SDL_opengl.h>
+#include <roingine/components/rect.h>
 #include <roingine/components/rect_renderer.h>
 #include <roingine/components/transform.h>
 #include <roingine/gameobject.h>
 
 namespace roingine {
-	RectRenderer::RectRenderer(GameObject &gameObject, float width, float height)
+	RectRenderer::RectRenderer(GameObject &gameObject)
 	    : Component{gameObject}
 	    , m_Transform{gameObject.GetComponent<Transform>()}
-	    , m_Width{width}
-	    , m_Height{height} {
+	    , m_Rect{gameObject.GetComponent<Rect>()} {
 	}
 
 	void RectRenderer::Update() {
@@ -25,9 +25,9 @@ namespace roingine {
 		glBegin(GL_POLYGON);
 		{
 			glVertex2f(0.f, 0.f);
-			glVertex2f(m_Width, 0.f);
-			glVertex2f(m_Width, m_Height);
-			glVertex2f(0.f, m_Height);
+			glVertex2f(m_Rect.m_Width, 0.f);
+			glVertex2f(m_Rect.m_Width, m_Rect.m_Height);
+			glVertex2f(0.f, m_Rect.m_Height);
 		}
 		glEnd();
 	}
