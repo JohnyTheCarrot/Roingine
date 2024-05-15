@@ -5,11 +5,25 @@ namespace roingine {
 		m_Scene = std::move(scene);
 	}
 
+	void SceneManager::Impl::PreUpdate() {
+		if (!m_Scene.has_value())
+			return;
+
+		m_Scene->PreUpdate();
+	}
+
 	void SceneManager::Impl::Update() {
 		if (!m_Scene.has_value())
 			return;
 
 		m_Scene->Update();
+	}
+
+	void SceneManager::Impl::PostUpdate() {
+		if (!m_Scene.has_value())
+			return;
+
+		m_Scene->PostUpdate();
 	}
 
 	void SceneManager::Impl::FixedUpdate() {
@@ -30,8 +44,16 @@ namespace roingine {
 		m_pImpl->SetActive(std::move(scene));
 	}
 
+	void SceneManager::PreUpdate() {
+		m_pImpl->PreUpdate();
+	}
+
 	void SceneManager::Update() {
 		m_pImpl->Update();
+	}
+
+	void SceneManager::PostUpdate() {
+		m_pImpl->PostUpdate();
 	}
 
 	void SceneManager::FixedUpdate() {

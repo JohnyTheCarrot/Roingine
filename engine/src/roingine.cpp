@@ -119,7 +119,9 @@ namespace roingine {
 				sceneManager.FixedUpdate();
 			}
 
+			sceneManager.PreUpdate();
 			sceneManager.Update();
+			sceneManager.PostUpdate();
 			event_queue::EventQueue::GetInstance().Update();
 			fn();
 

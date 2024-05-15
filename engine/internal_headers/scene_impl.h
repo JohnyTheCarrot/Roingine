@@ -12,7 +12,11 @@ namespace roingine {
 
 	class Scene::Impl final {
 	public:
+		void PreUpdate();
+
 		void Update();
+
+		void PostUpdate();
 
 		void FixedUpdate();
 

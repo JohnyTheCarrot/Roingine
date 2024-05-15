@@ -21,14 +21,14 @@ public:
 	    , m_Transform{GetGameObject().GetComponent<Transform>()} {
 	}
 
-	void Update() {
+	void Update() override {
 		m_Transform.Rotate(.1f);
 	}
 
-	void FixedUpdate() {
+	void FixedUpdate() override {
 	}
 
-	void Render() const {
+	void Render() const override {
 	}
 
 private:
@@ -99,9 +99,6 @@ int main() {
 	KeyboardInput::GetService().AddCommand(
 	        roingine::InputKeys::A, roingine::KeyEventType::Held, std::make_unique<KeyHeldCommand>()
 	);
-
-	SoundClip sound{SoundClip::FileType::WAV, "sound.wav"};
-	sound.Play();
 
 	Scene      scene{};
 	GameObject parentGameObject{scene.AddGameObject()};

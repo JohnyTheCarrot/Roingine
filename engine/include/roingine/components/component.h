@@ -17,7 +17,13 @@ namespace roingine {
 
 		virtual ~Component(){};
 
+		virtual void PreUpdate() {
+		}
+
 		virtual void Update() = 0;
+
+		virtual void PostUpdate() {
+		}
 
 		virtual void FixedUpdate() = 0;
 

@@ -10,7 +10,11 @@ namespace roingine {
 	public:
 		void SetActive(Scene &&scene);
 
+		void PreUpdate();
+
 		void Update();
+
+		void PostUpdate();
 
 		void FixedUpdate();
 

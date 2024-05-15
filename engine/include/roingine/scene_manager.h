@@ -14,7 +14,11 @@ namespace roingine {
 
 		void SetActive(Scene &&scene);
 
+		void PreUpdate();
+
 		void Update();
+
+		void PostUpdate();
 
 		void FixedUpdate();
 

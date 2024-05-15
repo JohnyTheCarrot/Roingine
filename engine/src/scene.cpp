@@ -2,8 +2,16 @@
 #include <roingine/gameobject.h>
 
 namespace roingine {
+	void Scene::Impl::PreUpdate() {
+		for (auto &component: m_GameObjectComponents) { component.second->PreUpdate(); }
+	}
+
 	void Scene::Impl::Update() {
 		for (auto &component: m_GameObjectComponents) { component.second->Update(); }
+	}
+
+	void Scene::Impl::PostUpdate() {
+		for (auto &component: m_GameObjectComponents) { component.second->PostUpdate(); }
 	}
 
 	void Scene::Impl::FixedUpdate() {
@@ -41,8 +49,16 @@ namespace roingine {
 
 	Scene &Scene::operator=(Scene &&other) = default;
 
+	void Scene::PreUpdate() {
+		m_pImpl->PreUpdate();
+	}
+
 	void Scene::Update() {
 		m_pImpl->Update();
+	}
+
+	void Scene::PostUpdate() {
+		m_pImpl->PostUpdate();
 	}
 
 	void Scene::FixedUpdate() {
