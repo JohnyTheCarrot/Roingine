@@ -23,6 +23,17 @@ namespace roingine {
 
 		SDL_PumpEvents();
 
+		auto const executeCommands{[&](size_t keyStateIdx, KeyEventType eventType) {
+			SDLKey const sdlKey{static_cast<SDLKey>(keyStateIdx)};
+
+			auto const [first, last] = m_Commands.equal_range(std::pair{sdlKey, eventType});
+
+			std::for_each(first, last, [](auto const &pair) {
+				auto const &[_, command] = pair;
+				command->Execute();
+			});
+		}};
+
 		for (std::size_t keyStateIdx = 0; keyStateIdx < m_KeyStates.size(); ++keyStateIdx) {
 			bool const newState{m_pKeyData[keyStateIdx] != 0};
 			bool const currentState{m_KeyStates[keyStateIdx]};
@@ -37,8 +48,8 @@ namespace roingine {
 				eventType = KeyEventType::Held;
 				m_KeyHeldTimes[keyStateIdx] += GameTime::GetInstance().GetDeltaTime();
 
-				if (m_KeyHeldTimes[keyStateIdx] < GameInfo::GetInstance().GetKeyHeldThresholdMs())
-					continue;
+				if (m_KeyHeldTimes[keyStateIdx] >= GameInfo::GetInstance().GetKeyHeldThresholdMs())
+					executeCommands(keyStateIdx, KeyEventType::LongPress);
 			} else {
 				m_KeyHeldTimes[keyStateIdx] = 0.f;
 
@@ -50,14 +61,7 @@ namespace roingine {
 					continue;
 			}
 
-			SDLKey const sdlKey{static_cast<SDLKey>(keyStateIdx)};
-
-			auto const [first, last] = m_Commands.equal_range(std::pair{sdlKey, eventType});
-
-			std::for_each(first, last, [](auto const &pair) {
-				auto const &[_, command] = pair;
-				command->Execute();
-			});
+			executeCommands(keyStateIdx, eventType);
 		}
 	}
 

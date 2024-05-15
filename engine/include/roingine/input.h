@@ -38,11 +38,7 @@ namespace roingine {
 		Shift,
 	};
 
-	enum class KeyEventType {
-		Up,
-		Down,
-		Held,
-	};
+	enum class KeyEventType { Up, Down, LongPress, Held };
 
 	class KeyboardInputService {
 	public:

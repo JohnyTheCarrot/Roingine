@@ -63,6 +63,15 @@ public:
 	}
 };
 
+class KeyLongPressCommand final : public roingine::Command {
+public:
+	~KeyLongPressCommand() override = default;
+
+	void Execute() override {
+		std::cout << "key long press" << std::endl;
+	}
+};
+
 enum class Sounds { TestSound };
 
 enum class EventType { PlaySoundRequest };
@@ -99,6 +108,9 @@ int main() {
 	);
 	KeyboardInput::GetService().AddCommand(
 	        roingine::InputKeys::A, roingine::KeyEventType::Held, std::make_unique<KeyHeldCommand>()
+	);
+	KeyboardInput::GetService().AddCommand(
+	        roingine::InputKeys::A, roingine::KeyEventType::LongPress, std::make_unique<KeyLongPressCommand>()
 	);
 
 	Scene      scene{};
