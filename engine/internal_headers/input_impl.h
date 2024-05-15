@@ -22,6 +22,8 @@ namespace roingine {
 
 		void AddCommand(InputKeys input, KeyEventType eventType, std::unique_ptr<Command> command);
 
+		void RemoveCommand(InputKeys input, KeyEventType eventType, Command *command);
+
 	private:
 		enum class SDLKey : int {
 			A     = SDL_SCANCODE_A,

@@ -72,6 +72,23 @@ namespace roingine {
 		m_Commands.emplace(std::pair{sdlKey, eventType}, std::move(command));
 	}
 
+	void SDLKeyboardInputService::Impl::RemoveCommand(InputKeys input, KeyEventType eventType, Command *command) {
+		SDLKey const sdlKey{GetSDLKeyFromInputKey(input)};
+		auto [start, end]{m_Commands.equal_range(std::pair{sdlKey, eventType})};
+
+		if (start == m_Commands.end())
+			return;
+
+		auto toEraseIt{std::find_if(start, end, [command](auto &pair) {
+			//
+			return pair.second.get() == command;
+		})};
+		if (toEraseIt == m_Commands.end())
+			return;
+
+		m_Commands.erase(toEraseIt);
+	}
+
 	constexpr SDLKeyboardInputService::Impl::SDLKey
 	SDLKeyboardInputService::Impl::GetSDLKeyFromInputKey(InputKeys inputKey) {
 		switch (inputKey) {
@@ -153,7 +170,14 @@ namespace roingine {
 		m_pImpl->AddCommand(input, eventType, std::move(command));
 	}
 
+	void SDLKeyboardInputService::RemoveCommand(InputKeys input, KeyEventType eventType, Command *command) {
+		m_pImpl->RemoveCommand(input, eventType, command);
+	}
+
 	void NullKeyboardInputService::AddCommand(InputKeys, KeyEventType, std::unique_ptr<Command>) {
+	}
+
+	void NullKeyboardInputService::RemoveCommand(InputKeys, KeyEventType, Command *) {
 	}
 
 }// namespace roingine
