@@ -11,8 +11,8 @@ namespace roingine {
 	public:
 		using Handle = std::pair<std::size_t, std::size_t>;
 
-		explicit Component(GameObject *pGameObject)
-		    : m_pGameObject{pGameObject} {
+		explicit Component(GameObject &gameObject)
+		    : m_GameObject{gameObject} {
 		}
 
 		virtual ~Component(){};
@@ -25,12 +25,12 @@ namespace roingine {
 
 	protected:
 		[[nodiscard]]
-		GameObject *GetGameObject() {
-			return m_pGameObject;
+		GameObject &GetGameObject() {
+			return m_GameObject;
 		}
 
 	private:
-		GameObject *m_pGameObject;
+		GameObject &m_GameObject;
 	};
 
 	template<class T>

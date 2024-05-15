@@ -8,7 +8,7 @@ namespace roingine {
 
 	class RectRenderer final : public Component {
 	public:
-		RectRenderer(GameObject *pGameObject, float width, float height);
+		RectRenderer(GameObject &gameObject, float width, float height);
 
 		~RectRenderer() override = default;
 
@@ -19,7 +19,7 @@ namespace roingine {
 		void Render() const override;
 
 	private:
-		Transform                 *m_pTransform;
+		Transform                 &m_Transform;
 		float                      m_Width, m_Height;
 	};
 }// namespace roingine

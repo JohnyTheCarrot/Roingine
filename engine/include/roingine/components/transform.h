@@ -7,7 +7,7 @@
 namespace roingine {
 	class Transform final : public Component {
 	public:
-		Transform(GameObject *pGameObject, glm::vec2 position, float rotation);
+		Transform(GameObject &gameObject, glm::vec2 position, float rotation);
 
 		void Update() override;
 
@@ -39,10 +39,10 @@ namespace roingine {
 
 		void SetPivot(float x, float y) noexcept;
 
-		void SetParent(Transform *pParent);
+		void SetParent(Transform &parent);
 
 		[[nodiscard]]
-		Transform *GetParent() const noexcept;
+		Transform &GetParent() const noexcept;
 
 		[[nodiscard]]
 		glm::mat4 GetTransformationMatrix() const noexcept;

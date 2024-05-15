@@ -4,9 +4,9 @@
 #include <roingine/gameobject.h>
 
 namespace roingine {
-	RectRenderer::RectRenderer(GameObject *pGameObject, float width, float height)
-	    : Component{pGameObject}
-	    , m_pTransform{pGameObject->GetComponent<Transform>()}
+	RectRenderer::RectRenderer(GameObject &gameObject, float width, float height)
+	    : Component{gameObject}
+	    , m_Transform{gameObject.GetComponent<Transform>()}
 	    , m_Width{width}
 	    , m_Height{height} {
 	}
@@ -18,7 +18,7 @@ namespace roingine {
 	}
 
 	void RectRenderer::Render() const {
-		TransformContext context{*m_pTransform};
+		TransformContext context{m_Transform};
 
 		glColor3f(1.0f, 1.0f, 1.0f);
 

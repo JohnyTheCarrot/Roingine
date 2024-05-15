@@ -7,8 +7,8 @@
 #include <roingine/game_time.h>
 
 namespace roingine {
-	Transform::Transform(GameObject *pGameObject, glm::vec2 position, float rotation)
-	    : Component{pGameObject}
+	Transform::Transform(GameObject &gameObject, glm::vec2 position, float rotation)
+	    : Component{gameObject}
 	    , m_Position{position}
 	    , m_Rotation{rotation} {
 	}
@@ -66,12 +66,12 @@ namespace roingine {
 		m_Pivot = {x, y};
 	}
 
-	void Transform::SetParent(Transform *pParent) {
-		m_pParent = pParent;
+	void Transform::SetParent(Transform &parent) {
+		m_pParent = &parent;
 	}
 
-	Transform *Transform::GetParent() const noexcept {
-		return m_pParent;
+	Transform &Transform::GetParent() const noexcept {
+		return *m_pParent;
 	}
 
 	glm::mat4 Transform::GetTransformationMatrix() const noexcept {
@@ -92,7 +92,7 @@ namespace roingine {
 				currentTransMat = glm::translate(currentTransMat, glm::vec3{-pivot, 0.f});
 
 			transMat = currentTransMat * transMat;
-		} while ((pCurrentTransform = pCurrentTransform->GetParent()) != nullptr);
+		} while ((pCurrentTransform = &pCurrentTransform->GetParent()) != nullptr);
 
 		return transMat;
 	}
