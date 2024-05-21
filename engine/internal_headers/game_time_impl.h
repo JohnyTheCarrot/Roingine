@@ -22,7 +22,7 @@ namespace roingine {
 
 		[[nodiscard]]
 		GameTime::DurationPrecision GetDeltaTime() const noexcept {
-			return m_DeltaTime.count();
+			return m_DeltaTime.count() / DURATION_FRACTION;
 		}
 
 		[[nodiscard]]
