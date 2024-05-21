@@ -18,6 +18,12 @@ namespace roingine {
 
 		void Render() const override;
 
+		[[nodiscard]]
+		char const *GetName() const override;
+
+		[[nodiscard]]
+		duk_function_list_entry const *SetUpScriptAPI(duk_context *) const override;
+
 	private:
 		Transform &m_Transform;
 		Rect      &m_Rect;

@@ -26,6 +26,12 @@ namespace roingine {
 		[[nodiscard]]
 		Corners GetCorners(Transform &transform) const noexcept;
 
+		[[nodiscard]]
+		char const *GetName() const override;
+
+		[[nodiscard]]
+		duk_function_list_entry const *SetUpScriptAPI(duk_context *) const override;
+
 		float m_Width, m_Height;
 	};
 }// namespace roingine

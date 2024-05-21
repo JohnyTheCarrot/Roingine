@@ -15,6 +15,17 @@ namespace roingine {
 		return m_rpScene->m_pImpl->m_GameObjectComponents;
 	}
 
+	std::optional<std::size_t> GameObject::GetTypeHashFromName(std::string const &name) const {
+		if (!m_rpScene->m_pImpl->m_NameMap.contains(name))
+			return std::nullopt;
+
+		return m_rpScene->m_pImpl->m_NameMap.at(name);
+	}
+
+	void GameObject::RegisterTypeHashName(std::string name, std::size_t hash) {
+		m_rpScene->m_pImpl->m_NameMap.emplace(std::move(name), hash);
+	}
+
 	GameObjectComponents const &GameObject::GetSceneComponents() const noexcept {
 		return m_rpScene->m_pImpl->m_GameObjectComponents;
 	}

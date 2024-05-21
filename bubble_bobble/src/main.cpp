@@ -24,13 +24,23 @@ public:
 	}
 
 	void Update() override {
-		m_Transform.Rotate(.1f);
+		m_Transform.Rotate(1.f);
 	}
 
 	void FixedUpdate() override {
 	}
 
 	void Render() const override {
+	}
+
+	[[nodiscard]]
+	char const *GetName() const override {
+		return "Rotator";
+	}
+
+	[[nodiscard]]
+	duk_function_list_entry const *SetUpScriptAPI(duk_context *) const override {
+		return nullptr;
 	}
 
 private:
@@ -66,7 +76,7 @@ using Audio               = AudioSystem<Sounds>;
 using AudioServiceLocator = ServiceLocator<AudioService<Sounds>>;
 
 int main() {
-	roingine::Engine roingine{"Bubble Bobble", 640, 480};
+	roingine::Engine roingine{"Script Test", 640, 480};
 
 	std::unordered_map<Sounds, std::string> soundMap{};
 	soundMap.emplace(Sounds::TestSound, "sound.wav");
@@ -85,15 +95,15 @@ int main() {
 	parentGameObject.AddComponent<Script>("scripts/test.js");
 
 
-	for (int i{0}; i < 5; ++i) {
-		GameObject go2{scene.AddGameObject()};
-		auto      &pChildTransform{go2.AddComponent<Transform>(glm::vec2{50.0f, 50.0f}, 0.0f)};
-		go2.AddComponent<Rect>(50.f, 50.f);
-		go2.AddComponent<RectRenderer>();
-		go2.AddComponent<Rotator>();
-		pChildTransform.SetParent(pParentTransform.get());
-		pParentTransform = pChildTransform;
-	}
+	// for (int i{0}; i < 5; ++i) {
+	// 	GameObject go2{scene.AddGameObject()};
+	// 	auto      &pChildTransform{go2.AddComponent<Transform>(glm::vec2{50.0f, 50.0f}, 0.0f)};
+	// 	go2.AddComponent<Rect>(50.f, 50.f);
+	// 	go2.AddComponent<RectRenderer>();
+	// 	go2.AddComponent<Rotator>();
+	// 	pChildTransform.SetParent(pParentTransform.get());
+	// 	pParentTransform = pChildTransform;
+	// }
 
 	GameEventQueue::GetInstance().AttachEventHandler<EventType::PlaySoundRequest>([](auto const &data) {
 		AudioServiceLocator::GetService().Play(data.sound);

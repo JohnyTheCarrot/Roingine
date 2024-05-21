@@ -1,5 +1,6 @@
 #include <SDL_opengl.h>
 #include <cmath>
+#include <duktape.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <numbers>
@@ -95,6 +96,29 @@ namespace roingine {
 		} while ((pCurrentTransform = &pCurrentTransform->GetParent()) != nullptr);
 
 		return transMat;
+	}
+
+	char const *Transform::GetName() const {
+		return "Transform";
+	}
+
+	int JsAPITranslate(duk_context *ctx) {
+		float const x{static_cast<float>(duk_require_number(ctx, 0))};
+		float const y{static_cast<float>(duk_require_number(ctx, 1))};
+
+		duk_push_this(ctx);
+		duk_get_prop_literal(ctx, -1, "__ptr");
+		Transform *ptr{static_cast<Transform *>(duk_get_pointer(ctx, -1))};
+
+		ptr->Translate(x, y);
+
+		return 0;
+	}
+
+	duk_function_list_entry const transformAPI[]{{"translate", JsAPITranslate, 2}, {nullptr, nullptr, 0}};
+
+	duk_function_list_entry const *Transform::SetUpScriptAPI(duk_context *) const {
+		return transformAPI;
 	}
 
 	TransformContext::TransformContext(Transform const &transform) noexcept {

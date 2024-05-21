@@ -10,7 +10,7 @@ namespace roingine {
 
 	using GameObjectHandle = size_t;
 	using GameObjectComponents =
-	        std::unordered_map<std::pair<GameObjectHandle, size_t>, std::unique_ptr<Component>, PairHash>;
+	        std::unordered_map<std::pair<GameObjectHandle, std::size_t>, std::unique_ptr<Component>, PairHash>;
 }// namespace roingine
 
 #endif// GAMEOBJECT_TYPES_H
