@@ -3,7 +3,7 @@
 
 namespace roingine {
 	GameInfo::GameInfo()
-	    : m_KeyHeldThresholdMs{300} {};
+	    : m_KeyHeldThresholdMs{0.3f} {};
 
 	GameInfo::~GameInfo() = default;
 

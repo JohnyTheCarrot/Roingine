@@ -4,6 +4,10 @@
 #include <type_traits>
 #include <utility>
 
+using duk_context = struct duk_hthread;
+
+struct duk_function_list_entry;
+
 namespace roingine {
 	class GameObject;
 
@@ -28,6 +32,12 @@ namespace roingine {
 		virtual void FixedUpdate() = 0;
 
 		virtual void Render() const = 0;
+
+		[[nodiscard]]
+		virtual char const *GetName() const = 0;
+
+		[[nodiscard]]
+		virtual duk_function_list_entry const *SetUpScriptAPI(duk_context *ctx) const = 0;
 
 	protected:
 		[[nodiscard]]

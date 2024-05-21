@@ -24,10 +24,20 @@ namespace roingine {
 		Script(GameObject &gameObject, std::string_view fileName);
 
 		void Update() override;
+
 		void FixedUpdate() override;
+
 		void Render() const override;
 
+		[[nodiscard]]
+		char const *GetName() const override;
+
+		[[nodiscard]]
+		duk_function_list_entry const *SetUpScriptAPI(duk_context *ctx) const override;
+
 	private:
+		void CallJsFunctionByName(std::string_view name);
+
 		std::vector<InputKeys> m_ListenedToKeys{};
 		UniqueDukContext m_DukContext;
 	};

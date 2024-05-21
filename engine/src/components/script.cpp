@@ -5,6 +5,7 @@
 #include <roingine/commands/command.h>
 #include <roingine/components/script.h>
 #include <roingine/game_time.h>
+#include <roingine/gameobject.h>
 #include <roingine/input.h>
 #include <roingine/roingine.h>
 
@@ -43,9 +44,15 @@ namespace roingine {
 		}
 		while (numArgs--) { std::cout << ' ' << duk_to_string(dukContext, -numArgs - 1); }
 
+		return 0;
+	}
+
+	int PrintLn(duk_context *dukContext) {
+		auto const result{Print(dukContext)};
+
 		std::cout << std::endl;
 
-		return 0;
+		return result;
 	}
 
 	int Listen(duk_context *dukContext, KeyEventType eventType) {
@@ -68,6 +75,30 @@ namespace roingine {
 		return 0;
 	}
 
+	int GetDeltaTime(duk_context *dukContext) {
+		auto const deltaTime{GameTime::GetInstance().GetDeltaTime()};
+		duk_push_number(dukContext, deltaTime);
+
+		return 1;
+	}
+
+	int GetComponent(duk_context *dukContext) {
+		auto const name{duk_require_string(dukContext, 0)};
+
+		duk_get_global_literal(dukContext, "__goPtr");
+		auto *ptr{static_cast<GameObject *>(duk_get_pointer(dukContext, -1))};
+
+		auto *comp{ptr->GetComponent(name)};
+
+		auto const api{comp->SetUpScriptAPI(dukContext)};
+		duk_push_object(dukContext);
+		duk_put_function_list(dukContext, -1, api);
+		duk_push_pointer(dukContext, static_cast<void *>(comp));
+		duk_put_prop_string(dukContext, -2, "__ptr");
+
+		return 1;
+	}
+
 	int OnKeyDown(duk_context *dukContext) {
 		return Listen(dukContext, KeyEventType::Down);
 	}
@@ -84,7 +115,30 @@ namespace roingine {
 		return Listen(dukContext, KeyEventType::LongPress);
 	}
 
-	duk_function_list_entry const roingineFunctions[]{{"print", Print, DUK_VARARGS}, {nullptr, nullptr, 0}};
+	void Script::CallJsFunctionByName(std::string_view name) {
+		duk_get_global_string(m_DukContext.get(), name.data());
+		if (duk_is_undefined(m_DukContext.get(), -1)) {
+			duk_pop(m_DukContext.get());
+			return;
+		}
+
+		duk_push_number(m_DukContext.get(), static_cast<duk_double_t>(GameTime::GetInstance().GetDeltaTime()));
+		if (duk_pcall(m_DukContext.get(), 1) != 0)
+			std::cerr << "Error: " << duk_safe_to_string(m_DukContext.get(), -1) << std::endl;
+		duk_pop(m_DukContext.get());
+	}
+
+	duk_function_list_entry const roingineFunctions[]{
+	        {"println", PrintLn, DUK_VARARGS},
+	        {"print", Print, DUK_VARARGS},
+	        {"getDeltaTime", GetDeltaTime, 0},
+	        {nullptr, nullptr, 0}
+	};
+
+	duk_function_list_entry const gameObjectFunctions[]{
+	        {"getComponent", GetComponent, DUK_VARARGS},
+	        {nullptr, nullptr, 0}
+	};
 
 	duk_function_list_entry const inputFunctions[]{
 	        {"onKeyDown", OnKeyDown, 2},
@@ -95,10 +149,21 @@ namespace roingine {
 	};
 
 	duk_number_list_entry const inputNumberConstants[]{
-	        {"KEY_A", static_cast<int>(InputKeys::A)},
-	        {"KEY_B", static_cast<int>(InputKeys::B)},
-	        {"KEY_C", static_cast<int>(InputKeys::C)},
-	        {nullptr, 0}
+	        {"KEY_A", static_cast<int>(InputKeys::A)},         {"KEY_B", static_cast<int>(InputKeys::B)},
+	        {"KEY_C", static_cast<int>(InputKeys::C)},         {"KEY_D", static_cast<int>(InputKeys::D)},
+	        {"KEY_E", static_cast<int>(InputKeys::E)},         {"KEY_F", static_cast<int>(InputKeys::F)},
+	        {"KEY_G", static_cast<int>(InputKeys::G)},         {"KEY_H", static_cast<int>(InputKeys::H)},
+	        {"KEY_I", static_cast<int>(InputKeys::I)},         {"KEY_J", static_cast<int>(InputKeys::J)},
+	        {"KEY_K", static_cast<int>(InputKeys::K)},         {"KEY_L", static_cast<int>(InputKeys::L)},
+	        {"KEY_M", static_cast<int>(InputKeys::M)},         {"KEY_N", static_cast<int>(InputKeys::N)},
+	        {"KEY_O", static_cast<int>(InputKeys::O)},         {"KEY_P", static_cast<int>(InputKeys::P)},
+	        {"KEY_Q", static_cast<int>(InputKeys::Q)},         {"KEY_R", static_cast<int>(InputKeys::R)},
+	        {"KEY_S", static_cast<int>(InputKeys::S)},         {"KEY_T", static_cast<int>(InputKeys::T)},
+	        {"KEY_U", static_cast<int>(InputKeys::U)},         {"KEY_V", static_cast<int>(InputKeys::V)},
+	        {"KEY_W", static_cast<int>(InputKeys::W)},         {"KEY_X", static_cast<int>(InputKeys::X)},
+	        {"KEY_Y", static_cast<int>(InputKeys::Y)},         {"KEY_Z", static_cast<int>(InputKeys::Z)},
+	        {"KEY_SPACE", static_cast<int>(InputKeys::Space)}, {"KEY_ENTER", static_cast<int>(InputKeys::Enter)},
+	        {"KEY_SHIFT", static_cast<int>(InputKeys::Shift)}, {nullptr, 0}
 	};
 
 	Script::Script(GameObject &gameObject, std::string_view fileName)
@@ -114,9 +179,16 @@ namespace roingine {
 		duk_put_prop_string(m_DukContext.get(), -2, "roingine");
 
 		duk_push_object(m_DukContext.get());
+		duk_put_function_list(m_DukContext.get(), -1, gameObjectFunctions);
+		duk_put_prop_string(m_DukContext.get(), -2, "gameObject");
+
+		duk_push_object(m_DukContext.get());
 		duk_put_number_list(m_DukContext.get(), -1, inputNumberConstants);
 		duk_put_function_list(m_DukContext.get(), -1, inputFunctions);
 		duk_put_prop_string(m_DukContext.get(), -2, "input");
+
+		duk_push_pointer(m_DukContext.get(), static_cast<void *>(&gameObject));
+		duk_put_prop_string(m_DukContext.get(), -2, "__goPtr");
 		duk_pop(m_DukContext.get());
 
 		std::string inputCode{std::istreambuf_iterator<char>(ifstream), {}};
@@ -125,25 +197,27 @@ namespace roingine {
 			auto const errMessage{duk_safe_to_string(m_DukContext.get(), -1)};
 			throw ScriptCompilationFailedException{errMessage};
 		}
+
+		CallJsFunctionByName("Init");
 	}
 
 	void Script::Update() {
-		duk_get_global_literal(m_DukContext.get(), "Update");
-		if (duk_is_undefined(m_DukContext.get(), -1)) {
-			duk_pop(m_DukContext.get());
-			return;
-		}
-
-		duk_push_number(m_DukContext.get(), static_cast<duk_double_t>(GameTime::GetInstance().GetDeltaTime()));
-		if (duk_pcall(m_DukContext.get(), 1) != 0)
-			std::cerr << "Error: " << duk_safe_to_string(m_DukContext.get(), -1) << std::endl;
-		duk_pop(m_DukContext.get());
+		CallJsFunctionByName("Update");
 	}
 
 	void Script::FixedUpdate() {
+		CallJsFunctionByName("FixedUpdate");
 	}
 
 	void Script::Render() const {
+	}
+
+	char const *Script::GetName() const {
+		return "Script";
+	}
+
+	duk_function_list_entry const *Script::SetUpScriptAPI(duk_context *) const {
+		return nullptr;
 	}
 
 	ScriptCompilationFailedException::ScriptCompilationFailedException(std::string errorMessage)

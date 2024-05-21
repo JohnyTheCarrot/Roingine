@@ -1,8 +1,10 @@
 #ifndef GAMEOBJECT_H
 #define GAMEOBJECT_H
 
+#include <optional>
 #include <roingine/components/component.h>
 #include <roingine/gameobject_types.h>
+#include <string>
 
 namespace roingine {
 	class Scene;
@@ -34,6 +36,8 @@ namespace roingine {
 			std::unique_ptr<TComponent> pComponent{std::make_unique<TComponent>(*this, std::forward<Args>(args)...)};
 			TComponent                 *rpComponent{pComponent.get()};
 
+			RegisterTypeHashName(pComponent->GetName(), typeid(TComponent).hash_code());
+
 			Component::Handle hComponent{GetComponentHandle<TComponent>()};
 			auto             &sceneComponents{GetSceneComponents()};
 
@@ -45,10 +49,10 @@ namespace roingine {
 		[[nodiscard]]
 		TComponent &GetComponent() {
 			Component::Handle hComponent{GetComponentHandle<TComponent>()};
-			auto             &sceneComponent{GetSceneComponents()};
+			auto             &sceneComponents{GetSceneComponents()};
 
-			if (sceneComponent.contains(hComponent))
-				return *dynamic_cast<TComponent *>(sceneComponent.at(hComponent).get());
+			if (sceneComponents.contains(hComponent))
+				return *dynamic_cast<TComponent *>(sceneComponents.at(hComponent).get());
 
 			throw ComponentNotFoundException{};
 		}
@@ -57,12 +61,32 @@ namespace roingine {
 		[[nodiscard]]
 		TComponent const &GetComponent() const {
 			Component::Handle hComponent{GetComponentHandle<TComponent>()};
-			auto const       &sceneComponent{GetSceneComponents()};
+			auto const       &sceneComponents{GetSceneComponents()};
 
-			if (sceneComponent.contains(hComponent))
-				return *dynamic_cast<TComponent *>(sceneComponent.at(hComponent).get());
+			if (sceneComponents.contains(hComponent))
+				return *dynamic_cast<TComponent *>(sceneComponents.at(hComponent).get());
 
 			throw ComponentNotFoundException{};
+		}
+
+		[[nodiscard]]
+		Component *GetComponent(std::size_t typeHash) {
+			Component::Handle hComponent{m_hGameObject, typeHash};
+			auto             &sceneComponents{GetSceneComponents()};
+
+			if (sceneComponents.contains(hComponent))
+				return sceneComponents.at(hComponent).get();
+
+			throw ComponentNotFoundException{};
+		}
+
+		[[nodiscard]]
+		Component *GetComponent(std::string const &name) {
+			auto const hash{GetTypeHashFromName(name)};
+			if (!hash.has_value())
+				return nullptr;
+
+			return GetComponent(hash.value());
 		}
 
 		template<ComponentImpl TComponent>
@@ -86,7 +110,6 @@ namespace roingine {
 		}
 
 	private:
-
 		template<ComponentImpl TComponent>
 		[[nodiscard]]
 		Component::Handle GetComponentHandle() const noexcept {
@@ -95,6 +118,11 @@ namespace roingine {
 
 		[[nodiscard]]
 		GameObjectComponents &GetSceneComponents() noexcept;
+
+		[[nodiscard]]
+		std::optional<std::size_t> GetTypeHashFromName(std::string const &name) const;
+
+		void RegisterTypeHashName(std::string name, std::size_t hash);
 
 		[[nodiscard]]
 		GameObjectComponents const &GetSceneComponents() const noexcept;

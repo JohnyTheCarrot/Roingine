@@ -31,4 +31,12 @@ namespace roingine {
 		}
 		glEnd();
 	}
+
+	char const *RectRenderer::GetName() const {
+		return "RectRenderer";
+	}
+
+	duk_function_list_entry const *RectRenderer::SetUpScriptAPI(duk_context *) const {
+		return nullptr;
+	}
 }// namespace roingine

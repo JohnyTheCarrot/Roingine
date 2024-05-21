@@ -27,4 +27,12 @@ namespace roingine {
 
 		return {.topLeft = worldPos, .bottomLeft = {minX, maxY}, .topRight = {maxX, minY}, .bottomRight = {maxX, maxY}};
 	}
+
+	char const *Rect::GetName() const {
+		return "Rect";
+	}
+
+	duk_function_list_entry const *Rect::SetUpScriptAPI(duk_context *) const {
+		return nullptr;
+	}
 }// namespace roingine

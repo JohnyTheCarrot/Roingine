@@ -29,6 +29,7 @@ namespace roingine {
 		friend class GameObject;
 
 		GameObjectComponents          m_GameObjectComponents;
+		std::unordered_map<std::string, std::size_t> m_NameMap;
 		std::forward_list<GameObject> m_GameObjects;
 
 		void AddGameObject(GameObject gameObject);
