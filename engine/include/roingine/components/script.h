@@ -23,17 +23,29 @@ namespace roingine {
 	public:
 		Script(GameObject &gameObject, std::string_view fileName);
 
+		Script(Script &&);
+
+		Script &operator=(Script &&);
+
 		void Update() override;
 
 		void FixedUpdate() override;
 
 		void Render() const override;
 
+		static constexpr char const *NAME{"Script"};
+
 		[[nodiscard]]
 		char const *GetName() const override;
 
 		[[nodiscard]]
 		duk_function_list_entry const *SetUpScriptAPI(duk_context *ctx) const override;
+
+		[[nodiscard]]
+		static std::size_t JSFactoryNumParams();
+
+		[[nodiscard]]
+		static std::unique_ptr<Script> JSFactory(GameObject *, duk_context *);
 
 	private:
 		void CallJsFunctionByName(std::string_view name);

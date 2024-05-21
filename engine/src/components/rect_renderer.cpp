@@ -33,10 +33,18 @@ namespace roingine {
 	}
 
 	char const *RectRenderer::GetName() const {
-		return "RectRenderer";
+		return NAME;
 	}
 
 	duk_function_list_entry const *RectRenderer::SetUpScriptAPI(duk_context *) const {
 		return nullptr;
+	}
+
+	size_t RectRenderer::JSFactoryNumParams() {
+		return 0;
+	}
+
+	std::unique_ptr<RectRenderer> RectRenderer::JSFactory(GameObject *pGameObject, duk_context *) {
+		return std::make_unique<RectRenderer>(*pGameObject);
 	}
 }// namespace roingine

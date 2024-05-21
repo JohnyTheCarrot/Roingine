@@ -18,11 +18,19 @@ namespace roingine {
 
 		void Render() const override;
 
+		static constexpr char const *NAME{"RectRenderer"};
+
 		[[nodiscard]]
 		char const *GetName() const override;
 
 		[[nodiscard]]
 		duk_function_list_entry const *SetUpScriptAPI(duk_context *) const override;
+
+		[[nodiscard]]
+		static std::size_t JSFactoryNumParams();
+
+		[[nodiscard]]
+		static std::unique_ptr<RectRenderer> JSFactory(GameObject *, duk_context *);
 
 	private:
 		Transform &m_Transform;

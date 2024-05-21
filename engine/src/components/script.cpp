@@ -89,10 +89,35 @@ namespace roingine {
 		auto *ptr{static_cast<GameObject *>(duk_get_pointer(dukContext, -1))};
 
 		auto *comp{ptr->GetComponent(name)};
+		if (!comp) {
+			duk_push_undefined(dukContext);
+			return 1;
+		}
 
 		auto const api{comp->SetUpScriptAPI(dukContext)};
 		duk_push_object(dukContext);
 		duk_put_function_list(dukContext, -1, api);
+		duk_push_pointer(dukContext, static_cast<void *>(comp));
+		duk_put_prop_string(dukContext, -2, "__ptr");
+
+		return 1;
+	}
+
+	int AddComponent(duk_context *dukContext) {
+		auto const name{duk_require_string(dukContext, 0)};
+
+		duk_get_global_literal(dukContext, "__goPtr");
+		auto *ptr{static_cast<GameObject *>(duk_get_pointer(dukContext, -1))};
+
+		auto *comp{ptr->AddComponent(name, dukContext)};
+
+		auto const api{comp->SetUpScriptAPI(dukContext)};
+		duk_push_object(dukContext);
+
+		if (api) {
+			duk_put_function_list(dukContext, -1, api);
+		}
+
 		duk_push_pointer(dukContext, static_cast<void *>(comp));
 		duk_put_prop_string(dukContext, -2, "__ptr");
 
@@ -137,6 +162,7 @@ namespace roingine {
 
 	duk_function_list_entry const gameObjectFunctions[]{
 	        {"getComponent", GetComponent, DUK_VARARGS},
+	        {"addComponent", AddComponent, DUK_VARARGS},
 	        {nullptr, nullptr, 0}
 	};
 
@@ -201,6 +227,31 @@ namespace roingine {
 		CallJsFunctionByName("Init");
 	}
 
+	Script::Script(Script &&other)
+	    : Component{std::move(other)}
+	    , m_ListenedToKeys{std::move(other.m_ListenedToKeys)}
+	    , m_DukContext{std::move(other.m_DukContext)} {
+		duk_push_global_object(m_DukContext.get());
+		duk_push_pointer(m_DukContext.get(), static_cast<void *>(&other.GetGameObject()));
+		duk_put_prop_string(m_DukContext.get(), -2, "__goPtr");
+		duk_pop(m_DukContext.get());
+	}
+
+	Script &Script::operator=(Script &&other) {
+		if (this == &other)
+			return *this;
+
+		m_ListenedToKeys = std::move(other.m_ListenedToKeys);
+		m_DukContext     = std::move(other.m_DukContext);
+
+		duk_push_global_object(m_DukContext.get());
+		duk_push_pointer(m_DukContext.get(), static_cast<void *>(&other.GetGameObject()));
+		duk_put_prop_string(m_DukContext.get(), -2, "__goPtr");
+		duk_pop(m_DukContext.get());
+
+		return *this;
+	}
+
 	void Script::Update() {
 		CallJsFunctionByName("Update");
 	}
@@ -213,11 +264,21 @@ namespace roingine {
 	}
 
 	char const *Script::GetName() const {
-		return "Script";
+		return NAME;
 	}
 
 	duk_function_list_entry const *Script::SetUpScriptAPI(duk_context *) const {
 		return nullptr;
+	}
+
+	std::size_t Script::JSFactoryNumParams() {
+		return 1;
+	}
+
+	std::unique_ptr<Script> Script::JSFactory(GameObject *pGameObject, duk_context *ctx) {
+		auto const path{duk_require_string(ctx, 0)};
+
+		return std::make_unique<Script>(*pGameObject, path);
 	}
 
 	ScriptCompilationFailedException::ScriptCompilationFailedException(std::string errorMessage)

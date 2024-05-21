@@ -1,8 +1,10 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-#include "gameobject.h"
 #include <memory>
+#include <roingine/gameobject.h>
+
+using duk_context = struct duk_hthread;
 
 namespace roingine {
 	class Scene final {
@@ -13,6 +15,10 @@ namespace roingine {
 		Scene(Scene &&);
 
 		Scene &operator=(Scene &&);
+
+		Scene(Scene const &) = delete;
+
+		Scene &operator=(Scene const &) = delete;
 
 		void PreUpdate();
 
@@ -26,6 +32,10 @@ namespace roingine {
 
 		[[nodiscard]]
 		GameObject AddGameObject();
+
+		void RegisterComponentType(
+		        std::string name, std::size_t hash, JSFactoryMapEntry::Function jsFactory, std::size_t jsFactoryNumArgs
+		);
 
 	private:
 		friend class GameObject;

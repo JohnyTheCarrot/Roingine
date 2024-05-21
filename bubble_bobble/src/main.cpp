@@ -87,11 +87,6 @@ int main() {
 
 	Scene                             scene{};
 	GameObject                        parentGameObject{scene.AddGameObject()};
-	std::reference_wrapper<Transform> pParentTransform{
-	        parentGameObject.AddComponent<Transform>(glm::vec2{200.0f, 100.0f}, 0.0f)
-	};
-	parentGameObject.AddComponent<Rect>(50.f, 50.f);
-	parentGameObject.AddComponent<RectRenderer>();
 	parentGameObject.AddComponent<Script>("scripts/test.js");
 
 

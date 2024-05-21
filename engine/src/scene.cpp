@@ -1,4 +1,8 @@
 #include "scene_impl.h"
+#include <roingine/components/rect.h>
+#include <roingine/components/rect_renderer.h>
+#include <roingine/components/script.h>
+#include <roingine/components/transform.h>
 #include <roingine/gameobject.h>
 
 namespace roingine {
@@ -31,6 +35,18 @@ namespace roingine {
 		return go;
 	}
 
+	void Scene::Impl::RegisterComponentType(
+	        std::string name, std::size_t hash, JSFactoryMapEntry::Function jsFactory, std::size_t jsFactoryNumArgs
+	) {
+		m_NameMap.emplace(std::move(name), hash);
+		m_JSFactoryMap.emplace(hash, JSFactoryMapEntry{jsFactory, jsFactoryNumArgs});
+	}
+
+	void Scene::Impl::SetGameObjectScenes(Scene &scene) {
+		for (auto &go: m_GameObjects) { go.SetScene(&scene); }
+		for (auto &comp: m_GameObjectComponents) { comp.second->GetGameObject().SetScene(&scene); }
+	}
+
 	void Scene::Impl::AddGameObject(GameObject gameObject) {
 		m_GameObjects.push_front(gameObject);
 	}
@@ -41,13 +57,36 @@ namespace roingine {
 
 	Scene::Scene()
 	    : m_pImpl{std::make_unique<Scene::Impl>()} {
+		RegisterComponentType(Rect::NAME, typeid(Rect).hash_code(), Rect::JSFactory, Rect::JSFactoryNumParams());
+		RegisterComponentType(
+		        RectRenderer::NAME, typeid(RectRenderer).hash_code(), RectRenderer::JSFactory,
+		        RectRenderer::JSFactoryNumParams()
+		);
+		RegisterComponentType(
+		        Transform::NAME, typeid(Transform).hash_code(), Transform::JSFactory, Transform::JSFactoryNumParams()
+		);
+		RegisterComponentType(
+		        Script::NAME, typeid(Script).hash_code(), Script::JSFactory, Script::JSFactoryNumParams()
+		);
 	}
 
 	Scene::~Scene() = default;
 
-	Scene::Scene(Scene &&other) = default;
+	Scene::Scene(Scene &&other)
+	    : m_pImpl{std::move(other.m_pImpl)} {
+		m_pImpl->SetGameObjectScenes(*this);
+	};
 
-	Scene &Scene::operator=(Scene &&other) = default;
+	Scene &Scene::operator=(Scene &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
+		m_pImpl = std::move(other.m_pImpl);
+		m_pImpl->SetGameObjectScenes(*this);
+
+		return *this;
+	}
 
 	void Scene::PreUpdate() {
 		m_pImpl->PreUpdate();
@@ -71,5 +110,11 @@ namespace roingine {
 
 	GameObject Scene::AddGameObject() {
 		return m_pImpl->AddGameObject(*this);
+	}
+
+	void Scene::RegisterComponentType(
+	        std::string name, std::size_t hash, JSFactoryMapEntry::Function jsFactory, std::size_t jsFactoryNumArgs
+	) {
+		m_pImpl->RegisterComponentType(name, hash, jsFactory, jsFactoryNumArgs);
 	}
 }// namespace roingine
