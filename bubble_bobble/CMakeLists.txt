@@ -5,7 +5,10 @@ project(BubbleBobble LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(${PROJECT_NAME} src/main.cpp)
+add_executable(${PROJECT_NAME}
+	src/main.cpp
+	scripts/test.js
+)
 target_link_libraries(${PROJECT_NAME} PRIVATE Roingine)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
@@ -103,6 +106,9 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 )
 
 # add post build commands
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+	COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_CURRENT_LIST_DIR}/scripts" "$<TARGET_FILE_DIR:${PROJECT_NAME}>/scripts"
+)
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 	COMMAND "${CMAKE_COMMAND}" -E copy "${SDL2_LIBRARY_DLL}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
 )

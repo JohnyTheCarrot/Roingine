@@ -2,6 +2,7 @@
 #include <roingine/commands/command.h>
 #include <roingine/components/rect.h>
 #include <roingine/components/rect_renderer.h>
+#include <roingine/components/script.h>
 #include <roingine/components/transform.h>
 #include <roingine/engine_event_queue.h>
 #include <roingine/event_queue.h>
@@ -45,33 +46,6 @@ public:
 	}
 };
 
-class KeyReleasedCommand final : public roingine::Command {
-public:
-	~KeyReleasedCommand() override = default;
-
-	void Execute() override {
-		std::cout << "key released" << std::endl;
-	}
-};
-
-class KeyHeldCommand final : public roingine::Command {
-public:
-	~KeyHeldCommand() override = default;
-
-	void Execute() override {
-		std::cout << "key held" << std::endl;
-	}
-};
-
-class KeyLongPressCommand final : public roingine::Command {
-public:
-	~KeyLongPressCommand() override = default;
-
-	void Execute() override {
-		std::cout << "key long press" << std::endl;
-	}
-};
-
 enum class Sounds { TestSound };
 
 enum class EventType { PlaySoundRequest };
@@ -100,26 +74,16 @@ int main() {
 	AudioServiceLocator::Provide(std::make_unique<Audio>(std::move(soundMap)));
 
 	KeyboardInput::Provide(std::make_unique<SDLKeyboardInputService>());
-	KeyboardInput::GetService().AddCommand(
-	        roingine::InputKeys::A, roingine::KeyEventType::Down, std::make_unique<KeyPressedCommand>()
-	);
-	KeyboardInput::GetService().AddCommand(
-	        roingine::InputKeys::A, roingine::KeyEventType::Up, std::make_unique<KeyReleasedCommand>()
-	);
-	KeyboardInput::GetService().AddCommand(
-	        roingine::InputKeys::A, roingine::KeyEventType::Held, std::make_unique<KeyHeldCommand>()
-	);
-	KeyboardInput::GetService().AddCommand(
-	        roingine::InputKeys::A, roingine::KeyEventType::LongPress, std::make_unique<KeyLongPressCommand>()
-	);
 
-	Scene      scene{};
-	GameObject parentGameObject{scene.AddGameObject()};
+	Scene                             scene{};
+	GameObject                        parentGameObject{scene.AddGameObject()};
 	std::reference_wrapper<Transform> pParentTransform{
 	        parentGameObject.AddComponent<Transform>(glm::vec2{200.0f, 100.0f}, 0.0f)
 	};
 	parentGameObject.AddComponent<Rect>(50.f, 50.f);
 	parentGameObject.AddComponent<RectRenderer>();
+	parentGameObject.AddComponent<Script>("scripts/test.js");
+
 
 	for (int i{0}; i < 5; ++i) {
 		GameObject go2{scene.AddGameObject()};

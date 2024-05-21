@@ -16,6 +16,7 @@ set (INCLUDE_HEADERS_COMPONENTS
 	include/roingine/components/rect_renderer.h
 	include/roingine/components/transform.h
 	include/roingine/components/rect.h
+	include/roingine/components/script.h
 )
 
 set (INCLUDE_HEADERS_COMMANDS
@@ -39,6 +40,7 @@ set (INCLUDE_HEADERS
 	include/roingine/sound_clip.h
 	include/roingine/game_info.h
 	include/roingine/engine_event_queue.h
+	include/roingine/unique_duk_context.h
 )
 
 set (SRC_FILES
@@ -52,8 +54,10 @@ set (SRC_FILES
 	src/components/rect_renderer.cpp
 	src/components/transform.cpp
 	src/components/rect.cpp
+	src/components/script.cpp
 	src/commands/gameobject_command.cpp
 	src/game_info.cpp
+	src/unique_duk_context.cpp
 )
 
 set (INTERNAL_HEADERS
@@ -96,6 +100,10 @@ include(FetchContent)
 
 # ImGUI
 target_link_libraries(${PROJECT_NAME} PRIVATE "$<BUILD_LOCAL_INTERFACE:ImGUI>")
+
+# Duktape
+target_link_libraries(${PROJECT_NAME} PRIVATE "$<BUILD_LOCAL_INTERFACE:Duktape>")
+target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_LIST_DIR}/3rdParty/Duktape")
 
 # GLM
 FetchContent_Declare(
