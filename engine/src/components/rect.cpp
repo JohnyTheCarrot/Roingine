@@ -1,3 +1,4 @@
+#include <duktape.h>
 #include <roingine/components/rect.h>
 #include <roingine/components/transform.h>
 #include <roingine/gameobject.h>
@@ -29,10 +30,21 @@ namespace roingine {
 	}
 
 	char const *Rect::GetName() const {
-		return "Rect";
+		return NAME;
 	}
 
 	duk_function_list_entry const *Rect::SetUpScriptAPI(duk_context *) const {
 		return nullptr;
+	}
+
+	size_t Rect::JSFactoryNumParams() {
+		return 2;
+	}
+
+	std::unique_ptr<Rect> Rect::JSFactory(GameObject *pGameObject, duk_context *ctx) {
+		auto const width{duk_require_number(ctx, 1)};
+		auto const height{duk_require_number(ctx, 2)};
+
+		return std::make_unique<Rect>(*pGameObject, static_cast<float>(width), static_cast<float>(height));
 	}
 }// namespace roingine

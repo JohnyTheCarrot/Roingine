@@ -25,12 +25,19 @@ namespace roingine {
 		[[nodiscard]]
 		GameObject AddGameObject(Scene &scene);
 
+		void RegisterComponentType(
+		        std::string name, std::size_t hash, JSFactoryMapEntry::Function jsFactory, std::size_t jsFactoryNumArgs
+		);
+
+		void SetGameObjectScenes(Scene &scene);
+
 	private:
 		friend class GameObject;
 
 		GameObjectComponents          m_GameObjectComponents;
 		std::unordered_map<std::string, std::size_t> m_NameMap;
-		std::forward_list<GameObject> m_GameObjects;
+		std::unordered_map<std::size_t, JSFactoryMapEntry> m_JSFactoryMap;
+		std::forward_list<GameObject>                      m_GameObjects;
 
 		void AddGameObject(GameObject gameObject);
 

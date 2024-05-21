@@ -6,7 +6,16 @@
 #include <roingine/gameobject_types.h>
 #include <string>
 
+using duk_context = struct duk_hthread;
+
 namespace roingine {
+	struct JSFactoryMapEntry final {
+		using Function = std::function<std::unique_ptr<Component>(GameObject *, duk_context *)>;
+
+		Function    jsFactory;
+		std::size_t numParams;
+	};
+
 	class Scene;
 
 	class ComponentNotFoundException final : public std::exception {
@@ -36,13 +45,32 @@ namespace roingine {
 			std::unique_ptr<TComponent> pComponent{std::make_unique<TComponent>(*this, std::forward<Args>(args)...)};
 			TComponent                 *rpComponent{pComponent.get()};
 
-			RegisterTypeHashName(pComponent->GetName(), typeid(TComponent).hash_code());
-
 			Component::Handle hComponent{GetComponentHandle<TComponent>()};
 			auto             &sceneComponents{GetSceneComponents()};
 
 			sceneComponents.insert({hComponent, std::move(pComponent)});
 			return *rpComponent;
+		}
+
+		Component *AddComponent(std::string name, duk_context *ctx) {
+			if (auto *existing{GetOptionalComponent(name)}; existing != nullptr)
+				return existing;
+
+			auto const hash{GetTypeHashFromName(name)};
+			if (!hash.has_value())
+				return nullptr;
+
+			auto const jsFactoryMapEntry{GetJSFactoryMapEntryByHash(hash.value())};
+			auto const factory{jsFactoryMapEntry.value().jsFactory};
+
+			std::unique_ptr<Component> pComp{factory(this, ctx)};
+			auto const                 rpComp{pComp.get()};
+
+			Component::Handle hComponent{m_hGameObject, hash.value()};
+			auto             &sceneComponents{GetSceneComponents()};
+
+			sceneComponents.insert({hComponent, std::move(pComp)});
+			return rpComp;
 		}
 
 		template<ComponentImpl TComponent>
@@ -81,12 +109,32 @@ namespace roingine {
 		}
 
 		[[nodiscard]]
+		Component *GetOptionalComponent(std::size_t typeHash) {
+			Component::Handle hComponent{m_hGameObject, typeHash};
+			auto             &sceneComponents{GetSceneComponents()};
+
+			if (sceneComponents.contains(hComponent))
+				return sceneComponents.at(hComponent).get();
+
+			return nullptr;
+		}
+
+		[[nodiscard]]
 		Component *GetComponent(std::string const &name) {
 			auto const hash{GetTypeHashFromName(name)};
 			if (!hash.has_value())
 				return nullptr;
 
 			return GetComponent(hash.value());
+		}
+
+		[[nodiscard]]
+		Component *GetOptionalComponent(std::string const &name) {
+			auto const hash{GetTypeHashFromName(name)};
+			if (!hash.has_value())
+				return nullptr;
+
+			return GetOptionalComponent(hash.value());
 		}
 
 		template<ComponentImpl TComponent>
@@ -109,6 +157,14 @@ namespace roingine {
 			sceneComponent.erase(hComponent);
 		}
 
+		[[nodiscard]]
+		Handle GetHandle() const noexcept;
+
+		void SetScene(Scene *scene) noexcept;
+
+		[[nodiscard]]
+		Scene *GetScene() const noexcept;
+
 	private:
 		template<ComponentImpl TComponent>
 		[[nodiscard]]
@@ -122,7 +178,8 @@ namespace roingine {
 		[[nodiscard]]
 		std::optional<std::size_t> GetTypeHashFromName(std::string const &name) const;
 
-		void RegisterTypeHashName(std::string name, std::size_t hash);
+		[[nodiscard]]
+		std::optional<JSFactoryMapEntry> GetJSFactoryMapEntryByHash(std::size_t hash) const;
 
 		[[nodiscard]]
 		GameObjectComponents const &GetSceneComponents() const noexcept;

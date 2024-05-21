@@ -47,11 +47,19 @@ namespace roingine {
 		[[nodiscard]]
 		glm::mat4 GetTransformationMatrix() const noexcept;
 
+		static constexpr char const *NAME{"Transform"};
+
 		[[nodiscard]]
 		char const *GetName() const override;
 
 		[[nodiscard]]
 		duk_function_list_entry const *SetUpScriptAPI(duk_context *) const override;
+
+		[[nodiscard]]
+		static std::size_t JSFactoryNumParams();
+
+		[[nodiscard]]
+		static std::unique_ptr<Transform> JSFactory(GameObject *pGameObject, duk_context *ctx);
 
 	private:
 		Transform          *m_pParent{nullptr};

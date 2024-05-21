@@ -26,11 +26,20 @@ namespace roingine {
 		[[nodiscard]]
 		Corners GetCorners(Transform &transform) const noexcept;
 
+		static constexpr char const *NAME{"Rect"};
+
 		[[nodiscard]]
 		char const *GetName() const override;
 
 		[[nodiscard]]
 		duk_function_list_entry const *SetUpScriptAPI(duk_context *) const override;
+
+		[[nodiscard]]
+		static std::size_t JSFactoryNumParams();
+
+		[[nodiscard]]
+		static std::unique_ptr<Rect> JSFactory(GameObject *, duk_context *);
+
 
 		float m_Width, m_Height;
 	};

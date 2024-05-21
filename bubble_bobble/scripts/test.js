@@ -28,5 +28,7 @@ input.onKeyHeld(input.KEY_D, function() {
 function Init() {
     roingine.println("Test Initialized!");
 
-    transform = gameObject.getComponent("Transform");
+    transform = gameObject.addComponent("Transform", 200, 100);
+    gameObject.addComponent("Rect", 50, 50);
+    gameObject.addComponent("RectRenderer");
 }
