@@ -27,9 +27,6 @@ namespace roingine {
 		duk_function_list_entry const *SetUpScriptAPI(duk_context *) const override;
 
 		[[nodiscard]]
-		static std::size_t JSFactoryNumParams();
-
-		[[nodiscard]]
 		static std::unique_ptr<RectRenderer> JSFactory(GameObject *, duk_context *);
 
 	private:

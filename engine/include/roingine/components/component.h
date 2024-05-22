@@ -58,7 +58,6 @@ namespace roingine {
 		{
 			T::JSFactory(static_cast<GameObject *>(nullptr), static_cast<duk_context *>(nullptr))
 		} -> std::same_as<std::unique_ptr<T>>;
-		{ T::JSFactoryNumParams() } -> std::same_as<std::size_t>;
 	};
 
 	static_assert(std::is_abstract_v<Component>, "Component must be abstract");

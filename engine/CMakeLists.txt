@@ -16,7 +16,8 @@ set (INCLUDE_HEADERS_COMPONENTS
 	include/roingine/components/rect_renderer.h
 	include/roingine/components/transform.h
 	include/roingine/components/rect.h
-	include/roingine/components/script.h
+	include/roingine/components/scripts.h
+	include/roingine/script.h
 )
 
 set (INCLUDE_HEADERS_COMMANDS
@@ -54,10 +55,11 @@ set (SRC_FILES
 	src/components/rect_renderer.cpp
 	src/components/transform.cpp
 	src/components/rect.cpp
-	src/components/script.cpp
+	src/components/scripts.cpp
 	src/commands/gameobject_command.cpp
 	src/game_info.cpp
 	src/unique_duk_context.cpp
+	src/script.cpp
 )
 
 set (INTERNAL_HEADERS

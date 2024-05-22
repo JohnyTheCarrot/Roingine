@@ -1,6 +1,9 @@
+const SCRIPT_NAME = "Test";
+
 const SPEED = 200;
 
 var transform;
+var scripts;
 
 function translate(x, y) {
     const transX = roingine.getDeltaTime() * x;
@@ -25,10 +28,15 @@ input.onKeyHeld(input.KEY_D, function() {
     translate(SPEED, 0);
 });
 
+input.onKeyDown(input.KEY_T, function() {
+    scripts.addScript("scripts/runtime_script.js");
+});
+
 function Init() {
     roingine.println("Test Initialized!");
 
     transform = gameObject.addComponent("Transform", 200, 100);
+    scripts = gameObject.getComponent("Scripts");
     gameObject.addComponent("Rect", 50, 50);
     gameObject.addComponent("RectRenderer");
 }

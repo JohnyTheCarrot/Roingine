@@ -37,10 +37,6 @@ namespace roingine {
 		return nullptr;
 	}
 
-	size_t Rect::JSFactoryNumParams() {
-		return 2;
-	}
-
 	std::unique_ptr<Rect> Rect::JSFactory(GameObject *pGameObject, duk_context *ctx) {
 		auto const width{duk_require_number(ctx, 1)};
 		auto const height{duk_require_number(ctx, 2)};

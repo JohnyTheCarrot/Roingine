@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(${PROJECT_NAME}
 	src/main.cpp
 	scripts/test.js
+	scripts/runtime_script.js
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE Roingine)
 
@@ -107,6 +108,7 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 
 # add post build commands
 configure_file("${CMAKE_CURRENT_LIST_DIR}/scripts/test.js" "scripts/test.js" COPYONLY)
+configure_file("${CMAKE_CURRENT_LIST_DIR}/scripts/runtime_script.js" "scripts/runtime_script.js" COPYONLY)
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 	COMMAND "${CMAKE_COMMAND}" -E copy "${SDL2_LIBRARY_DLL}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"

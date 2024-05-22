@@ -19,7 +19,7 @@ namespace roingine {
 			m_Fps             = m_Frames * static_cast<float>(DURATION_FRACTION) / m_FpsTimeProgress.count();
 			m_FpsTimeProgress = 0_t;
 			m_Frames          = 0;
-			std::cout << m_Fps << " FPS" << std::endl;
+			// std::cout << m_Fps << " FPS" << std::endl;
 		}
 	}
 

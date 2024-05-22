@@ -1,7 +1,7 @@
 #include "scene_impl.h"
 #include <roingine/components/rect.h>
 #include <roingine/components/rect_renderer.h>
-#include <roingine/components/script.h>
+#include <roingine/components/scripts.h>
 #include <roingine/components/transform.h>
 #include <roingine/gameobject.h>
 
@@ -35,11 +35,9 @@ namespace roingine {
 		return go;
 	}
 
-	void Scene::Impl::RegisterComponentType(
-	        std::string name, std::size_t hash, JSFactoryMapEntry::Function jsFactory, std::size_t jsFactoryNumArgs
-	) {
+	void Scene::Impl::RegisterComponentType(std::string name, std::size_t hash, JSFactoryMapEntry::Function jsFactory) {
 		m_NameMap.emplace(std::move(name), hash);
-		m_JSFactoryMap.emplace(hash, JSFactoryMapEntry{jsFactory, jsFactoryNumArgs});
+		m_JSFactoryMap.emplace(hash, JSFactoryMapEntry{jsFactory});
 	}
 
 	void Scene::Impl::SetGameObjectScenes(Scene &scene) {
@@ -57,17 +55,10 @@ namespace roingine {
 
 	Scene::Scene()
 	    : m_pImpl{std::make_unique<Scene::Impl>()} {
-		RegisterComponentType(Rect::NAME, typeid(Rect).hash_code(), Rect::JSFactory, Rect::JSFactoryNumParams());
-		RegisterComponentType(
-		        RectRenderer::NAME, typeid(RectRenderer).hash_code(), RectRenderer::JSFactory,
-		        RectRenderer::JSFactoryNumParams()
-		);
-		RegisterComponentType(
-		        Transform::NAME, typeid(Transform).hash_code(), Transform::JSFactory, Transform::JSFactoryNumParams()
-		);
-		RegisterComponentType(
-		        Script::NAME, typeid(Script).hash_code(), Script::JSFactory, Script::JSFactoryNumParams()
-		);
+		RegisterComponentType(Rect::NAME, typeid(Rect).hash_code(), Rect::JSFactory);
+		RegisterComponentType(RectRenderer::NAME, typeid(RectRenderer).hash_code(), RectRenderer::JSFactory);
+		RegisterComponentType(Transform::NAME, typeid(Transform).hash_code(), Transform::JSFactory);
+		RegisterComponentType(Scripts::NAME, typeid(Scripts).hash_code(), Scripts::JSFactory);
 	}
 
 	Scene::~Scene() = default;
@@ -112,9 +103,7 @@ namespace roingine {
 		return m_pImpl->AddGameObject(*this);
 	}
 
-	void Scene::RegisterComponentType(
-	        std::string name, std::size_t hash, JSFactoryMapEntry::Function jsFactory, std::size_t jsFactoryNumArgs
-	) {
-		m_pImpl->RegisterComponentType(name, hash, jsFactory, jsFactoryNumArgs);
+	void Scene::RegisterComponentType(std::string name, std::size_t hash, JSFactoryMapEntry::Function jsFactory) {
+		m_pImpl->RegisterComponentType(name, hash, jsFactory);
 	}
 }// namespace roingine

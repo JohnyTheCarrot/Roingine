@@ -33,9 +33,7 @@ namespace roingine {
 		[[nodiscard]]
 		GameObject AddGameObject();
 
-		void RegisterComponentType(
-		        std::string name, std::size_t hash, JSFactoryMapEntry::Function jsFactory, std::size_t jsFactoryNumArgs
-		);
+		void RegisterComponentType(std::string name, std::size_t hash, JSFactoryMapEntry::Function jsFactory);
 
 	private:
 		friend class GameObject;

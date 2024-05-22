@@ -3,7 +3,6 @@
 #include <duktape.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <iostream>
 #include <numbers>
 #include <roingine/components/transform.h>
 #include <roingine/game_time.h>
@@ -120,10 +119,6 @@ namespace roingine {
 
 	duk_function_list_entry const *Transform::SetUpScriptAPI(duk_context *) const {
 		return transformAPI;
-	}
-
-	size_t Transform::JSFactoryNumParams() {
-		return 2;
 	}
 
 	std::unique_ptr<Transform> Transform::JSFactory(GameObject *pGameObject, duk_context *ctx) {
