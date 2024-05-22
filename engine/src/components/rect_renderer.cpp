@@ -40,10 +40,6 @@ namespace roingine {
 		return nullptr;
 	}
 
-	size_t RectRenderer::JSFactoryNumParams() {
-		return 0;
-	}
-
 	std::unique_ptr<RectRenderer> RectRenderer::JSFactory(GameObject *pGameObject, duk_context *) {
 		return std::make_unique<RectRenderer>(*pGameObject);
 	}

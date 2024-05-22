@@ -3,11 +3,11 @@
 #include <fstream>
 #include <iostream>
 #include <roingine/commands/command.h>
-#include <roingine/components/script.h>
 #include <roingine/game_time.h>
 #include <roingine/gameobject.h>
 #include <roingine/input.h>
 #include <roingine/roingine.h>
+#include <roingine/script.h>
 
 namespace roingine {
 	std::string KeyEventListenerKey(KeyEventType eventType, InputKeys key) {
@@ -192,9 +192,13 @@ namespace roingine {
 	        {"KEY_SHIFT", static_cast<int>(InputKeys::Shift)}, {nullptr, 0}
 	};
 
-	Script::Script(GameObject &gameObject, std::string_view fileName)
-	    : Component{gameObject}
-	    , m_DukContext{duk_create_heap_default()} {
+	static void my_fatal(void *, char const *msg) {
+		throw FatalScriptError{msg};
+	}
+
+	Script::Script(GameObject gameObject, std::string_view fileName)
+	    : m_GameObject{gameObject}
+	    , m_DukContext{duk_create_heap(nullptr, nullptr, nullptr, nullptr, my_fatal)} {
 		std::ifstream ifstream{fileName.data()};
 		if (!ifstream)
 			throw ScriptCompilationFailedException{"File not found"};
@@ -225,14 +229,23 @@ namespace roingine {
 		}
 
 		CallJsFunctionByName("Init");
+		duk_get_global_literal(m_DukContext.get(), "SCRIPT_NAME");
+		auto const scriptName{duk_get_string(m_DukContext.get(), -1)};
+
+		if (!scriptName) {
+			throw FatalScriptError{"A script is required to declare a SCRIPT_NAME string."};
+		}
+
+		m_ScriptName = scriptName;
 	}
 
 	Script::Script(Script &&other)
-	    : Component{std::move(other)}
+	    : m_GameObject{other.m_GameObject}
 	    , m_ListenedToKeys{std::move(other.m_ListenedToKeys)}
-	    , m_DukContext{std::move(other.m_DukContext)} {
+	    , m_DukContext{std::move(other.m_DukContext)}
+	    , m_ScriptName{std::move(other.m_ScriptName)} {
 		duk_push_global_object(m_DukContext.get());
-		duk_push_pointer(m_DukContext.get(), static_cast<void *>(&other.GetGameObject()));
+		duk_push_pointer(m_DukContext.get(), static_cast<void *>(&m_GameObject));
 		duk_put_prop_string(m_DukContext.get(), -2, "__goPtr");
 		duk_pop(m_DukContext.get());
 	}
@@ -243,9 +256,10 @@ namespace roingine {
 
 		m_ListenedToKeys = std::move(other.m_ListenedToKeys);
 		m_DukContext     = std::move(other.m_DukContext);
+		m_ScriptName     = std::move(other.m_ScriptName);
 
 		duk_push_global_object(m_DukContext.get());
-		duk_push_pointer(m_DukContext.get(), static_cast<void *>(&other.GetGameObject()));
+		duk_push_pointer(m_DukContext.get(), static_cast<void *>(&m_GameObject));
 		duk_put_prop_string(m_DukContext.get(), -2, "__goPtr");
 		duk_pop(m_DukContext.get());
 
@@ -263,29 +277,23 @@ namespace roingine {
 	void Script::Render() const {
 	}
 
-	char const *Script::GetName() const {
-		return NAME;
-	}
-
-	duk_function_list_entry const *Script::SetUpScriptAPI(duk_context *) const {
-		return nullptr;
-	}
-
-	std::size_t Script::JSFactoryNumParams() {
-		return 1;
-	}
-
-	std::unique_ptr<Script> Script::JSFactory(GameObject *pGameObject, duk_context *ctx) {
-		auto const path{duk_require_string(ctx, 0)};
-
-		return std::make_unique<Script>(*pGameObject, path);
-	}
-
 	ScriptCompilationFailedException::ScriptCompilationFailedException(std::string errorMessage)
 	    : m_ErrorMessage{std::move(errorMessage)} {
 	}
 
 	char const *ScriptCompilationFailedException::what() const noexcept {
+		return m_ErrorMessage.c_str();
+	}
+
+	std::string_view Script::GetScriptName() const {
+		return m_ScriptName;
+	}
+
+	FatalScriptError::FatalScriptError(std::string errorMessage)
+	    : m_ErrorMessage{std::move(errorMessage)} {
+	}
+
+	char const *FatalScriptError::what() const noexcept {
 		return m_ErrorMessage.c_str();
 	}
 }// namespace roingine

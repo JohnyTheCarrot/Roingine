@@ -2,7 +2,7 @@
 #include <roingine/commands/command.h>
 #include <roingine/components/rect.h>
 #include <roingine/components/rect_renderer.h>
-#include <roingine/components/script.h>
+#include <roingine/components/scripts.h>
 #include <roingine/components/transform.h>
 #include <roingine/engine_event_queue.h>
 #include <roingine/event_queue.h>
@@ -87,7 +87,9 @@ int main() {
 
 	Scene                             scene{};
 	GameObject                        parentGameObject{scene.AddGameObject()};
-	parentGameObject.AddComponent<Script>("scripts/test.js");
+
+	auto &scripts{parentGameObject.AddComponent<Scripts>()};
+	scripts.AddScript("scripts/test.js");
 
 
 	// for (int i{0}; i < 5; ++i) {

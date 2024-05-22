@@ -25,9 +25,7 @@ namespace roingine {
 		[[nodiscard]]
 		GameObject AddGameObject(Scene &scene);
 
-		void RegisterComponentType(
-		        std::string name, std::size_t hash, JSFactoryMapEntry::Function jsFactory, std::size_t jsFactoryNumArgs
-		);
+		void RegisterComponentType(std::string name, std::size_t hash, JSFactoryMapEntry::Function jsFactory);
 
 		void SetGameObjectScenes(Scene &scene);
 

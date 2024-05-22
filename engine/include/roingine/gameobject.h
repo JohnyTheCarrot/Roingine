@@ -13,7 +13,6 @@ namespace roingine {
 		using Function = std::function<std::unique_ptr<Component>(GameObject *, duk_context *)>;
 
 		Function    jsFactory;
-		std::size_t numParams;
 	};
 
 	class Scene;

@@ -3,6 +3,7 @@
 
 #include <exception>
 #include <roingine/components/component.h>
+#include <roingine/gameobject.h>
 #include <roingine/input.h>
 #include <roingine/unique_duk_context.h>
 #include <string_view>
@@ -19,39 +20,40 @@ namespace roingine {
 		std::string m_ErrorMessage;
 	};
 
-	class Script final : public roingine::Component {
+	class FatalScriptError final : public std::exception {
 	public:
-		Script(GameObject &gameObject, std::string_view fileName);
+		FatalScriptError(std::string errorMessage);
+
+		char const *what() const noexcept override;
+
+	private:
+		std::string m_ErrorMessage;
+	};
+
+	class Script final {
+	public:
+		Script(GameObject gameObject, std::string_view fileName);
 
 		Script(Script &&);
 
 		Script &operator=(Script &&);
 
-		void Update() override;
+		void Update();
 
-		void FixedUpdate() override;
+		void FixedUpdate();
 
-		void Render() const override;
-
-		static constexpr char const *NAME{"Script"};
+		void Render() const;
 
 		[[nodiscard]]
-		char const *GetName() const override;
-
-		[[nodiscard]]
-		duk_function_list_entry const *SetUpScriptAPI(duk_context *ctx) const override;
-
-		[[nodiscard]]
-		static std::size_t JSFactoryNumParams();
-
-		[[nodiscard]]
-		static std::unique_ptr<Script> JSFactory(GameObject *, duk_context *);
+		std::string_view GetScriptName() const;
 
 	private:
 		void CallJsFunctionByName(std::string_view name);
 
+		GameObject             m_GameObject;
 		std::vector<InputKeys> m_ListenedToKeys{};
-		UniqueDukContext m_DukContext;
+		UniqueDukContext       m_DukContext;
+		std::string            m_ScriptName;
 	};
 }// namespace roingine
 
