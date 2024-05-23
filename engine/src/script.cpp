@@ -68,9 +68,12 @@ namespace roingine {
 		duk_put_prop_string(dukContext, -2, name.c_str());
 		duk_pop(dukContext);
 
-		KeyboardInput::GetService().AddCommand(
-		        inputKey, eventType, std::make_unique<ScriptPressCommand>(dukContext, eventType, inputKey)
-		);
+		auto pCommand{std::make_unique<ScriptPressCommand>(dukContext, eventType, inputKey)};
+
+		duk_get_global_literal(dukContext, "__scriptPtr");
+		Script *ptr{static_cast<Script *>(duk_get_pointer(dukContext, -1))};
+		ptr->RegisterListenedToKey(inputKey, eventType, std::move(pCommand));
+		duk_pop(dukContext);
 
 		return 0;
 	}
@@ -140,19 +143,6 @@ namespace roingine {
 		return Listen(dukContext, KeyEventType::LongPress);
 	}
 
-	void Script::CallJsFunctionByName(std::string_view name) {
-		duk_get_global_string(m_DukContext.get(), name.data());
-		if (duk_is_undefined(m_DukContext.get(), -1)) {
-			duk_pop(m_DukContext.get());
-			return;
-		}
-
-		duk_push_number(m_DukContext.get(), static_cast<duk_double_t>(GameTime::GetInstance().GetDeltaTime()));
-		if (duk_pcall(m_DukContext.get(), 1) != 0)
-			std::cerr << "Error: " << duk_safe_to_string(m_DukContext.get(), -1) << std::endl;
-		duk_pop(m_DukContext.get());
-	}
-
 	duk_function_list_entry const roingineFunctions[]{
 	        {"println", PrintLn, DUK_VARARGS},
 	        {"print", Print, DUK_VARARGS},
@@ -192,51 +182,56 @@ namespace roingine {
 	        {"KEY_SHIFT", static_cast<int>(InputKeys::Shift)}, {nullptr, 0}
 	};
 
-	static void my_fatal(void *, char const *msg) {
-		throw FatalScriptError{msg};
-	}
-
 	Script::Script(GameObject gameObject, std::string_view fileName)
 	    : m_GameObject{gameObject}
-	    , m_DukContext{duk_create_heap(nullptr, nullptr, nullptr, nullptr, my_fatal)} {
+	    , m_DukContext{} {
 		std::ifstream ifstream{fileName.data()};
 		if (!ifstream)
 			throw ScriptCompilationFailedException{"File not found"};
 
-		duk_push_global_object(m_DukContext.get());
-		duk_push_object(m_DukContext.get());
-		duk_put_function_list(m_DukContext.get(), -1, roingineFunctions);
-		duk_put_prop_string(m_DukContext.get(), -2, "roingine");
+		{
+			auto globalObject{m_DukContext.PushGlobalObject()};
 
-		duk_push_object(m_DukContext.get());
-		duk_put_function_list(m_DukContext.get(), -1, gameObjectFunctions);
-		duk_put_prop_string(m_DukContext.get(), -2, "gameObject");
+			{
+				auto roingineObject{globalObject.PushObject("roingine")};
+				roingineObject.PutFunctionList(roingineFunctions);
+			}
 
-		duk_push_object(m_DukContext.get());
-		duk_put_number_list(m_DukContext.get(), -1, inputNumberConstants);
-		duk_put_function_list(m_DukContext.get(), -1, inputFunctions);
-		duk_put_prop_string(m_DukContext.get(), -2, "input");
+			{
+				auto gameObjectObject{globalObject.PushObject("gameObject")};
+				gameObjectObject.PutFunctionList(gameObjectFunctions);
+			}
 
-		duk_push_pointer(m_DukContext.get(), static_cast<void *>(&gameObject));
-		duk_put_prop_string(m_DukContext.get(), -2, "__goPtr");
-		duk_pop(m_DukContext.get());
+			{
+				auto inputObject{globalObject.PushObject("input")};
+				inputObject.PutFunctionList(inputFunctions);
+				inputObject.PutNumberList(inputNumberConstants);
+			}
+
+			globalObject.PushPointer("__goPtr", static_cast<void *>(&gameObject));
+			globalObject.PushPointer("__scriptPtr", static_cast<void *>(this));
+		}
 
 		std::string inputCode{std::istreambuf_iterator<char>(ifstream), {}};
 
-		if (duk_peval_string(m_DukContext.get(), inputCode.c_str()) != 0) {
-			auto const errMessage{duk_safe_to_string(m_DukContext.get(), -1)};
-			throw ScriptCompilationFailedException{errMessage};
-		}
+		m_DukContext.Eval(inputCode);
 
-		CallJsFunctionByName("Init");
-		duk_get_global_literal(m_DukContext.get(), "SCRIPT_NAME");
-		auto const scriptName{duk_get_string(m_DukContext.get(), -1)};
+		auto const scriptName{m_DukContext.GetGlobalString("SCRIPT_NAME")};
 
 		if (!scriptName) {
 			throw FatalScriptError{"A script is required to declare a SCRIPT_NAME string."};
 		}
 
 		m_ScriptName = scriptName;
+
+		duk_get_global_literal(m_DukContext.GetRawContext(), "Init");
+		if (duk_is_undefined(m_DukContext.GetRawContext(), -1)) {
+			duk_pop(m_DukContext.GetRawContext());
+			return;
+		}
+		if (duk_pcall(m_DukContext.GetRawContext(), 0) != 0)
+			std::cerr << "Error: " << duk_safe_to_string(m_DukContext.GetRawContext(), -1) << std::endl;
+		duk_pop(m_DukContext.GetRawContext());
 	}
 
 	Script::Script(Script &&other)
@@ -244,11 +239,11 @@ namespace roingine {
 	    , m_ListenedToKeys{std::move(other.m_ListenedToKeys)}
 	    , m_DukContext{std::move(other.m_DukContext)}
 	    , m_ScriptName{std::move(other.m_ScriptName)} {
-		duk_push_global_object(m_DukContext.get());
-		duk_push_pointer(m_DukContext.get(), static_cast<void *>(&m_GameObject));
-		duk_put_prop_string(m_DukContext.get(), -2, "__goPtr");
-		duk_pop(m_DukContext.get());
+		auto global{m_DukContext.PushGlobalObject()};
+		global.PushPointer("__goPtr", static_cast<void *>(&m_GameObject));
 	}
+
+	Script::~Script() = default;
 
 	Script &Script::operator=(Script &&other) {
 		if (this == &other)
@@ -258,20 +253,16 @@ namespace roingine {
 		m_DukContext     = std::move(other.m_DukContext);
 		m_ScriptName     = std::move(other.m_ScriptName);
 
-		duk_push_global_object(m_DukContext.get());
-		duk_push_pointer(m_DukContext.get(), static_cast<void *>(&m_GameObject));
-		duk_put_prop_string(m_DukContext.get(), -2, "__goPtr");
-		duk_pop(m_DukContext.get());
+		auto global{m_DukContext.PushGlobalObject()};
+		global.PushPointer("__goPtr", static_cast<void *>(&m_GameObject));
 
 		return *this;
 	}
 
 	void Script::Update() {
-		CallJsFunctionByName("Update");
 	}
 
 	void Script::FixedUpdate() {
-		CallJsFunctionByName("FixedUpdate");
 	}
 
 	void Script::Render() const {
@@ -287,6 +278,10 @@ namespace roingine {
 
 	std::string_view Script::GetScriptName() const {
 		return m_ScriptName;
+	}
+
+	void Script::RegisterListenedToKey(InputKeys key, KeyEventType eventType, std::unique_ptr<Command> pCommand) {
+		m_ListenedToKeys.emplace_back(key, eventType, std::move(pCommand));
 	}
 
 	FatalScriptError::FatalScriptError(std::string errorMessage)

@@ -23,6 +23,7 @@ set (INCLUDE_HEADERS_COMPONENTS
 set (INCLUDE_HEADERS_COMMANDS
 	include/roingine/commands/command.h
 	include/roingine/commands/gameobject_command.h
+	include/roingine/commands/registered_keyboard_command.h
 )
 
 set (INCLUDE_HEADERS
@@ -57,9 +58,11 @@ set (SRC_FILES
 	src/components/rect.cpp
 	src/components/scripts.cpp
 	src/commands/gameobject_command.cpp
+	src/commands/registered_keyboard_command.cpp
 	src/game_info.cpp
 	src/unique_duk_context.cpp
 	src/script.cpp
+	src/duk_wrappers.cpp
 )
 
 set (INTERNAL_HEADERS

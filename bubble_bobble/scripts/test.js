@@ -28,10 +28,6 @@ input.onKeyHeld(input.KEY_D, function() {
     translate(SPEED, 0);
 });
 
-input.onKeyDown(input.KEY_T, function() {
-    scripts.addScript("scripts/runtime_script.js");
-});
-
 function Init() {
     roingine.println("Test Initialized!");
 
