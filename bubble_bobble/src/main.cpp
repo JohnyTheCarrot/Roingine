@@ -90,7 +90,6 @@ int main() {
 
 	auto &scripts{parentGameObject.AddComponent<Scripts>()};
 	scripts.AddScript("scripts/test.js");
-	scripts.AddScript("scripts/runtime_script.js");
 
 
 	// for (int i{0}; i < 5; ++i) {

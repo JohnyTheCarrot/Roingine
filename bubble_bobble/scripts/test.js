@@ -4,6 +4,7 @@ const SPEED = 200;
 
 var transform;
 var scripts;
+var requireTest = require('require_test.js');
 
 function translate(x, y) {
     const transX = roingine.getDeltaTime() * x;
@@ -35,4 +36,10 @@ function Init() {
     scripts = gameObject.getComponent("Scripts");
     gameObject.addComponent("Rect", 50, 50);
     gameObject.addComponent("RectRenderer");
+
+    requireTest.hello();
+}
+
+function OnDispose() {
+    roingine.println("OnDispose");
 }
