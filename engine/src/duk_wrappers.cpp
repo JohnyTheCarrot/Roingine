@@ -1,3 +1,4 @@
+#include <duk_module_duktape.h>
 #include <duktape.h>
 #include <roingine/duk_wrappers.h>
 
@@ -8,6 +9,7 @@ namespace roingine {
 
 	DukContext::DukContext()
 	    : m_DukContext{duk_create_heap(nullptr, nullptr, nullptr, nullptr, FatalHandler)} {
+		duk_module_duktape_init(m_DukContext.get());
 	}
 
 	DukContext::~DukContext() = default;

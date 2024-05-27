@@ -85,6 +85,35 @@ namespace roingine {
 		return 1;
 	}
 
+	int ReadFile(duk_context *ctx) {
+		auto                       fileName{std::string{duk_require_string(ctx, 0)}};
+		constexpr std::string_view ABSOLUTE_PREFIX{"@/"};
+
+		bool const isAbsolute{fileName.starts_with(ABSOLUTE_PREFIX)};
+		if (isAbsolute)
+			fileName = fileName.substr(ABSOLUTE_PREFIX.length());
+
+		duk_get_global_literal(ctx, "__scriptPtr");
+		Script *ptr{static_cast<Script *>(duk_get_pointer(ctx, -1))};
+		duk_pop(ctx);
+
+		auto const &parentPath{ptr->GetPath().parent_path()};
+
+		std::filesystem::path filePath{isAbsolute ? fileName : parentPath / fileName};
+
+		std::ifstream iFileStream{filePath};
+
+		if (!iFileStream) {
+			std::cerr << "Could not load file " << fileName << std::endl;
+			return DUK_RET_ERROR;
+		}
+
+		std::string inputCode{std::istreambuf_iterator<char>(iFileStream), {}};
+
+		duk_push_string(ctx, inputCode.c_str());
+		return 1;
+	}
+
 	int GetComponent(duk_context *dukContext) {
 		auto const name{duk_require_string(dukContext, 0)};
 
@@ -147,6 +176,7 @@ namespace roingine {
 	        {"println", PrintLn, DUK_VARARGS},
 	        {"print", Print, DUK_VARARGS},
 	        {"getDeltaTime", GetDeltaTime, 0},
+	        {"readFile", ReadFile, 1},
 	        {nullptr, nullptr, 0}
 	};
 
@@ -183,7 +213,8 @@ namespace roingine {
 	};
 
 	Script::Script(GameObject gameObject, std::string_view fileName)
-	    : m_GameObject{gameObject}
+	    : m_FilePath{fileName}
+	    , m_GameObject{gameObject}
 	    , m_DukContext{} {
 		std::ifstream ifstream{fileName.data()};
 		if (!ifstream)
@@ -212,9 +243,10 @@ namespace roingine {
 			globalObject.PushPointer("__scriptPtr", static_cast<void *>(this));
 		}
 
+		std::string const modSearchCode{"Duktape.modSearch=function(fileName){return roingine.readFile(fileName);};"};
 		std::string inputCode{std::istreambuf_iterator<char>(ifstream), {}};
 
-		m_DukContext.Eval(inputCode);
+		m_DukContext.Eval(modSearchCode + std::move(inputCode));
 
 		auto const scriptName{m_DukContext.GetGlobalString("SCRIPT_NAME")};
 
@@ -243,7 +275,19 @@ namespace roingine {
 		global.PushPointer("__goPtr", static_cast<void *>(&m_GameObject));
 	}
 
-	Script::~Script() = default;
+	Script::~Script() {
+		if (m_DukContext.GetRawContext() == nullptr)
+			return;
+
+		duk_get_global_literal(m_DukContext.GetRawContext(), "OnDispose");
+		if (duk_is_undefined(m_DukContext.GetRawContext(), -1)) {
+			duk_pop(m_DukContext.GetRawContext());
+			return;
+		}
+		if (duk_pcall(m_DukContext.GetRawContext(), 0) != 0)
+			std::cerr << "Error: " << duk_safe_to_string(m_DukContext.GetRawContext(), -1) << std::endl;
+		duk_pop(m_DukContext.GetRawContext());
+	}
 
 	Script &Script::operator=(Script &&other) {
 		if (this == &other)
@@ -278,6 +322,10 @@ namespace roingine {
 
 	std::string_view Script::GetScriptName() const {
 		return m_ScriptName;
+	}
+
+	std::filesystem::path const &Script::GetPath() const {
+		return m_FilePath;
 	}
 
 	void Script::RegisterListenedToKey(InputKeys key, KeyEventType eventType, std::unique_ptr<Command> pCommand) {
