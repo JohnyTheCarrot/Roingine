@@ -35,7 +35,7 @@ namespace roingine {
 		return scriptName;
 	}
 
-	duk_context *DukContext::GetRawContext() {
+	duk_context *DukContext::GetRawContext() const {
 		return m_DukContext.get();
 	}
 
@@ -52,9 +52,8 @@ namespace roingine {
 	}
 
 	DukObject::~DukObject() {
-		auto const currentTop{duk_require_top_index(m_DukContext)};
 		if (m_AddToParentInfo.has_value()) {
-			auto const index{m_AddToParentInfo->parentIndex - currentTop + 1};
+			auto const index{m_AddToParentInfo->parentIndex};
 
 			duk_put_prop_string(m_DukContext, index, m_AddToParentInfo->key.c_str());
 		} else if (m_ShouldPop)

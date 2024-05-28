@@ -8,6 +8,7 @@
 #include <roingine/gameobject.h>
 #include <roingine/input.h>
 #include <string_view>
+#include <variant>
 #include <vector>
 
 namespace roingine {
@@ -32,6 +33,19 @@ namespace roingine {
 
 		[[nodiscard]]
 		std::filesystem::path const &GetPath() const;
+
+		void ReturnAPIObject(duk_context *ctx);
+
+		struct DukUndefined final {};
+
+		struct DukNull final {};
+
+		using PropertyValue = std::variant<double, std::string, bool, DukUndefined, DukNull>;
+
+		void SetProperty(std::string const &key, PropertyValue value);
+
+		[[nodiscard]]
+		PropertyValue GetProperty(std::string const &key) const;
 
 		void RegisterListenedToKey(InputKeys key, KeyEventType eventType, std::unique_ptr<roingine::Command> pCommand);
 

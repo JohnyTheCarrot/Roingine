@@ -56,7 +56,6 @@ namespace roingine {
 
 		void MarkForReturn();
 
-		[[nodiscard]]
 		DukObject PushObject(std::string const &key) const;
 
 		void PushPointer(std::string const &key, void *ptr) const;
@@ -91,7 +90,7 @@ namespace roingine {
 		char const *GetGlobalString(std::string const &key) const;
 
 		[[nodiscard]]
-		duk_context *GetRawContext();
+		duk_context *GetRawContext() const;
 
 	private:
 		UniqueDukContext m_DukContext;

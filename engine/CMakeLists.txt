@@ -43,6 +43,7 @@ set (INCLUDE_HEADERS
 	include/roingine/game_info.h
 	include/roingine/engine_event_queue.h
 	include/roingine/unique_duk_context.h
+	include/roingine/duk_wrappers.h
 )
 
 set (SRC_FILES
