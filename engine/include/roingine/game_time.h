@@ -8,6 +8,7 @@ namespace roingine {
 	class GameTime final : public Singleton<GameTime> {
 	public:
 		using DurationPrecision = float;
+		static constexpr DurationPrecision FIXED_TIME_DELTA{0.01f};
 
 		GameTime();
 		~GameTime();

@@ -114,8 +114,8 @@ namespace roingine {
 			KeyboardInput::GetService().ProcessInput();
 			auto &sceneManager{SceneManager::GetInstance()};
 
-			while (accumulator >= GameTime::Impl::FIXED_TIME_DELTA) {
-				accumulator -= GameTime::Impl::FIXED_TIME_DELTA;
+			while (accumulator >= GameTime::FIXED_TIME_DELTA) {
+				accumulator -= GameTime::FIXED_TIME_DELTA;
 				sceneManager.FixedUpdate();
 			}
 

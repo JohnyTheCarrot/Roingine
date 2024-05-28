@@ -6,7 +6,6 @@
 
 namespace roingine {
 	constexpr size_t DURATION_FRACTION{1000};
-	using banana           = std::chrono::seconds;
 	using GameLoopTimeUnit = std::chrono::duration<GameTime::DurationPrecision, std::ratio<1, DURATION_FRACTION>>;
 
 	constexpr GameLoopTimeUnit operator""_t(unsigned long long time) {
@@ -15,7 +14,6 @@ namespace roingine {
 
 	class GameTime::Impl final {
 	public:
-		static constexpr GameTime::DurationPrecision FIXED_TIME_DELTA{(10_t).count()};
 		static constexpr std::chrono::duration       TIME_PER_FRAME{
                 std::chrono::duration<GameTime::DurationPrecision, std::ratio<1>>{1} / 144.0
         };

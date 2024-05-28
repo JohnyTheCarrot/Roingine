@@ -193,6 +193,11 @@ namespace roingine {
 	        {nullptr, nullptr, 0}
 	};
 
+	duk_number_list_entry const roingineNumberConstants[]{
+	        {"FIXED_UPDATE_DELTATIME", GameTime::FIXED_TIME_DELTA},
+	        {nullptr, 0}
+	};
+
 	duk_function_list_entry const gameObjectFunctions[]{
 	        {"getComponent", GetComponent, DUK_VARARGS},
 	        {"addComponent", AddComponent, DUK_VARARGS},
@@ -239,6 +244,7 @@ namespace roingine {
 			{
 				auto roingineObject{globalObject.PushObject("roingine")};
 				roingineObject.PutFunctionList(roingineFunctions);
+				roingineObject.PutNumberList(roingineNumberConstants);
 			}
 
 			{
