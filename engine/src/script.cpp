@@ -337,6 +337,15 @@ namespace roingine {
 	}
 
 	void Script::FixedUpdate() {
+		duk_get_global_literal(m_DukContext.GetRawContext(), "FixedUpdate");
+		if (duk_is_undefined(m_DukContext.GetRawContext(), -1)) {
+			duk_pop(m_DukContext.GetRawContext());
+			return;
+		}
+
+		if (duk_pcall(m_DukContext.GetRawContext(), 0) != 0)
+			std::cerr << "Error: " << duk_safe_to_string(m_DukContext.GetRawContext(), -1) << std::endl;
+		duk_pop(m_DukContext.GetRawContext());
 	}
 
 	void Script::Render() const {
