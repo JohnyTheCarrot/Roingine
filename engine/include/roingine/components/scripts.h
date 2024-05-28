@@ -33,6 +33,9 @@ namespace roingine {
 
 		void AddScript(std::string_view fileName);
 
+		[[nodiscard]]
+		Script *GetScript(std::string const &name);
+
 	private:
 		std::unordered_map<std::string, Script> m_Scripts;
 	};
