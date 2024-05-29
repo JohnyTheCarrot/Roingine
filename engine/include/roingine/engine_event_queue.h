@@ -19,7 +19,6 @@ namespace roingine {
 
 		using EventQueue = EventQueue<EventType, CleanShutdownData>;
 	}// namespace event_queue
-
 }// namespace roingine
 
 #endif// ENGINE_EVENT_QUEUE_H

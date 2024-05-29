@@ -1,4 +1,3 @@
-#include "game_time_impl.h"
 #include <roingine/game_time.h>
 #include <roingine/input.h>
 #include <roingine/roingine.h>
@@ -105,7 +104,7 @@ namespace roingine {
 		void RunOneFrame(std::function<void()> const &fn) {
 			GameTime &gameTime{GameTime::GetInstance()};
 
-			gameTime.m_pImpl->StartDeltaTimeMeasurement();
+			gameTime.StartDeltaTimeMeasurement();
 
 			static GameTime::DurationPrecision accumulator{0};
 
@@ -130,8 +129,8 @@ namespace roingine {
 
 			SDL_GL_SwapWindow(m_rpWindow);
 
-			gameTime.m_pImpl->Sleep();
-			gameTime.m_pImpl->EndDeltaTimeMeasurement();
+			gameTime.Sleep();
+			gameTime.EndDeltaTimeMeasurement();
 		}
 	};
 
