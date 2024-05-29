@@ -3,15 +3,8 @@
 
 #include <SDL_scancode.h>
 #include <roingine/input.h>
+#include <roingine/pair_hash.h>
 #include <unordered_map>
-
-struct pair_hash final {
-	// credit goes to https://www.techiedelight.com/use-std-pair-key-std-unordered_map-cpp
-	template<class T1, class T2>
-	std::size_t operator()(std::pair<T1, T2> const &pair) const {
-		return std::hash<T1>()(pair.first) ^ std::hash<T2>()(pair.second);
-	}
-};
 
 namespace roingine {
 	class SDLKeyboardInputService::Impl final {
@@ -56,7 +49,7 @@ namespace roingine {
 			Enter = SDL_SCANCODE_RETURN,
 			Shift = SDL_SCANCODE_LSHIFT
 		};
-		using Commands = std::unordered_multimap<std::pair<SDLKey, KeyEventType>, std::unique_ptr<Command>, pair_hash>;
+		using Commands = std::unordered_multimap<std::pair<SDLKey, KeyEventType>, std::unique_ptr<Command>, PairHash>;
 
 		[[nodiscard]]
 		constexpr SDLKey GetSDLKeyFromInputKey(InputKeys inputKey);

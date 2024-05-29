@@ -6,6 +6,7 @@
 
 namespace roingine {
 	struct PairHash final {
+		// credit goes to https://www.techiedelight.com/use-std-pair-key-std-unordered_map-cpp
 		template<class T1, class T2>
 		std::size_t operator()(std::pair<T1, T2> const &pair) const {
 			return std::hash<T1>()(pair.first) ^ std::hash<T2>()(pair.second);
