@@ -61,7 +61,6 @@ namespace roingine {
 		[[nodiscard]]
 		constexpr SDLKey GetSDLKeyFromInputKey(InputKeys inputKey);
 
-		// TODO: allocator
 		Commands           m_Commands;
 		std::vector<bool>  m_KeyStates;
 		std::vector<float> m_KeyHeldTimes;

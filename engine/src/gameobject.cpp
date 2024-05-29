@@ -1,5 +1,5 @@
-#include "scene_impl.h"
 #include <roingine/gameobject.h>
+#include <roingine/scene.h>
 
 namespace roingine {
 	GameObject::GameObject(Scene &scene, GameObject::Handle hGoHandle)
@@ -23,25 +23,20 @@ namespace roingine {
 		return m_rpScene;
 	}
 
-	GameObjectComponents &GameObject::GetSceneComponents() noexcept {
-		return m_rpScene->m_pImpl->m_GameObjectComponents;
-	}
-
+	// why not call this on scene directly? bc of sircular dependencies
 	std::optional<std::size_t> GameObject::GetTypeHashFromName(std::string const &name) const {
-		if (!m_rpScene->m_pImpl->m_NameMap.contains(name))
-			return std::nullopt;
-
-		return m_rpScene->m_pImpl->m_NameMap.at(name);
+		return m_rpScene->GetTypeHashFromName(name);
 	}
 
 	std::optional<JSFactoryMapEntry> GameObject::GetJSFactoryMapEntryByHash(std::size_t hash) const {
-		if (!m_rpScene->m_pImpl->m_JSFactoryMap.contains(hash))
-			return std::nullopt;
-
-		return m_rpScene->m_pImpl->m_JSFactoryMap.at(hash);
+		return m_rpScene->GetJSFactoryMapEntryByHash(hash);
 	}
 
 	GameObjectComponents const &GameObject::GetSceneComponents() const noexcept {
-		return m_rpScene->m_pImpl->m_GameObjectComponents;
+		return m_rpScene->GetGameObjectComponents();
+	}
+
+	GameObjectComponents &GameObject::GetSceneComponents() noexcept {
+		return m_rpScene->GetGameObjectComponents();
 	}
 }// namespace roingine

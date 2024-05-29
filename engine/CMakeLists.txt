@@ -68,7 +68,6 @@ set (SRC_FILES
 
 set (INTERNAL_HEADERS
 	internal_headers/input_impl.h
-	internal_headers/scene_impl.h
 	internal_headers/scene_manager_impl.h
 	internal_headers/sound_impl.h
 )

@@ -172,9 +172,6 @@ namespace roingine {
 		}
 
 		[[nodiscard]]
-		GameObjectComponents &GetSceneComponents() noexcept;
-
-		[[nodiscard]]
 		std::optional<std::size_t> GetTypeHashFromName(std::string const &name) const;
 
 		[[nodiscard]]
@@ -182,6 +179,9 @@ namespace roingine {
 
 		[[nodiscard]]
 		GameObjectComponents const &GetSceneComponents() const noexcept;
+
+		[[nodiscard]]
+		GameObjectComponents &GetSceneComponents() noexcept;
 
 		Scene *m_rpScene;
 		Handle m_hGameObject;
