@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <roingine/commands/command.h>
+#include <roingine/components/scripts.h>
 #include <roingine/game_time.h>
 #include <roingine/gameobject.h>
 #include <roingine/input.h>
@@ -186,9 +187,9 @@ namespace roingine {
 	        {"KEY_SHIFT", static_cast<int>(InputKeys::Shift)}, {nullptr, 0}
 	};
 
-	Script::Script(GameObject &gameObject, std::string_view fileName)
+	Script::Script(Scripts &scriptsComponent, std::string_view fileName)
 	    : m_FilePath{fileName}
-	    , m_GameObject{gameObject}
+	    , m_ScriptsComponent{scriptsComponent}
 	    , m_DukContext{} {
 		std::ifstream ifstream{fileName.data()};
 		if (!ifstream)
@@ -203,9 +204,7 @@ namespace roingine {
 				roingineObject.PutNumberList(roingineNumberConstants);
 			}
 
-			duk_gameobject::PutGameObject(
-			        globalObject, &m_GameObject.get(), CURRENT_GAMEOBJECT_PROP_NAME, m_DukContext
-			);
+			duk_gameobject::PutGameObject(globalObject, GetGameObjectPtr(), CURRENT_GAMEOBJECT_PROP_NAME, m_DukContext);
 
 			{
 				auto inputObject{globalObject.PutObject("input")};
@@ -245,12 +244,12 @@ namespace roingine {
 	}
 
 	Script::Script(Script &&other)
-	    : m_GameObject{other.m_GameObject}
+	    : m_ScriptsComponent{other.m_ScriptsComponent}
 	    , m_ListenedToKeys{std::move(other.m_ListenedToKeys)}
 	    , m_DukContext{std::move(other.m_DukContext)}
 	    , m_ScriptName{std::move(other.m_ScriptName)} {
 		auto global{m_DukContext.AccessGlobalObject()};
-		duk_gameobject::PutGameObject(global, &m_GameObject.get(), CURRENT_GAMEOBJECT_PROP_NAME, m_DukContext);
+		duk_gameobject::PutGameObject(global, GetGameObjectPtr(), CURRENT_GAMEOBJECT_PROP_NAME, m_DukContext);
 		global.PutPointer("__scriptPtr", static_cast<void *>(this));
 	}
 
@@ -277,7 +276,7 @@ namespace roingine {
 		m_ScriptName     = std::move(other.m_ScriptName);
 
 		auto global{m_DukContext.AccessGlobalObject()};
-		duk_gameobject::PutGameObject(global, &m_GameObject.get(), CURRENT_GAMEOBJECT_PROP_NAME, m_DukContext);
+		duk_gameobject::PutGameObject(global, GetGameObjectPtr(), CURRENT_GAMEOBJECT_PROP_NAME, m_DukContext);
 		global.PutPointer("__scriptPtr", static_cast<void *>(this));
 
 		return *this;
@@ -576,7 +575,15 @@ namespace roingine {
 	}
 
 	GameObject Script::GetGameObject() const noexcept {
-		return m_GameObject;
+		return *GetGameObjectPtr();
+	}
+
+	void Script::SetGameObjectScene(Scene *pScene) noexcept {
+		GetGameObjectPtr()->SetScene(pScene);
+	}
+
+	GameObject *Script::GetGameObjectPtr() const noexcept {
+		return &m_ScriptsComponent.get().GetGameObject();
 	}
 
 	FatalScriptError::FatalScriptError(std::string errorMessage)

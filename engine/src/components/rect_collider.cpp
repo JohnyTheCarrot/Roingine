@@ -66,7 +66,7 @@ namespace roingine {
 			else if (intersectRight)
 				hitPoint.x = otherRight;
 
-			CallJSCallback(hitPoint);
+			CallJSCallback(other.GetGameObject(), hitPoint);
 		});
 	}
 
@@ -117,12 +117,12 @@ namespace roingine {
 		m_HasListener = hasListener;
 	}
 
-	void RectCollider::CallJSCallback(glm::vec2 hitPoint) {
+	void RectCollider::CallJSCallback(GameObject otherGameObject, glm::vec2 hitPoint) {
 		auto *pScripts{GetGameObject().GetOptionalComponent<Scripts>()};
 		if (pScripts == nullptr)
 			return;
 
-		pScripts->ExecuteOnEveryScript([&](GameObject gameObject, DukContext &ctx) {
+		pScripts->ExecuteOnEveryScript([&](DukContext &ctx) {
 			duk_push_global_stash(ctx.GetRawContext());
 
 			duk_get_prop_string(ctx.GetRawContext(), -1, RectCollider::JS_CALLBACK_NAME);
@@ -132,7 +132,7 @@ namespace roingine {
 				return;
 			}
 
-			duk_gameobject::PushGameObject(&gameObject, ctx);
+			duk_gameobject::PushGameObject(&otherGameObject, ctx);
 			duk_push_number(ctx.GetRawContext(), hitPoint.x);
 			duk_push_number(ctx.GetRawContext(), hitPoint.y);
 			if (duk_pcall(ctx.GetRawContext(), 3) != 0) {

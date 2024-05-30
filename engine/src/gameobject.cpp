@@ -1,3 +1,4 @@
+#include <roingine/components/component.h>
 #include <roingine/gameobject.h>
 #include <roingine/scene.h>
 
@@ -9,6 +10,63 @@ namespace roingine {
 
 	bool GameObject::operator==(GameObject const &other) const noexcept {
 		return m_rpScene == other.m_rpScene && m_hGameObject == other.m_hGameObject;
+	}
+
+	Component *GameObject::AddComponent(std::string name, duk_context *ctx) {
+		if (auto *existing{GetOptionalComponent(name)}; existing != nullptr)
+			return existing;
+
+		auto const hash{GetTypeHashFromName(name)};
+		if (!hash.has_value())
+			return nullptr;
+
+		auto const jsFactoryMapEntry{GetJSFactoryMapEntryByHash(hash.value())};
+		auto const factory{jsFactoryMapEntry.value().jsFactory};
+
+		std::unique_ptr<Component> pComp{factory(this, ctx)};
+		auto const                 rpComp{pComp.get()};
+
+		ComponentHandle hComponent{m_hGameObject, hash.value()};
+		auto           &sceneComponents{GetSceneComponents()};
+
+		sceneComponents.insert({hComponent, std::move(pComp)});
+		return rpComp;
+	}
+
+	Component *GameObject::GetComponent(std::size_t typeHash) {
+		ComponentHandle hComponent{m_hGameObject, typeHash};
+		auto           &sceneComponents{GetSceneComponents()};
+
+		if (sceneComponents.contains(hComponent))
+			return sceneComponents.at(hComponent).get();
+
+		throw ComponentNotFoundException{};
+	}
+
+	Component *GameObject::GetOptionalComponent(std::size_t typeHash) {
+		ComponentHandle hComponent{m_hGameObject, typeHash};
+		auto           &sceneComponents{GetSceneComponents()};
+
+		if (sceneComponents.contains(hComponent))
+			return sceneComponents.at(hComponent).get();
+
+		return nullptr;
+	}
+
+	Component *GameObject::GetComponent(std::string const &name) {
+		auto const hash{GetTypeHashFromName(name)};
+		if (!hash.has_value())
+			return nullptr;
+
+		return GetComponent(hash.value());
+	}
+
+	Component *GameObject::GetOptionalComponent(std::string const &name) {
+		auto const hash{GetTypeHashFromName(name)};
+		if (!hash.has_value())
+			return nullptr;
+
+		return GetOptionalComponent(hash.value());
 	}
 
 	void GameObject::Destroy() {

@@ -36,7 +36,7 @@ namespace roingine {
 		[[nodiscard]]
 		Script *GetScript(std::string const &name);
 
-		void ExecuteOnEveryScript(const std::function<void (GameObject, DukContext &)> &fn);
+		void ExecuteOnEveryScript(std::function<void(DukContext &)>const&fn);
 
 	private:
 		std::unordered_map<std::string, Script> m_Scripts;

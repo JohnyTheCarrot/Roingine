@@ -1,5 +1,6 @@
 #include "duk_gameobject.h"
 #include <duktape.h>
+#include <roingine/components/component.h>
 #include <roingine/gameobject.h>
 
 namespace roingine::duk_gameobject {
@@ -78,6 +79,4 @@ namespace roingine::duk_gameobject {
 		PushGameObject(pGameObject, ctx);
 		duk_put_prop_string(ctx.GetRawContext(), obj.GetStackIndex(), key.c_str());
 	}
-
-
 }// namespace roingine::duk_gameobject

@@ -12,9 +12,11 @@
 #include <vector>
 
 namespace roingine {
+	class Scripts;
+
 	class Script final {
 	public:
-		Script(GameObject &gameObject, std::string_view fileName);
+		Script(Scripts &scriptsComponent, std::string_view fileName);
 
 		~Script();
 
@@ -63,11 +65,16 @@ namespace roingine {
 		[[nodiscard]]
 		GameObject GetGameObject() const noexcept;
 
+		void SetGameObjectScene(Scene *pScene) noexcept;
+
 	private:
 		void CallJsFunctionByName(std::string_view name);
 
+		[[nodiscard]]
+		GameObject *GetGameObjectPtr() const noexcept;
+
 		std::filesystem::path                  m_FilePath;
-		std::reference_wrapper<GameObject>     m_GameObject;
+		std::reference_wrapper<Scripts>        m_ScriptsComponent;
 		std::vector<RegisteredKeyboardCommand> m_ListenedToKeys;
 		DukContext                             m_DukContext;
 		std::string                            m_ScriptName;

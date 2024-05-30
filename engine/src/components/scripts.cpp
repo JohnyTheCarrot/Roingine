@@ -72,7 +72,7 @@ namespace roingine {
 
 	void Scripts::AddScript(std::string_view fileName) {
 		try {
-			Script script{GetGameObject(), fileName};
+			Script script{*this, fileName};
 
 			m_Scripts.emplace(script.GetScriptName(), std::move(script));
 		} catch (ScriptCompilationFailedException const &ex) {
@@ -89,9 +89,7 @@ namespace roingine {
 		return &m_Scripts.at(name);
 	}
 
-	void Scripts::ExecuteOnEveryScript(std::function<void(GameObject gameObject, DukContext &)> const &fn) {
-		std::for_each(m_Scripts.begin(), m_Scripts.end(), [&](auto &pair) {
-			fn(pair.second.GetGameObject(), pair.second.GetDukContext());
-		});
+	void Scripts::ExecuteOnEveryScript(std::function<void(DukContext &)> const &fn) {
+		std::for_each(m_Scripts.begin(), m_Scripts.end(), [&](auto &pair) { fn(pair.second.GetDukContext()); });
 	}
 }// namespace roingine
