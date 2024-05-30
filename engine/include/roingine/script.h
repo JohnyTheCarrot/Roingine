@@ -37,7 +37,7 @@ namespace roingine {
 		void ReturnAPIObject(duk_context *ctx);
 
 		[[nodiscard]]
-		duk_context *GetDukContext();
+		DukContext &GetDukContext();
 
 		struct DukUndefined final {};
 

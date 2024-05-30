@@ -156,6 +156,8 @@ namespace roingine {
 			sceneComponent.erase(hComponent);
 		}
 
+		void Destroy();
+
 		[[nodiscard]]
 		Handle GetHandle() const noexcept;
 
@@ -185,6 +187,10 @@ namespace roingine {
 
 		Scene *m_rpScene;
 		Handle m_hGameObject;
+	};
+
+	struct GameObjectHash final {
+		std::size_t operator()(GameObject gameObject) const;
 	};
 }// namespace roingine
 

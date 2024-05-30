@@ -11,6 +11,10 @@ namespace roingine {
 		return m_rpScene == other.m_rpScene && m_hGameObject == other.m_hGameObject;
 	}
 
+	void GameObject::Destroy() {
+		m_rpScene->m_GameObjectsToDestroy.emplace_back(*this);
+	}
+
 	GameObject::Handle GameObject::GetHandle() const noexcept {
 		return m_hGameObject;
 	}
@@ -38,5 +42,9 @@ namespace roingine {
 
 	GameObjectComponents &GameObject::GetSceneComponents() noexcept {
 		return m_rpScene->GetGameObjectComponents();
+	}
+
+	std::size_t GameObjectHash::operator()(GameObject gameObject) const {
+		return reinterpret_cast<size_t>(gameObject.GetScene()) ^ gameObject.GetHandle();
 	}
 }// namespace roingine

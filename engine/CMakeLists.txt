@@ -66,12 +66,14 @@ set (SRC_FILES
 	src/unique_duk_context.cpp
 	src/script.cpp
 	src/duk_wrappers.cpp
+	src/duk_gameobject.cpp
 )
 
 set (INTERNAL_HEADERS
 	internal_headers/input_impl.h
 	internal_headers/scene_manager_impl.h
 	internal_headers/sound_impl.h
+	internal_headers/duk_gameobject.h
 )
 
 add_library(${PROJECT_NAME} STATIC

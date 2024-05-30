@@ -41,7 +41,9 @@ function Init() {
     transform = current.addComponent("Transform", 200, 100);
     var collider = current.addComponent("RectCollider", 50, 50);
 
-    collider.onCollision(function(hitX, hitY) {
+    collider.onCollision(function(gameObject, hitX, hitY) {
+        var otherTransform = gameObject.getComponent("Transform");
+        otherTransform.translate(1, 0);
         transform.setLocalPosition(hitX, hitY);
     });
 

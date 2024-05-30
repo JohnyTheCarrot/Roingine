@@ -1,3 +1,4 @@
+#include "duk_gameobject.h"
 #include <duktape.h>
 #include <format>
 #include <fstream>
@@ -127,48 +128,6 @@ namespace roingine {
 		return 1;
 	}
 
-	int GetComponent(duk_context *dukContext) {
-		auto const name{duk_require_string(dukContext, 0)};
-
-		duk_get_global_literal(dukContext, "__goPtr");
-		auto *ptr{static_cast<GameObject *>(duk_get_pointer(dukContext, -1))};
-
-		auto *comp{ptr->GetComponent(name)};
-		if (!comp) {
-			duk_push_undefined(dukContext);
-			return 1;
-		}
-
-		auto const api{comp->SetUpScriptAPI(dukContext)};
-		duk_push_object(dukContext);
-		duk_put_function_list(dukContext, -1, api);
-		duk_push_pointer(dukContext, static_cast<void *>(comp));
-		duk_put_prop_string(dukContext, -2, "__ptr");
-
-		return 1;
-	}
-
-	int AddComponent(duk_context *dukContext) {
-		auto const name{duk_require_string(dukContext, 0)};
-
-		duk_get_global_literal(dukContext, "__goPtr");
-		auto *ptr{static_cast<GameObject *>(duk_get_pointer(dukContext, -1))};
-
-		auto *comp{ptr->AddComponent(name, dukContext)};
-
-		auto const api{comp->SetUpScriptAPI(dukContext)};
-		duk_push_object(dukContext);
-
-		if (api) {
-			duk_put_function_list(dukContext, -1, api);
-		}
-
-		duk_push_pointer(dukContext, static_cast<void *>(comp));
-		duk_put_prop_string(dukContext, -2, "__ptr");
-
-		return 1;
-	}
-
 	int OnKeyDown(duk_context *dukContext) {
 		return Listen(dukContext, KeyEventType::Down);
 	}
@@ -200,12 +159,6 @@ namespace roingine {
 
 	constexpr char const *CURRENT_GAMEOBJECT_PROP_NAME{"current"};
 	constexpr char const *CURRENT_SCRIPT_PROP_NAME{"script"};
-
-	duk_function_list_entry const gameObjectFunctions[]{
-	        {"getComponent", GetComponent, DUK_VARARGS},
-	        {"addComponent", AddComponent, DUK_VARARGS},
-	        {nullptr, nullptr, 0}
-	};
 
 	duk_function_list_entry const inputFunctions[]{
 	        {"onKeyDown", OnKeyDown, 2},
@@ -242,7 +195,7 @@ namespace roingine {
 			throw ScriptCompilationFailedException{"File not found"};
 
 		{
-			auto globalObject{m_DukContext.PushGlobalObject()};
+			auto globalObject{m_DukContext.AccessGlobalObject()};
 
 			{
 				auto roingineObject{globalObject.PutObject("roingine")};
@@ -250,10 +203,9 @@ namespace roingine {
 				roingineObject.PutNumberList(roingineNumberConstants);
 			}
 
-			{
-				auto gameObjectObject{globalObject.PutObject(CURRENT_GAMEOBJECT_PROP_NAME)};
-				gameObjectObject.PutFunctionList(gameObjectFunctions);
-			}
+			duk_gameobject::PutGameObject(
+			        globalObject, &m_GameObject.get(), CURRENT_GAMEOBJECT_PROP_NAME, m_DukContext
+			);
 
 			{
 				auto inputObject{globalObject.PutObject("input")};
@@ -266,7 +218,6 @@ namespace roingine {
 				currentObject.PutObject("properties");
 			}
 
-			globalObject.PutPointer("__goPtr", static_cast<void *>(&gameObject));
 			globalObject.PutPointer("__scriptPtr", static_cast<void *>(this));
 		}
 
@@ -298,8 +249,8 @@ namespace roingine {
 	    , m_ListenedToKeys{std::move(other.m_ListenedToKeys)}
 	    , m_DukContext{std::move(other.m_DukContext)}
 	    , m_ScriptName{std::move(other.m_ScriptName)} {
-		auto global{m_DukContext.PushGlobalObject()};
-		global.PutPointer("__goPtr", static_cast<void *>(&m_GameObject));
+		auto global{m_DukContext.AccessGlobalObject()};
+		duk_gameobject::PutGameObject(global, &m_GameObject.get(), CURRENT_GAMEOBJECT_PROP_NAME, m_DukContext);
 		global.PutPointer("__scriptPtr", static_cast<void *>(this));
 	}
 
@@ -325,8 +276,8 @@ namespace roingine {
 		m_DukContext     = std::move(other.m_DukContext);
 		m_ScriptName     = std::move(other.m_ScriptName);
 
-		auto global{m_DukContext.PushGlobalObject()};
-		global.PutPointer("__goPtr", static_cast<void *>(&m_GameObject));
+		auto global{m_DukContext.AccessGlobalObject()};
+		duk_gameobject::PutGameObject(global, &m_GameObject.get(), CURRENT_GAMEOBJECT_PROP_NAME, m_DukContext);
 		global.PutPointer("__scriptPtr", static_cast<void *>(this));
 
 		return *this;
@@ -475,8 +426,8 @@ namespace roingine {
 		duk_put_function_list(ctx, -1, apiFunctions);
 	}
 
-	duk_context *Script::GetDukContext() {
-		return m_DukContext.GetRawContext();
+	DukContext &Script::GetDukContext() {
+		return m_DukContext;
 	}
 
 	void Script::SetProperty(std::string const &key, PropertyValue value) {

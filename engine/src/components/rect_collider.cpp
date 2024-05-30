@@ -1,3 +1,4 @@
+#include "duk_gameobject.h"
 #include <duktape.h>
 #include <iostream>
 #include <roingine/components/rect.h>
@@ -65,7 +66,7 @@ namespace roingine {
 			else if (intersectRight)
 				hitPoint.x = otherRight;
 
-			CallJSCallback(hitPoint);
+			CallJSCallback(&other.GetGameObject(), hitPoint);
 		});
 	}
 
@@ -116,27 +117,29 @@ namespace roingine {
 		m_HasListener = hasListener;
 	}
 
-	void RectCollider::CallJSCallback(glm::vec2 hitPoint) {
+	void RectCollider::CallJSCallback(GameObject *other, glm::vec2 hitPoint) {
 		auto *pScripts{GetGameObject().GetOptionalComponent<Scripts>()};
 		if (pScripts == nullptr)
 			return;
 
-		pScripts->ExecuteOnEveryScript([&](duk_context *ctx) {
-			duk_push_global_stash(ctx);
+		pScripts->ExecuteOnEveryScript([&](DukContext &ctx) {
+			duk_push_global_stash(ctx.GetRawContext());
 
-			duk_get_prop_string(ctx, -1, RectCollider::JS_CALLBACK_NAME);
+			duk_get_prop_string(ctx.GetRawContext(), -1, RectCollider::JS_CALLBACK_NAME);
 
-			if (duk_is_undefined(ctx, -1)) {
-				duk_pop_2(ctx);
+			if (duk_is_undefined(ctx.GetRawContext(), -1)) {
+				duk_pop_2(ctx.GetRawContext());
 				return;
 			}
 
-			duk_push_number(ctx, hitPoint.x);
-			duk_push_number(ctx, hitPoint.y);
-			if (duk_pcall(ctx, 2) != 0) {
-				std::cerr << "Error calling rect collider callback: " << duk_safe_to_string(ctx, -1) << std::endl;
+			duk_gameobject::PushGameObject(other, ctx);
+			duk_push_number(ctx.GetRawContext(), hitPoint.x);
+			duk_push_number(ctx.GetRawContext(), hitPoint.y);
+			if (duk_pcall(ctx.GetRawContext(), 3) != 0) {
+				std::cerr << "Error calling rect collider callback: " << duk_safe_to_string(ctx.GetRawContext(), -1)
+				          << std::endl;
 			}
-			duk_pop_2(ctx);
+			duk_pop_2(ctx.GetRawContext());
 		});
 	}
 }// namespace roingine

@@ -113,6 +113,7 @@ namespace roingine {
 		duk_push_this(ctx);
 		duk_get_prop_literal(ctx, -1, "__ptr");
 		Transform *ptr{static_cast<Transform *>(duk_get_pointer(ctx, -1))};
+		duk_pop(ctx);
 
 		ptr->Translate(x, y);
 
@@ -126,6 +127,7 @@ namespace roingine {
 		duk_push_this(ctx);
 		duk_get_prop_literal(ctx, -1, "__ptr");
 		Transform *ptr{static_cast<Transform *>(duk_get_pointer(ctx, -1))};
+		duk_pop(ctx);
 
 		ptr->SetLocalPosition(glm::vec2{x, y});
 

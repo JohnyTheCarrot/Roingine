@@ -36,7 +36,9 @@ namespace roingine {
 
 	class DukObject final {
 	public:
-		DukObject(duk_context *ctx, std::optional<DukAddObjToParentInfo> addToParentInfo = std::nullopt);
+		DukObject(duk_context *ctx, std::optional<DukAddObjToParentInfo> addToParentInfo);
+
+		DukObject(duk_context *ctx);
 
 		~DukObject();
 
@@ -60,9 +62,12 @@ namespace roingine {
 
 		void PutPointer(std::string const &key, void *ptr) const;
 
+		[[nodiscard]]
+		int GetStackIndex() const noexcept;
+
 	private:
 		duk_context                         *m_DukContext;
-		std::optional<DukAddObjToParentInfo> m_AddToParentInfo;
+		std::optional<DukAddObjToParentInfo> m_AddToParentInfo{std::nullopt};
 		int                                  m_StackBottomOffset;
 		bool                                 m_ShouldPop{true};
 	};
@@ -82,7 +87,10 @@ namespace roingine {
 		DukContext &operator=(DukContext const &) = delete;
 
 		[[nodiscard]]
-		DukObject PushGlobalObject() const;
+		DukObject AccessGlobalObject() const;
+
+		[[nodiscard]]
+		DukObject PushObject() const;
 
 		void Eval(std::string_view code) const;
 

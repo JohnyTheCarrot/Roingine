@@ -17,6 +17,7 @@ namespace roingine {
 
 	void Scene::PostUpdate() {
 		for (auto &component: m_GameObjectComponents) { component.second->PostUpdate(); }
+		CleanupMarkedGameObjects();
 	}
 
 	void Scene::FixedUpdate() {
@@ -42,7 +43,11 @@ namespace roingine {
 	}
 
 	void Scene::SetGameObjectScenes() {
-		for (auto &go: m_GameObjects) { go.SetScene(this); }
+		for (auto &go: m_GameObjects) {
+			auto nodeHandle{m_GameObjects.extract(go)};
+			nodeHandle.value().SetScene(this);
+			m_GameObjects.insert(std::move(nodeHandle));
+		}
 		for (auto &comp: m_GameObjectComponents) {
 			comp.second->GetGameObject().SetScene(this);
 		}
@@ -70,8 +75,13 @@ namespace roingine {
 		return m_JSFactoryMap.at(hash);
 	}
 
+	void Scene::CleanupMarkedGameObjects() {
+		for (GameObject gameObject: m_GameObjectsToDestroy) { RemoveGameObject(gameObject); }
+		m_GameObjectsToDestroy.clear();
+	}
+
 	void Scene::AddGameObject(GameObject gameObject) {
-		m_GameObjects.push_front(gameObject);
+		m_GameObjects.insert(gameObject);
 	}
 
 	void Scene::RemoveGameObject(GameObject gameObject) {
@@ -82,7 +92,7 @@ namespace roingine {
 			return currGameObject == gameObject.GetHandle();
 		});
 
-		m_GameObjects.remove(gameObject);
+		m_GameObjects.erase(gameObject);
 	}
 
 	Scene::Scene() {

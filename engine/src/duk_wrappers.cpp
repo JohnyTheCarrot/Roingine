@@ -14,7 +14,11 @@ namespace roingine {
 
 	DukContext::~DukContext() = default;
 
-	DukObject DukContext::PushGlobalObject() const {
+	DukObject DukContext::AccessGlobalObject() const {
+		return {m_DukContext.get(), std::nullopt};
+	}
+
+	DukObject DukContext::PushObject() const {
 		return {m_DukContext.get()};
 	}
 
@@ -51,6 +55,13 @@ namespace roingine {
 		m_StackBottomOffset = duk_require_top_index(ctx);
 	}
 
+	DukObject::DukObject(duk_context *ctx)
+	    : m_DukContext{ctx}
+	    , m_ShouldPop{false} {
+		duk_push_object(ctx);
+		m_StackBottomOffset = duk_require_top_index(ctx);
+	}
+
 	DukObject::~DukObject() {
 		if (m_AddToParentInfo.has_value()) {
 			auto const index{m_AddToParentInfo->parentIndex};
@@ -69,15 +80,13 @@ namespace roingine {
 	}
 
 	void DukObject::PutFunctionList(duk_function_list_entry const *functionList) {
-		auto const currentTop{duk_require_top_index(m_DukContext)};
-		auto const index{currentTop - m_StackBottomOffset + 1};
+		auto const index{GetStackIndex()};
 
 		duk_put_function_list(m_DukContext, index, functionList);
 	}
 
 	void DukObject::PutNumberList(duk_number_list_entry const *numberList) {
-		auto const currentTop{duk_require_top_index(m_DukContext)};
-		auto const index{currentTop - m_StackBottomOffset + 1};
+		auto const index{GetStackIndex()};
 
 		duk_put_number_list(m_DukContext, index, numberList);
 	}
@@ -91,11 +100,19 @@ namespace roingine {
 	}
 
 	void DukObject::PutPointer(std::string const &key, void *ptr) const {
-		auto const currentTop{duk_require_top_index(m_DukContext)};
-		auto const index{currentTop - m_StackBottomOffset};
+		auto const index{GetStackIndex()};
 
 		duk_push_pointer(m_DukContext, ptr);
 		duk_put_prop_string(m_DukContext, index, key.c_str());
+	}
+
+	int DukObject::GetStackIndex() const noexcept {
+		if (m_StackBottomOffset == 0)
+			return 0;
+
+		auto const currentTop{duk_require_top_index(m_DukContext)};
+
+		return currentTop - m_StackBottomOffset + 1;
 	}
 
 	DukObject::DukObject(DukObject &&other)
