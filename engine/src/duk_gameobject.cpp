@@ -11,7 +11,7 @@ namespace roingine::duk_gameobject {
 		auto *ptr{static_cast<GameObject *>(duk_require_pointer(ctx, -1))};
 		duk_pop(ctx);
 
-		auto *comp{ptr->GetComponent(name)};
+		auto *comp{ptr->GetOptionalComponent(name)};
 		if (!comp) {
 			duk_push_undefined(ctx);
 			return 1;
