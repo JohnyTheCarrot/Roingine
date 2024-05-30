@@ -1,6 +1,7 @@
 #ifndef RECT_COLLIDER_H
 #define RECT_COLLIDER_H
 
+#include <glm/glm.hpp>
 #include <memory>
 #include <roingine/components/component.h>
 
@@ -30,11 +31,17 @@ namespace roingine {
 		[[nodiscard]]
 		static std::unique_ptr<RectCollider> JSFactory(GameObject *pGameObject, duk_context *ctx);
 
+		[[nodiscard]]
+		bool GetHasListener() const noexcept;
+
+		void SetHasListener(bool hasListener) noexcept;
+
 	private:
 		void CallJSCallback(glm::vec2 hitPoint);
 
 		Transform &m_Transform;
 		float      m_Width, m_Height;
+		bool       m_HasListener{false};
 	};
 }// namespace roingine
 

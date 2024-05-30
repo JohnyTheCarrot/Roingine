@@ -19,6 +19,9 @@ namespace roingine {
 	}
 
 	void RectCollider::PostUpdate() {
+		if (!m_HasListener)
+			return;
+
 		auto const worldPos{m_Transform.GetWorldPosition()};
 
 		GetGameObject().GetScene()->ForEveryComponentOfType<RectCollider>([&](RectCollider &other) {
@@ -84,6 +87,11 @@ namespace roingine {
 		duk_put_prop_string(ctx, -2, RectCollider::JS_CALLBACK_NAME);
 		duk_pop(ctx);
 
+		duk_push_this(ctx);
+		duk_get_prop_literal(ctx, -1, "__ptr");
+		RectCollider *ptr{static_cast<RectCollider *>(duk_get_pointer(ctx, -1))};
+		ptr->SetHasListener(true);
+
 		return 0;
 	}
 
@@ -98,6 +106,14 @@ namespace roingine {
 		auto const height{duk_require_number(ctx, 2)};
 
 		return std::make_unique<RectCollider>(*pGameObject, static_cast<float>(width), static_cast<float>(height));
+	}
+
+	bool RectCollider::GetHasListener() const noexcept {
+		return m_HasListener;
+	}
+
+	void RectCollider::SetHasListener(bool hasListener) noexcept {
+		m_HasListener = hasListener;
 	}
 
 	void RectCollider::CallJSCallback(glm::vec2 hitPoint) {
