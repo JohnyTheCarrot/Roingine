@@ -86,11 +86,11 @@ namespace roingine {
 		m_ShouldPop = false;
 	}
 
-	DukObject DukObject::PushObject(std::string const &key) const {
+	DukObject DukObject::PutObject(std::string const &key) const {
 		return {m_DukContext, DukAddObjToParentInfo{key, m_StackBottomOffset}};
 	}
 
-	void DukObject::PushPointer(std::string const &key, void *ptr) const {
+	void DukObject::PutPointer(std::string const &key, void *ptr) const {
 		auto const currentTop{duk_require_top_index(m_DukContext)};
 		auto const index{currentTop - m_StackBottomOffset};
 

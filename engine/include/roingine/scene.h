@@ -1,6 +1,7 @@
 #ifndef SCENE_H
 #define SCENE_H
 
+#include <algorithm>
 #include <forward_list>
 #include <roingine/gameobject.h>
 
@@ -35,7 +36,7 @@ namespace roingine {
 
 		void RegisterComponentType(std::string name, std::size_t hash, JSFactoryMapEntry::Function jsFactory);
 
-		void SetGameObjectScenes(Scene &scene);
+		void SetGameObjectScenes();
 
 		[[nodiscard]]
 		GameObjectComponents &GetGameObjectComponents() noexcept;
@@ -48,6 +49,19 @@ namespace roingine {
 
 		[[nodiscard]]
 		std::optional<JSFactoryMapEntry> GetJSFactoryMapEntryByHash(std::size_t hash) const;
+
+		template<ComponentImpl TComponent>
+		void ForEveryComponentOfType(std::function<void(TComponent &)> const &fn) {
+			std::for_each(m_GameObjectComponents.begin(), m_GameObjectComponents.end(), [&fn](auto &pair) {
+				auto &[key, pComponent] = pair;
+				auto componentHash      = key.second;
+				if (componentHash != typeid(TComponent).hash_code())
+					return;
+
+				auto &component{*dynamic_cast<TComponent *>(pComponent.get())};
+				fn(component);
+			});
+		}
 
 	private:
 		friend class GameObject;

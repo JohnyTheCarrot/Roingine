@@ -25,9 +25,9 @@ namespace roingine {
 		glBegin(GL_POLYGON);
 		{
 			glVertex2f(0.f, 0.f);
-			glVertex2f(m_Rect.m_Width, 0.f);
-			glVertex2f(m_Rect.m_Width, m_Rect.m_Height);
-			glVertex2f(0.f, m_Rect.m_Height);
+			glVertex2f(m_Rect.GetWidth(), 0.f);
+			glVertex2f(m_Rect.GetWidth(), m_Rect.GetHeight());
+			glVertex2f(0.f, m_Rect.GetHeight());
 		}
 		glEnd();
 	}

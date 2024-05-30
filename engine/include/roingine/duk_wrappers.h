@@ -56,9 +56,9 @@ namespace roingine {
 
 		void MarkForReturn();
 
-		DukObject PushObject(std::string const &key) const;
+		DukObject PutObject(std::string const &key) const;
 
-		void PushPointer(std::string const &key, void *ptr) const;
+		void PutPointer(std::string const &key, void *ptr) const;
 
 	private:
 		duk_context                         *m_DukContext;

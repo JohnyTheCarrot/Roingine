@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <duktape.h>
 #include <iostream>
 #include <roingine/components/scripts.h>
@@ -29,6 +30,7 @@ namespace roingine {
 		duk_push_this(ctx);
 		duk_get_prop_literal(ctx, -1, "__ptr");
 		Scripts *ptr{static_cast<Scripts *>(duk_get_pointer(ctx, -1))};
+		duk_pop(ctx);
 
 		ptr->AddScript(fileName);
 
@@ -80,5 +82,9 @@ namespace roingine {
 			return nullptr;
 
 		return &m_Scripts.at(name);
+	}
+
+	void Scripts::ExecuteOnEveryScript(std::function<void(duk_context *)> const &fn) {
+		std::for_each(m_Scripts.begin(), m_Scripts.end(), [&](auto &pair) { fn(pair.second.GetDukContext()); });
 	}
 }// namespace roingine

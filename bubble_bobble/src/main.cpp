@@ -1,6 +1,7 @@
 #include <roingine/audio_service.h>
 #include <roingine/commands/command.h>
 #include <roingine/components/rect.h>
+#include <roingine/components/rect_collider.h>
 #include <roingine/components/rect_renderer.h>
 #include <roingine/components/scripts.h>
 #include <roingine/components/transform.h>
@@ -85,22 +86,17 @@ int main() {
 
 	KeyboardInput::Provide(std::make_unique<SDLKeyboardInputService>());
 
-	Scene                             scene{};
-	GameObject                        parentGameObject{scene.AddGameObject()};
+	Scene      scene{};
+	GameObject parentGameObject{scene.AddGameObject()};
 
 	auto &scripts{parentGameObject.AddComponent<Scripts>()};
 	scripts.AddScript("scripts/test.js");
 
-
-	// for (int i{0}; i < 5; ++i) {
-	// 	GameObject go2{scene.AddGameObject()};
-	// 	auto      &pChildTransform{go2.AddComponent<Transform>(glm::vec2{50.0f, 50.0f}, 0.0f)};
-	// 	go2.AddComponent<Rect>(50.f, 50.f);
-	// 	go2.AddComponent<RectRenderer>();
-	// 	go2.AddComponent<Rotator>();
-	// 	pChildTransform.SetParent(pParentTransform.get());
-	// 	pParentTransform = pChildTransform;
-	// }
+	GameObject collider{scene.AddGameObject()};
+	collider.AddComponent<Transform>(glm::vec2{300, 100}, 0.f);
+	collider.AddComponent<Rect>(100.f, 100.f);
+	collider.AddComponent<RectRenderer>();
+	collider.AddComponent<RectCollider>(100.f, 100.f);
 
 	GameEventQueue::GetInstance().AttachEventHandler<EventType::PlaySoundRequest>([](auto const &data) {
 		AudioServiceLocator::GetService().Play(data.sound);

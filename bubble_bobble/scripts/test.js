@@ -38,8 +38,14 @@ input.onKeyHeld(input.KEY_T, function() {
 function Init() {
     roingine.println("Test Initialized!");
 
-    transform = gameObject.addComponent("Transform", 200, 100);
-    scripts = gameObject.getComponent("Scripts");
+    transform = current.addComponent("Transform", 200, 100);
+    var collider = current.addComponent("RectCollider", 50, 50);
+
+    collider.onCollision(function(hitX, hitY) {
+        transform.setLocalPosition(hitX, hitY);
+    });
+
+    scripts = current.getComponent("Scripts");
     scripts.addScript("scripts/runtime_script.js");
 
     runtimeScript = scripts.getScript("RuntimeScript");
@@ -47,8 +53,8 @@ function Init() {
     runtimeScript.setProperty("stringTest", "bingus");
     runtimeScript.setProperty("boolTest", true);
 
-    gameObject.addComponent("Rect", 50, 50);
-    gameObject.addComponent("RectRenderer");
+    current.addComponent("Rect", 50, 50);
+    current.addComponent("RectRenderer");
 
     requireTest.hello();
 }

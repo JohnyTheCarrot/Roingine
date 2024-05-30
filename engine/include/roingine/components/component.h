@@ -16,7 +16,7 @@ namespace roingine {
 	public:
 		using Handle = std::pair<std::size_t, std::size_t>;
 
-		explicit Component(GameObject &gameObject)
+		explicit Component(std::reference_wrapper<GameObject> gameObject)
 		    : m_GameObject{gameObject} {
 		}
 
@@ -49,7 +49,7 @@ namespace roingine {
 		}
 
 	private:
-		GameObject &m_GameObject;
+		std::reference_wrapper<GameObject> m_GameObject;
 	};
 
 	template<class T>

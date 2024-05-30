@@ -17,7 +17,7 @@ set (INCLUDE_HEADERS_COMPONENTS
 	include/roingine/components/transform.h
 	include/roingine/components/rect.h
 	include/roingine/components/scripts.h
-	include/roingine/script.h
+	include/roingine/components/rect_collider.h
 )
 
 set (INCLUDE_HEADERS_COMMANDS
@@ -44,6 +44,7 @@ set (INCLUDE_HEADERS
 	include/roingine/engine_event_queue.h
 	include/roingine/unique_duk_context.h
 	include/roingine/duk_wrappers.h
+	include/roingine/script.h
 )
 
 set (SRC_FILES
@@ -58,6 +59,7 @@ set (SRC_FILES
 	src/components/transform.cpp
 	src/components/rect.cpp
 	src/components/scripts.cpp
+	src/components/rect_collider.cpp
 	src/commands/gameobject_command.cpp
 	src/commands/registered_keyboard_command.cpp
 	src/game_info.cpp

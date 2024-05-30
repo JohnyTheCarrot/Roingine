@@ -1,4 +1,5 @@
 #include <roingine/components/rect.h>
+#include <roingine/components/rect_collider.h>
 #include <roingine/components/rect_renderer.h>
 #include <roingine/components/scripts.h>
 #include <roingine/components/transform.h>
@@ -40,9 +41,11 @@ namespace roingine {
 		m_JSFactoryMap.emplace(hash, JSFactoryMapEntry{jsFactory});
 	}
 
-	void Scene::SetGameObjectScenes(Scene &scene) {
-		for (auto &go: m_GameObjects) { go.SetScene(&scene); }
-		for (auto &comp: m_GameObjectComponents) { comp.second->GetGameObject().SetScene(&scene); }
+	void Scene::SetGameObjectScenes() {
+		for (auto &go: m_GameObjects) { go.SetScene(this); }
+		for (auto &comp: m_GameObjectComponents) {
+			comp.second->GetGameObject().SetScene(this);
+		}
 	}
 
 	GameObjectComponents &Scene::GetGameObjectComponents() noexcept {
@@ -72,6 +75,13 @@ namespace roingine {
 	}
 
 	void Scene::RemoveGameObject(GameObject gameObject) {
+		std::erase_if(m_GameObjectComponents, [&](auto &it) {
+			auto &[key, value]  = it;
+			auto currGameObject = key.first;
+
+			return currGameObject == gameObject.GetHandle();
+		});
+
 		m_GameObjects.remove(gameObject);
 	}
 
@@ -80,6 +90,7 @@ namespace roingine {
 		RegisterComponentType(RectRenderer::NAME, typeid(RectRenderer).hash_code(), RectRenderer::JSFactory);
 		RegisterComponentType(Transform::NAME, typeid(Transform).hash_code(), Transform::JSFactory);
 		RegisterComponentType(Scripts::NAME, typeid(Scripts).hash_code(), Scripts::JSFactory);
+		RegisterComponentType(RectCollider::NAME, typeid(RectCollider).hash_code(), RectCollider::JSFactory);
 	}
 
 	Scene::~Scene() = default;
@@ -89,7 +100,7 @@ namespace roingine {
 	    , m_NameMap{std::move(other.m_NameMap)}
 	    , m_JSFactoryMap{std::move(other.m_JSFactoryMap)}
 	    , m_GameObjects{std::move(other.m_GameObjects)} {
-		SetGameObjectScenes(*this);
+		SetGameObjectScenes();
 	};
 
 	Scene &Scene::operator=(Scene &&other) {
@@ -102,7 +113,7 @@ namespace roingine {
 		m_JSFactoryMap         = std::move(other.m_JSFactoryMap);
 		m_GameObjects          = std::move(other.m_GameObjects);
 
-		SetGameObjectScenes(*this);
+		SetGameObjectScenes();
 
 		return *this;
 	}

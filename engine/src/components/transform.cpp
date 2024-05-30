@@ -33,12 +33,16 @@ namespace roingine {
 	}
 
 	void Transform::Translate(glm::vec2 translation) noexcept {
-		m_Position += translation;
+		Translate(translation.x, translation.y);
 	}
 
 	void Transform::Translate(float x, float y) noexcept {
 		m_Position.x += x;
 		m_Position.y += y;
+	}
+
+	void Transform::SetLocalPosition(glm::vec2 position) {
+		m_Position = position;
 	}
 
 	glm::vec2 Transform::GetLocalPosition() const noexcept {
@@ -99,7 +103,7 @@ namespace roingine {
 	}
 
 	char const *Transform::GetName() const {
-		return "Transform";
+		return NAME;
 	}
 
 	int JsAPITranslate(duk_context *ctx) {
@@ -115,7 +119,24 @@ namespace roingine {
 		return 0;
 	}
 
-	duk_function_list_entry const transformAPI[]{{"translate", JsAPITranslate, 2}, {nullptr, nullptr, 0}};
+	int JsAPISetLocalPosition(duk_context *ctx) {
+		float const x{static_cast<float>(duk_require_number(ctx, 0))};
+		float const y{static_cast<float>(duk_require_number(ctx, 1))};
+
+		duk_push_this(ctx);
+		duk_get_prop_literal(ctx, -1, "__ptr");
+		Transform *ptr{static_cast<Transform *>(duk_get_pointer(ctx, -1))};
+
+		ptr->SetLocalPosition(glm::vec2{x, y});
+
+		return 0;
+	}
+
+	duk_function_list_entry const transformAPI[]{
+	        {"translate", JsAPITranslate, 2},
+	        {"setLocalPosition", JsAPISetLocalPosition, 2},
+	        {nullptr, nullptr, 0}
+	};
 
 	duk_function_list_entry const *Transform::SetUpScriptAPI(duk_context *) const {
 		return transformAPI;

@@ -42,7 +42,7 @@ namespace roingine {
 			auto const index{-numArgs - 1};
 			auto const isObject{duk_check_type(dukContext, index, DUK_TYPE_OBJECT)};
 
-			if (isObject) {
+			if (isObject && !duk_is_function(dukContext, index)) {
 				std::cout << duk_json_encode(dukContext, index);
 			} else {
 				std::cout << duk_to_string(dukContext, index);
@@ -198,6 +198,9 @@ namespace roingine {
 	        {nullptr, 0}
 	};
 
+	constexpr char const *CURRENT_GAMEOBJECT_PROP_NAME{"current"};
+	constexpr char const *CURRENT_SCRIPT_PROP_NAME{"script"};
+
 	duk_function_list_entry const gameObjectFunctions[]{
 	        {"getComponent", GetComponent, DUK_VARARGS},
 	        {"addComponent", AddComponent, DUK_VARARGS},
@@ -230,7 +233,7 @@ namespace roingine {
 	        {"KEY_SHIFT", static_cast<int>(InputKeys::Shift)}, {nullptr, 0}
 	};
 
-	Script::Script(GameObject gameObject, std::string_view fileName)
+	Script::Script(GameObject &gameObject, std::string_view fileName)
 	    : m_FilePath{fileName}
 	    , m_GameObject{gameObject}
 	    , m_DukContext{} {
@@ -242,29 +245,29 @@ namespace roingine {
 			auto globalObject{m_DukContext.PushGlobalObject()};
 
 			{
-				auto roingineObject{globalObject.PushObject("roingine")};
+				auto roingineObject{globalObject.PutObject("roingine")};
 				roingineObject.PutFunctionList(roingineFunctions);
 				roingineObject.PutNumberList(roingineNumberConstants);
 			}
 
 			{
-				auto gameObjectObject{globalObject.PushObject("gameObject")};
+				auto gameObjectObject{globalObject.PutObject(CURRENT_GAMEOBJECT_PROP_NAME)};
 				gameObjectObject.PutFunctionList(gameObjectFunctions);
 			}
 
 			{
-				auto inputObject{globalObject.PushObject("input")};
+				auto inputObject{globalObject.PutObject("input")};
 				inputObject.PutFunctionList(inputFunctions);
 				inputObject.PutNumberList(inputNumberConstants);
 			}
 
 			{
-				auto currentObject{globalObject.PushObject("current")};
-				currentObject.PushObject("properties");
+				auto currentObject{globalObject.PutObject(CURRENT_SCRIPT_PROP_NAME)};
+				currentObject.PutObject("properties");
 			}
 
-			globalObject.PushPointer("__goPtr", static_cast<void *>(&gameObject));
-			globalObject.PushPointer("__scriptPtr", static_cast<void *>(this));
+			globalObject.PutPointer("__goPtr", static_cast<void *>(&gameObject));
+			globalObject.PutPointer("__scriptPtr", static_cast<void *>(this));
 		}
 
 		std::string const modSearchCode{"Duktape.modSearch=function(fileName){return roingine.readFile(fileName);};"};
@@ -296,7 +299,8 @@ namespace roingine {
 	    , m_DukContext{std::move(other.m_DukContext)}
 	    , m_ScriptName{std::move(other.m_ScriptName)} {
 		auto global{m_DukContext.PushGlobalObject()};
-		global.PushPointer("__goPtr", static_cast<void *>(&m_GameObject));
+		global.PutPointer("__goPtr", static_cast<void *>(&m_GameObject));
+		global.PutPointer("__scriptPtr", static_cast<void *>(this));
 	}
 
 	Script::~Script() {
@@ -322,7 +326,8 @@ namespace roingine {
 		m_ScriptName     = std::move(other.m_ScriptName);
 
 		auto global{m_DukContext.PushGlobalObject()};
-		global.PushPointer("__goPtr", static_cast<void *>(&m_GameObject));
+		global.PutPointer("__goPtr", static_cast<void *>(&m_GameObject));
+		global.PutPointer("__scriptPtr", static_cast<void *>(this));
 
 		return *this;
 	}
@@ -470,16 +475,23 @@ namespace roingine {
 		duk_put_function_list(ctx, -1, apiFunctions);
 	}
 
+	duk_context *Script::GetDukContext() {
+		return m_DukContext.GetRawContext();
+	}
+
 	void Script::SetProperty(std::string const &key, PropertyValue value) {
-		duk_get_global_literal(m_DukContext.GetRawContext(), "current");
+		duk_get_global_string(m_DukContext.GetRawContext(), CURRENT_SCRIPT_PROP_NAME);
 		if (duk_is_undefined(m_DukContext.GetRawContext(), -1)) {
 			duk_pop(m_DukContext.GetRawContext());
-			throw FatalScriptError{std::format("Script {}'s current is undefined", GetScriptName())};
+			throw FatalScriptError{std::format("Script {}'s {} is undefined", GetScriptName(), CURRENT_SCRIPT_PROP_NAME)
+			};
 		}
 		duk_get_prop_literal(m_DukContext.GetRawContext(), -1, "properties");
 		if (duk_is_undefined(m_DukContext.GetRawContext(), -1)) {
 			duk_pop_2(m_DukContext.GetRawContext());
-			throw FatalScriptError{std::format("Script {}'s current.properties is undefined", GetScriptName())};
+			throw FatalScriptError{
+			        std::format("Script {}'s {}.properties is undefined", GetScriptName(), CURRENT_SCRIPT_PROP_NAME)
+			};
 		}
 
 		PushPropertyValue(m_DukContext.GetRawContext(), value);
@@ -489,15 +501,18 @@ namespace roingine {
 	}
 
 	Script::PropertyValue Script::GetProperty(std::string const &key) const {
-		duk_get_global_literal(m_DukContext.GetRawContext(), "current");
+		duk_get_global_string(m_DukContext.GetRawContext(), CURRENT_SCRIPT_PROP_NAME);
 		if (duk_is_undefined(m_DukContext.GetRawContext(), -1)) {
 			duk_pop(m_DukContext.GetRawContext());
-			throw FatalScriptError{std::format("Script {}'s current is undefined", GetScriptName())};
+			throw FatalScriptError{std::format("Script {}'s {} is undefined", GetScriptName(), CURRENT_SCRIPT_PROP_NAME)
+			};
 		}
 		duk_get_prop_literal(m_DukContext.GetRawContext(), -1, "properties");
 		if (duk_is_undefined(m_DukContext.GetRawContext(), -1)) {
 			duk_pop_2(m_DukContext.GetRawContext());
-			throw FatalScriptError{std::format("Script {}'s current.properties is undefined", GetScriptName())};
+			throw FatalScriptError{
+			        std::format("Script {}'s {}.properties is undefined", GetScriptName(), CURRENT_SCRIPT_PROP_NAME)
+			};
 		}
 
 		duk_get_prop_string(m_DukContext.GetRawContext(), -1, key.c_str());

@@ -21,6 +21,8 @@ namespace roingine {
 
 		void Translate(float x, float y) noexcept;
 
+		void SetLocalPosition(glm::vec2 position);
+
 		[[nodiscard]]
 		glm::vec2 GetLocalPosition() const noexcept;
 

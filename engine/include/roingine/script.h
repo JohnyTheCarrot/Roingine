@@ -14,7 +14,7 @@
 namespace roingine {
 	class Script final {
 	public:
-		Script(GameObject gameObject, std::string_view fileName);
+		Script(GameObject &gameObject, std::string_view fileName);
 
 		~Script();
 
@@ -36,6 +36,9 @@ namespace roingine {
 
 		void ReturnAPIObject(duk_context *ctx);
 
+		[[nodiscard]]
+		duk_context *GetDukContext();
+
 		struct DukUndefined final {};
 
 		struct DukNull final {};
@@ -53,7 +56,7 @@ namespace roingine {
 		void CallJsFunctionByName(std::string_view name);
 
 		std::filesystem::path                  m_FilePath;
-		GameObject                             m_GameObject;
+		std::reference_wrapper<GameObject>     m_GameObject;
 		std::vector<RegisteredKeyboardCommand> m_ListenedToKeys;
 		DukContext                             m_DukContext;
 		std::string                            m_ScriptName;
