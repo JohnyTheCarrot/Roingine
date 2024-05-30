@@ -46,6 +46,11 @@ namespace roingine {
 		duk_pop(ctx);
 
 		auto script{ptr->GetScript(scriptName)};
+		if (script == nullptr) {
+			duk_push_undefined(ctx);
+			return 1;
+		}
+
 		script->ReturnAPIObject(ctx);
 
 		return 1;
