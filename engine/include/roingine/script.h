@@ -60,6 +60,9 @@ namespace roingine {
 
 		void RegisterListenedToKey(InputKeys key, KeyEventType eventType, std::unique_ptr<roingine::Command> pCommand);
 
+		[[nodiscard]]
+		GameObject GetGameObject() const noexcept;
+
 	private:
 		void CallJsFunctionByName(std::string_view name);
 

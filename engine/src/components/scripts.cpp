@@ -89,7 +89,9 @@ namespace roingine {
 		return &m_Scripts.at(name);
 	}
 
-	void Scripts::ExecuteOnEveryScript(std::function<void(DukContext &)> const &fn) {
-		std::for_each(m_Scripts.begin(), m_Scripts.end(), [&](auto &pair) { fn(pair.second.GetDukContext()); });
+	void Scripts::ExecuteOnEveryScript(std::function<void(GameObject gameObject, DukContext &)> const &fn) {
+		std::for_each(m_Scripts.begin(), m_Scripts.end(), [&](auto &pair) {
+			fn(pair.second.GetGameObject(), pair.second.GetDukContext());
+		});
 	}
 }// namespace roingine

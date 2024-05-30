@@ -575,6 +575,10 @@ namespace roingine {
 		m_ListenedToKeys.emplace_back(key, eventType, std::move(pCommand));
 	}
 
+	GameObject Script::GetGameObject() const noexcept {
+		return m_GameObject;
+	}
+
 	FatalScriptError::FatalScriptError(std::string errorMessage)
 	    : m_ErrorMessage{std::move(errorMessage)} {
 	}

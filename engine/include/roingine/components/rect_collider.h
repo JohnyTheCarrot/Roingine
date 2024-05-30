@@ -37,7 +37,7 @@ namespace roingine {
 		void SetHasListener(bool hasListener) noexcept;
 
 	private:
-		void CallJSCallback(roingine::GameObject *other, glm::vec2 hitPoint);
+		void CallJSCallback(glm::vec2 hitPoint);
 
 		Transform &m_Transform;
 		float      m_Width, m_Height;
