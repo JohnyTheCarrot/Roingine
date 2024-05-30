@@ -49,9 +49,21 @@ namespace roingine::duk_gameobject {
 		return 1;
 	}
 
+	int Destroy(duk_context *ctx) {
+		duk_push_this(ctx);
+		duk_get_prop_literal(ctx, -1, "__ptr");
+		auto *ptr{static_cast<GameObject *>(duk_require_pointer(ctx, -1))};
+		duk_pop(ctx);
+
+		ptr->Destroy();
+
+		return 0;
+	}
+
 	duk_function_list_entry const gameObjectFunctions[]{
 	        {"getComponent", GetComponent, DUK_VARARGS},
 	        {"addComponent", AddComponent, DUK_VARARGS},
+	        {"destroy", Destroy, 0},
 	        {nullptr, nullptr, 0}
 	};
 
