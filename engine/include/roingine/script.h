@@ -43,12 +43,20 @@ namespace roingine {
 
 		struct DukNull final {};
 
-		using PropertyValue = std::variant<double, std::string, bool, DukUndefined, DukNull>;
+		using DukValue = std::variant<double, std::string, bool, DukUndefined, DukNull>;
 
-		void SetProperty(std::string const &key, PropertyValue value);
+		void SetProperty(std::string const &key, DukValue value);
 
 		[[nodiscard]]
-		PropertyValue GetProperty(std::string const &key) const;
+		static DukValue FromDukToValue(duk_context *ctx, int index = -1);
+
+		static void PushToDukFromValue(duk_context *ctx, DukValue const &value);
+
+		[[nodiscard]]
+		DukValue GetProperty(std::string const &key) const;
+
+		[[nodiscard]]
+		DukValue CallMethod(std::string const &key, std::vector<DukValue> const &arguments) const;
 
 		void RegisterListenedToKey(InputKeys key, KeyEventType eventType, std::unique_ptr<roingine::Command> pCommand);
 

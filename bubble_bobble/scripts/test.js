@@ -54,6 +54,8 @@ function Init() {
 
     runtimeScript.setProperty("stringTest", "bingus");
     runtimeScript.setProperty("boolTest", true);
+    var result = runtimeScript.callMethod("testMethod", "Hello world from test.js!");
+    roingine.println(result);
 
     current.addComponent("Rect", 50, 50);
     current.addComponent("RectRenderer");

@@ -329,7 +329,7 @@ namespace roingine {
 		return m_FilePath;
 	}
 
-	void PushPropertyValue(duk_context *ctx, Script::PropertyValue value) {
+	void PushPropertyValue(duk_context *ctx, Script::DukValue value) {
 		if (std::holds_alternative<double>(value)) {
 			auto const unwrapped{std::get<double>(value)};
 
@@ -412,9 +412,31 @@ namespace roingine {
 		return 1;
 	}
 
+	int CallMethod(duk_context *ctx) {
+		duk_push_this(ctx);
+		duk_get_prop_literal(ctx, -1, "__ptr");
+		Script *ptr{static_cast<Script *>(duk_require_pointer(ctx, -1))};
+		duk_pop(ctx);
+
+		std::string const name{duk_require_string(ctx, 0)};
+
+		std::vector<Script::DukValue> arguments;
+		arguments.reserve(std::max(duk_get_top(ctx) - 1, 0));
+
+		for (int idx{1}; idx < duk_get_top_index(ctx); ++idx) {
+			arguments.emplace_back(Script::FromDukToValue(ctx, idx));
+		}
+
+		auto const result{ptr->CallMethod(name, arguments)};
+		Script::PushToDukFromValue(ctx, result);
+
+		return 1;
+	}
+
 	duk_function_list_entry const apiFunctions[]{
 	        {"setProperty", SetProperty, 2},
 	        {"getProperty", GetProperty, 1},
+	        {"callMethod", CallMethod, DUK_VARARGS},
 	        {nullptr, nullptr, 0}
 	};
 
@@ -430,7 +452,7 @@ namespace roingine {
 		return m_DukContext;
 	}
 
-	void Script::SetProperty(std::string const &key, PropertyValue value) {
+	void Script::SetProperty(std::string const &key, DukValue value) {
 		duk_get_global_string(m_DukContext.GetRawContext(), CURRENT_SCRIPT_PROP_NAME);
 		if (duk_is_undefined(m_DukContext.GetRawContext(), -1)) {
 			duk_pop(m_DukContext.GetRawContext());
@@ -451,7 +473,82 @@ namespace roingine {
 		duk_pop_2(m_DukContext.GetRawContext());
 	}
 
-	Script::PropertyValue Script::GetProperty(std::string const &key) const {
+	Script::DukValue Script::FromDukToValue(duk_context *ctx, int index) {
+		auto const dukType{duk_get_type(ctx, index)};
+		DukValue   value{DukUndefined{}};
+
+		switch (dukType) {
+			case DUK_TYPE_BOOLEAN:
+				value = duk_require_boolean(ctx, index) != 0;
+				break;
+			case DUK_TYPE_NUMBER:
+				value = duk_require_number(ctx, index);
+				break;
+			case DUK_TYPE_UNDEFINED:
+				value = DukUndefined{};
+				duk_pop(ctx);
+				break;
+			case DUK_TYPE_NULL:
+				value = DukNull{};
+				duk_pop(ctx);
+				break;
+			case DUK_TYPE_STRING:
+				value = duk_require_string(ctx, index);
+				break;
+			default:
+				std::cerr << "callMethod and getProperty only support atomic types" << std::endl;
+				value = DukNull{};
+				duk_pop(ctx);
+				break;
+		}
+
+		return value;
+	}
+
+	void Script::PushToDukFromValue(duk_context *ctx, DukValue const &value) {
+		if (std::holds_alternative<double>(value))
+			duk_push_number(ctx, std::get<double>(value));
+		else if (std::holds_alternative<std::string>(value))
+			duk_push_string(ctx, std::get<std::string>(value).c_str());
+		else if (std::holds_alternative<bool>(value))
+			duk_push_boolean(ctx, std::get<bool>(value));
+		else if (std::holds_alternative<DukUndefined>(value))
+			duk_push_undefined(ctx);
+		else if (std::holds_alternative<DukNull>(value))
+			duk_push_null(ctx);
+	}
+
+	Script::DukValue Script::CallMethod(std::string const &key, std::vector<DukValue> const &arguments) const {
+		duk_get_global_string(m_DukContext.GetRawContext(), CURRENT_SCRIPT_PROP_NAME);
+		if (duk_is_undefined(m_DukContext.GetRawContext(), -1)) {
+			duk_pop(m_DukContext.GetRawContext());
+			throw FatalScriptError{std::format("Script {}'s {} is undefined", GetScriptName(), CURRENT_SCRIPT_PROP_NAME)
+			};
+		}
+		duk_get_prop_literal(m_DukContext.GetRawContext(), -1, "api");
+		if (duk_is_undefined(m_DukContext.GetRawContext(), -1)) {
+			duk_pop_2(m_DukContext.GetRawContext());
+			return DukUndefined{};
+		}
+		duk_get_prop_string(m_DukContext.GetRawContext(), -1, key.c_str());
+
+		for (auto const &argument: arguments) { PushToDukFromValue(m_DukContext.GetRawContext(), argument); }
+
+		if (duk_pcall(m_DukContext.GetRawContext(), static_cast<int>(arguments.size())) != 0) {
+			std::cerr << "Error during callMethod: " << duk_safe_to_string(m_DukContext.GetRawContext(), -1)
+			          << std::endl;
+			duk_pop_2(m_DukContext.GetRawContext());
+			duk_push_undefined(m_DukContext.GetRawContext());
+			return DukUndefined{};
+		}
+
+		auto const result{FromDukToValue(m_DukContext.GetRawContext(), -1)};
+		duk_pop_2(m_DukContext.GetRawContext());
+
+		return result;
+	}
+
+	Script::DukValue Script::GetProperty(std::string const &key) const {
 		duk_get_global_string(m_DukContext.GetRawContext(), CURRENT_SCRIPT_PROP_NAME);
 		if (duk_is_undefined(m_DukContext.GetRawContext(), -1)) {
 			duk_pop(m_DukContext.GetRawContext());
@@ -468,30 +565,7 @@ namespace roingine {
 
 		duk_get_prop_string(m_DukContext.GetRawContext(), -1, key.c_str());
 
-		auto const    dukType{duk_get_type(m_DukContext.GetRawContext(), -1)};
-		PropertyValue value{DukUndefined{}};
-
-		switch (dukType) {
-			case DUK_TYPE_BOOLEAN:
-				value = duk_require_boolean(m_DukContext.GetRawContext(), -1) != 0;
-				break;
-			case DUK_TYPE_NUMBER:
-				value = duk_require_number(m_DukContext.GetRawContext(), -1);
-				break;
-			case DUK_TYPE_UNDEFINED:
-				value = DukUndefined{};
-				break;
-			case DUK_TYPE_NULL:
-				value = DukNull{};
-				break;
-			case DUK_TYPE_STRING:
-				value = duk_require_string(m_DukContext.GetRawContext(), -1);
-				break;
-			default:
-				std::cerr << "getProperty only supports atomic types" << std::endl;
-				value = DukNull{};
-				break;
-		}
+		auto const value{FromDukToValue(m_DukContext.GetRawContext())};
 
 		duk_pop_3(m_DukContext.GetRawContext());
 		return value;
