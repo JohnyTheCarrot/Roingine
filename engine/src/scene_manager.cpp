@@ -5,6 +5,13 @@ namespace roingine {
 		m_Scene = std::move(scene);
 	}
 
+	Scene *SceneManager::Impl::GetActive() {
+		if (!m_Scene.has_value())
+			return nullptr;
+
+		return &m_Scene.value();
+	}
+
 	void SceneManager::Impl::PreUpdate() {
 		if (!m_Scene.has_value())
 			return;
@@ -42,6 +49,10 @@ namespace roingine {
 
 	void SceneManager::SetActive(Scene &&scene) {
 		m_pImpl->SetActive(std::move(scene));
+	}
+
+	Scene *SceneManager::GetActive() {
+		return m_pImpl->GetActive();
 	}
 
 	void SceneManager::PreUpdate() {

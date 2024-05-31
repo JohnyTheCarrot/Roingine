@@ -14,6 +14,9 @@ namespace roingine {
 
 		void SetActive(Scene &&scene);
 
+		[[nodiscard]]
+		Scene *GetActive();
+
 		void PreUpdate();
 
 		void Update();
