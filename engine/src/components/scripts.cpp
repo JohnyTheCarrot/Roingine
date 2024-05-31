@@ -70,16 +70,20 @@ namespace roingine {
 		return std::make_unique<Scripts>(*pGameObject);
 	}
 
-	void Scripts::AddScript(std::string_view fileName) {
+	Script *Scripts::AddScript(std::string_view fileName, std::optional<Script::CppFunctionCaller> const &caller) {
 		try {
-			Script script{*this, fileName};
+			Script script{*this, fileName, caller};
 
-			m_Scripts.emplace(script.GetScriptName(), std::move(script));
+			auto pair{m_Scripts.emplace(script.GetScriptName(), std::move(script)).first};
+
+			return &pair->second;
 		} catch (ScriptCompilationFailedException const &ex) {
 			std::cerr << "Failed to compile script \"" << fileName << "\": " << ex.what() << std::endl;
 		} catch (FatalScriptError const &ex) {
 			std::cerr << "Fatal script error in \"" << fileName << "\": " << ex.what() << std::endl;
 		}
+
+		return nullptr;
 	}
 
 	Script *Scripts::GetScript(std::string const &name) {

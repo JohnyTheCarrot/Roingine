@@ -145,6 +145,26 @@ namespace roingine {
 		return Listen(dukContext, KeyEventType::LongPress);
 	}
 
+	int CallCpp(duk_context *ctx) {
+		auto const                    fnName{duk_require_string(ctx, 0)};
+		std::vector<Script::DukValue> arguments;
+		arguments.reserve(std::max(duk_get_top(ctx) - 1, 0));
+
+		for (int idx{1}; idx <= duk_get_top_index(ctx); ++idx) {
+			auto value{Script::FromDukToValue(ctx, idx)};
+			arguments.emplace_back(std::move(value));
+		}
+
+		duk_get_global_literal(ctx, "__scriptPtr");
+		Script *ptr{static_cast<Script *>(duk_get_pointer(ctx, -1))};
+		duk_pop(ctx);
+
+		auto const result{ptr->CallCppFunction(fnName, std::move(arguments))};
+		Script::PushToDukFromValue(ctx, result);
+
+		return 1;
+	}
+
 	duk_function_list_entry const roingineFunctions[]{
 	        {"println", PrintLn, DUK_VARARGS},
 	        {"print", Print, DUK_VARARGS},
@@ -152,6 +172,8 @@ namespace roingine {
 	        {"readFile", ReadFile, 1},
 	        {nullptr, nullptr, 0}
 	};
+
+	duk_function_list_entry const currentScriptFunctions[]{{"callCpp", CallCpp, DUK_VARARGS}, {nullptr, nullptr, 0}};
 
 	duk_number_list_entry const roingineNumberConstants[]{
 	        {"FIXED_UPDATE_DELTATIME", GameTime::FIXED_TIME_DELTA},
@@ -187,10 +209,11 @@ namespace roingine {
 	        {"KEY_SHIFT", static_cast<int>(InputKeys::Shift)}, {nullptr, 0}
 	};
 
-	Script::Script(Scripts &scriptsComponent, std::string_view fileName)
+	Script::Script(Scripts &scriptsComponent, std::string_view fileName, std::optional<CppFunctionCaller> const &caller)
 	    : m_FilePath{fileName}
 	    , m_ScriptsComponent{scriptsComponent}
-	    , m_DukContext{} {
+	    , m_DukContext{}
+	    , m_CppFunctionCaller{caller} {
 		std::ifstream ifstream{fileName.data()};
 		if (!ifstream)
 			throw ScriptCompilationFailedException{"File not found"};
@@ -215,6 +238,7 @@ namespace roingine {
 			{
 				auto currentObject{globalObject.PutObject(CURRENT_SCRIPT_PROP_NAME)};
 				currentObject.PutObject("properties");
+				currentObject.PutFunctionList(currentScriptFunctions);
 			}
 
 			globalObject.PutPointer("__scriptPtr", static_cast<void *>(this));
@@ -247,7 +271,8 @@ namespace roingine {
 	    : m_ScriptsComponent{other.m_ScriptsComponent}
 	    , m_ListenedToKeys{std::move(other.m_ListenedToKeys)}
 	    , m_DukContext{std::move(other.m_DukContext)}
-	    , m_ScriptName{std::move(other.m_ScriptName)} {
+	    , m_ScriptName{std::move(other.m_ScriptName)}
+	    , m_CppFunctionCaller{std::move(other.m_CppFunctionCaller)} {
 		auto global{m_DukContext.AccessGlobalObject()};
 		duk_gameobject::PutGameObject(global, GetGameObjectPtr(), CURRENT_GAMEOBJECT_PROP_NAME, m_DukContext);
 		global.PutPointer("__scriptPtr", static_cast<void *>(this));
@@ -271,9 +296,11 @@ namespace roingine {
 		if (this == &other)
 			return *this;
 
-		m_ListenedToKeys = std::move(other.m_ListenedToKeys);
-		m_DukContext     = std::move(other.m_DukContext);
-		m_ScriptName     = std::move(other.m_ScriptName);
+		m_ScriptsComponent  = std::move(other.m_ScriptsComponent);
+		m_ListenedToKeys    = std::move(other.m_ListenedToKeys);
+		m_DukContext        = std::move(other.m_DukContext);
+		m_ScriptName        = std::move(other.m_ScriptName);
+		m_CppFunctionCaller = std::move(other.m_CppFunctionCaller);
 
 		auto global{m_DukContext.AccessGlobalObject()};
 		duk_gameobject::PutGameObject(global, GetGameObjectPtr(), CURRENT_GAMEOBJECT_PROP_NAME, m_DukContext);
@@ -580,6 +607,17 @@ namespace roingine {
 
 	void Script::SetGameObjectScene(Scene *pScene) noexcept {
 		GetGameObjectPtr()->SetScene(pScene);
+	}
+
+	void Script::SetCppFunctionCaller(CppFunctionCaller const &caller) {
+		m_CppFunctionCaller = caller;
+	}
+
+	Script::DukValue Script::CallCppFunction(std::string_view name, std::vector<DukValue> &&arguments) {
+		if (!m_CppFunctionCaller.has_value())
+			return DukUndefined{};
+
+		return (*m_CppFunctionCaller)(name, std::move(arguments));
 	}
 
 	GameObject *Script::GetGameObjectPtr() const noexcept {

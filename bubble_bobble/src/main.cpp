@@ -90,7 +90,17 @@ int main() {
 	GameObject parentGameObject{scene.AddGameObject()};
 
 	auto &scripts{parentGameObject.AddComponent<Scripts>()};
-	scripts.AddScript("scripts/test.js");
+	scripts.AddScript(
+	        "scripts/test.js",
+	        [](std::string_view name, std::vector<Script::DukValue> &&args) -> Script::DukValue {
+		        if (name == "cppCallTest") {
+			        std::cout << "cppCallTest called with " << args.size() << " args!" << std::endl;
+			        return args.at(0);
+		        }
+
+		        return Script::DukUndefined{};
+	        }
+	);
 
 	GameObject collider{scene.AddGameObject()};
 	collider.AddComponent<Transform>(glm::vec2{300, 100}, 0.f);

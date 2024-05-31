@@ -16,7 +16,15 @@ namespace roingine {
 
 	class Script final {
 	public:
-		Script(Scripts &scriptsComponent, std::string_view fileName);
+		struct DukUndefined final {};
+
+		struct DukNull final {};
+
+		using DukValue = std::variant<double, std::string, bool, DukUndefined, DukNull>;
+
+		using CppFunctionCaller = std::function<DukValue(std::string_view, std::vector<DukValue> &&)>;
+
+		Script(Scripts &scriptsComponent, std::string_view fileName, std::optional<CppFunctionCaller> const &caller);
 
 		~Script();
 
@@ -41,12 +49,6 @@ namespace roingine {
 		[[nodiscard]]
 		DukContext &GetDukContext();
 
-		struct DukUndefined final {};
-
-		struct DukNull final {};
-
-		using DukValue = std::variant<double, std::string, bool, DukUndefined, DukNull>;
-
 		void SetProperty(std::string const &key, DukValue value);
 
 		[[nodiscard]]
@@ -67,6 +69,11 @@ namespace roingine {
 
 		void SetGameObjectScene(Scene *pScene) noexcept;
 
+		void SetCppFunctionCaller(CppFunctionCaller const &caller);
+
+		[[nodiscard]]
+		Script::DukValue CallCppFunction(std::string_view name, std::vector<DukValue> &&arguments);
+
 	private:
 		void CallJsFunctionByName(std::string_view name);
 
@@ -78,6 +85,8 @@ namespace roingine {
 		std::vector<RegisteredKeyboardCommand> m_ListenedToKeys;
 		DukContext                             m_DukContext;
 		std::string                            m_ScriptName;
+
+		std::optional<CppFunctionCaller> m_CppFunctionCaller{};
 	};
 }// namespace roingine
 

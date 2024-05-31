@@ -2,6 +2,7 @@
 #define SCRIPTS_H
 
 #include <memory>
+#include <optional>
 #include <roingine/components/component.h>
 #include <roingine/input.h>
 #include <roingine/script.h>
@@ -31,7 +32,8 @@ namespace roingine {
 		[[nodiscard]]
 		static std::unique_ptr<Scripts> JSFactory(GameObject *, duk_context *);
 
-		void AddScript(std::string_view fileName);
+		Script *
+		AddScript(std::string_view fileName, std::optional<Script::CppFunctionCaller> const &caller = std::nullopt);
 
 		[[nodiscard]]
 		Script *GetScript(std::string const &name);

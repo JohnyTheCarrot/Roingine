@@ -57,6 +57,8 @@ function Init() {
     var result = runtimeScript.callMethod("testMethod", "Hello world from test.js!");
     roingine.println(result);
 
+    roingine.println(script.callCpp("cppCallTest", 42, 24));
+
     current.addComponent("Rect", 50, 50);
     current.addComponent("RectRenderer");
 
