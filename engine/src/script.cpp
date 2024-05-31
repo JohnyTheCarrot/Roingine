@@ -159,7 +159,7 @@ namespace roingine {
 		Script *ptr{static_cast<Script *>(duk_get_pointer(ctx, -1))};
 		duk_pop(ctx);
 
-		auto const result{ptr->CallCppFunction(fnName, std::move(arguments))};
+		auto const result{ptr->CallCppFunction(fnName, ptr->GetGameObject(), std::move(arguments))};
 		Script::PushToDukFromValue(ctx, result);
 
 		return 1;
@@ -613,11 +613,12 @@ namespace roingine {
 		m_CppFunctionCaller = caller;
 	}
 
-	Script::DukValue Script::CallCppFunction(std::string_view name, std::vector<DukValue> &&arguments) {
+	Script::DukValue
+	Script::CallCppFunction(std::string_view name, GameObject gameObject, std::vector<DukValue> &&arguments) {
 		if (!m_CppFunctionCaller.has_value())
 			return DukUndefined{};
 
-		return (*m_CppFunctionCaller)(name, std::move(arguments));
+		return (*m_CppFunctionCaller)(name, gameObject, std::move(arguments));
 	}
 
 	GameObject *Script::GetGameObjectPtr() const noexcept {

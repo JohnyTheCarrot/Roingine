@@ -22,7 +22,7 @@ namespace roingine {
 
 		using DukValue = std::variant<double, std::string, bool, DukUndefined, DukNull>;
 
-		using CppFunctionCaller = std::function<DukValue(std::string_view, std::vector<DukValue> &&)>;
+		using CppFunctionCaller = std::function<DukValue(std::string_view, GameObject, std::vector<DukValue> &&)>;
 
 		Script(Scripts &scriptsComponent, std::string_view fileName, std::optional<CppFunctionCaller> const &caller);
 
@@ -72,7 +72,8 @@ namespace roingine {
 		void SetCppFunctionCaller(CppFunctionCaller const &caller);
 
 		[[nodiscard]]
-		Script::DukValue CallCppFunction(std::string_view name, std::vector<DukValue> &&arguments);
+		Script::DukValue
+		CallCppFunction(std::string_view name, GameObject gameObject, std::vector<DukValue> &&arguments);
 
 	private:
 		void CallJsFunctionByName(std::string_view name);
