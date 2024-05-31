@@ -134,9 +134,45 @@ namespace roingine {
 		return 0;
 	}
 
+	int JsAPIGetWorldPosition(duk_context *ctx) {
+		duk_push_this(ctx);
+		duk_get_prop_literal(ctx, -1, "__ptr");
+		Transform *ptr{static_cast<Transform *>(duk_get_pointer(ctx, -1))};
+		duk_pop(ctx);
+
+		auto const worldPos{ptr->GetWorldPosition()};
+
+		duk_push_object(ctx);
+		duk_push_number(ctx, worldPos.x);
+		duk_put_prop_literal(ctx, -2, "x");
+		duk_push_number(ctx, worldPos.y);
+		duk_put_prop_literal(ctx, -2, "y");
+
+		return 1;
+	}
+
+	int JsAPIGetLocalPosition(duk_context *ctx) {
+		duk_push_this(ctx);
+		duk_get_prop_literal(ctx, -1, "__ptr");
+		Transform *ptr{static_cast<Transform *>(duk_get_pointer(ctx, -1))};
+		duk_pop(ctx);
+
+		auto const localPos{ptr->GetLocalPosition()};
+
+		duk_push_object(ctx);
+		duk_push_number(ctx, localPos.x);
+		duk_put_prop_literal(ctx, -2, "x");
+		duk_push_number(ctx, localPos.y);
+		duk_put_prop_literal(ctx, -2, "y");
+
+		return 1;
+	}
+
 	duk_function_list_entry const transformAPI[]{
 	        {"translate", JsAPITranslate, 2},
 	        {"setLocalPosition", JsAPISetLocalPosition, 2},
+	        {"getWorldPosition", JsAPIGetWorldPosition, 0},
+	        {"getLocalPosition", JsAPIGetLocalPosition, 0},
 	        {nullptr, nullptr, 0}
 	};
 
