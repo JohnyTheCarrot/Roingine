@@ -33,10 +33,11 @@ input.onKeyHeld(input.KEY_D, function() {
 input.onKeyHeld(input.KEY_T, function() {
     var value = runtimeScript.getProperty("prop") || 0;
     runtimeScript.setProperty("prop", ++value);
+    var other = scene.getGameObject(0);
 });
 
-function Init() {
-    roingine.println("Test Initialized!");
+function Init(a, b, c) {
+    roingine.println("Test Initialized!", a, b, c);
 
     transform = current.addComponent("Transform", 200, 100);
     var collider = current.addComponent("RectCollider", 50, 50);

@@ -133,7 +133,7 @@ namespace roingine {
 				return;
 			}
 
-			duk_gameobject::PushGameObject(&otherGameObject, ctx);
+			duk_gameobject::PushGameObject(otherGameObject, ctx.GetRawContext());
 			duk_push_number(ctx.GetRawContext(), hitPoint.x);
 			duk_push_number(ctx.GetRawContext(), hitPoint.y);
 			if (duk_pcall(ctx.GetRawContext(), 3) != 0) {

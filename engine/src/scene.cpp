@@ -43,11 +43,7 @@ namespace roingine {
 	}
 
 	void Scene::SetGameObjectScenes() {
-		for (auto &go: m_GameObjects) {
-			auto nodeHandle{m_GameObjects.extract(go)};
-			nodeHandle.value().SetScene(this);
-			m_GameObjects.insert(std::move(nodeHandle));
-		}
+		for (auto &go: m_GameObjects) { go.second.SetScene(this); }
 		for (auto &comp: m_GameObjectComponents) {
 			comp.second->GetGameObject().SetScene(this);
 		}
@@ -75,13 +71,20 @@ namespace roingine {
 		return m_JSFactoryMap.at(hash);
 	}
 
+	GameObject *Scene::GetGameObjectPtr(std::size_t handle) {
+		if (m_GameObjects.contains(handle))
+			return &m_GameObjects.at(handle);
+
+		return nullptr;
+	}
+
 	void Scene::CleanupMarkedGameObjects() {
 		for (GameObject gameObject: m_GameObjectsToDestroy) { RemoveGameObject(gameObject); }
 		m_GameObjectsToDestroy.clear();
 	}
 
 	void Scene::AddGameObject(GameObject gameObject) {
-		m_GameObjects.insert(gameObject);
+		m_GameObjects.emplace(gameObject.GetHandle(), gameObject);
 	}
 
 	void Scene::RemoveGameObject(GameObject gameObject) {
@@ -92,7 +95,7 @@ namespace roingine {
 			return currGameObject == gameObject.GetHandle();
 		});
 
-		m_GameObjects.erase(gameObject);
+		m_GameObjects.erase(gameObject.GetHandle());
 	}
 
 	Scene::Scene() {

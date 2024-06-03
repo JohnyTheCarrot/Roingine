@@ -24,7 +24,8 @@ namespace roingine {
 
 		using CppFunctionCaller = std::function<DukValue(std::string_view, GameObject, std::vector<DukValue> &&)>;
 
-		Script(Scripts &scriptsComponent, std::string_view fileName, std::optional<CppFunctionCaller> const &caller);
+		Script(Scripts &scriptsComponent, std::string_view fileName, std::vector<ComponentInitArgument> const &args,
+		       std::optional<CppFunctionCaller> const &caller);
 
 		~Script();
 

@@ -21,12 +21,13 @@ namespace roingine {
 
 		Scene operator()();
 
-		void CreateGameObject(GameObjectData const &data);
+		void CreateGameObject(GameObjectData &data);
 
 	private:
 		nlohmann::json        m_Data;
 		Scene                 m_Scene;
 		std::filesystem::path m_Path;
+		std::unordered_map<std::string, std::size_t> m_Labels;
 	};
 }// namespace roingine
 

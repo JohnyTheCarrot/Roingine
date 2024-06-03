@@ -32,8 +32,10 @@ namespace roingine {
 		[[nodiscard]]
 		static std::unique_ptr<Scripts> JSFactory(GameObject *, std::vector<ComponentInitArgument> const &args);
 
-		Script *
-		AddScript(std::string_view fileName, std::optional<Script::CppFunctionCaller> const &caller = std::nullopt);
+		Script *AddScript(
+		        std::string_view fileName, std::vector<ComponentInitArgument> const &args,
+		        std::optional<Script::CppFunctionCaller> const &caller = std::nullopt
+		);
 
 		[[nodiscard]]
 		Script *GetScript(std::string const &name);

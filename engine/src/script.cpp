@@ -1,3 +1,4 @@
+#include "component_args.h"
 #include "duk_gameobject.h"
 #include <duktape.h>
 #include <format>
@@ -9,6 +10,7 @@
 #include <roingine/gameobject.h>
 #include <roingine/input.h>
 #include <roingine/roingine.h>
+#include <roingine/scene.h>
 #include <roingine/script.h>
 
 namespace roingine {
@@ -173,6 +175,25 @@ namespace roingine {
 	        {nullptr, nullptr, 0}
 	};
 
+	int GetGameObject(duk_context *ctx) {
+		auto const handle{duk_require_int(ctx, 0)};
+
+		duk_get_global_literal(ctx, "__scriptPtr");
+		Script *ptr{static_cast<Script *>(duk_get_pointer(ctx, -1))};
+		duk_pop(ctx);
+
+		auto *optionalObject{ptr->GetGameObject().GetScene()->GetGameObjectPtr(handle)};
+		if (!optionalObject) {
+			duk_push_null(ctx);
+			return 1;
+		}
+
+		duk_gameobject::PushGameObject(*optionalObject, ctx);
+		return 1;
+	}
+
+	duk_function_list_entry const sceneFunctions[]{{"getGameObject", GetGameObject, 1}, {nullptr, nullptr, 0}};
+
 	duk_function_list_entry const currentScriptFunctions[]{{"callCpp", CallCpp, DUK_VARARGS}, {nullptr, nullptr, 0}};
 
 	duk_number_list_entry const roingineNumberConstants[]{
@@ -209,7 +230,10 @@ namespace roingine {
 	        {"KEY_SHIFT", static_cast<int>(InputKeys::Shift)}, {nullptr, 0}
 	};
 
-	Script::Script(Scripts &scriptsComponent, std::string_view fileName, std::optional<CppFunctionCaller> const &caller)
+	Script::Script(
+	        Scripts &scriptsComponent, std::string_view fileName, std::vector<ComponentInitArgument> const &args,
+	        std::optional<CppFunctionCaller> const &caller
+	)
 	    : m_FilePath{fileName}
 	    , m_ScriptsComponent{scriptsComponent}
 	    , m_DukContext{}
@@ -228,13 +252,20 @@ namespace roingine {
 			}
 
 			{
+				auto sceneObject{globalObject.PutObject("scene")};
+				sceneObject.PutFunctionList(sceneFunctions);
+			}
+
+			{
 				auto scriptsObject{globalObject.PutObject("scripts")};
 				scriptsObject.PutPointer("__ptr", &scriptsComponent);
 				auto const api{scriptsComponent.SetUpScriptAPI(m_DukContext.GetRawContext())};
 				scriptsObject.PutFunctionList(api);
 			}
 
-			duk_gameobject::PutGameObject(globalObject, GetGameObjectPtr(), CURRENT_GAMEOBJECT_PROP_NAME, m_DukContext);
+			duk_gameobject::PutGameObject(
+			        globalObject, *GetGameObjectPtr(), CURRENT_GAMEOBJECT_PROP_NAME, m_DukContext
+			);
 
 			{
 				auto inputObject{globalObject.PutObject("input")};
@@ -269,8 +300,11 @@ namespace roingine {
 			duk_pop(m_DukContext.GetRawContext());
 			return;
 		}
-		if (duk_pcall(m_DukContext.GetRawContext(), 0) != 0)
+		PushComponentArgsToDuk(args, m_DukContext.GetRawContext());
+		if (duk_pcall(m_DukContext.GetRawContext(), static_cast<int>(args.size())) != 0) {
 			std::cerr << "Error: " << duk_safe_to_string(m_DukContext.GetRawContext(), -1) << std::endl;
+		}
+
 		duk_pop(m_DukContext.GetRawContext());
 	}
 
@@ -281,7 +315,7 @@ namespace roingine {
 	    , m_ScriptName{std::move(other.m_ScriptName)}
 	    , m_CppFunctionCaller{std::move(other.m_CppFunctionCaller)} {
 		auto global{m_DukContext.AccessGlobalObject()};
-		duk_gameobject::PutGameObject(global, GetGameObjectPtr(), CURRENT_GAMEOBJECT_PROP_NAME, m_DukContext);
+		duk_gameobject::PutGameObject(global, *GetGameObjectPtr(), CURRENT_GAMEOBJECT_PROP_NAME, m_DukContext);
 		global.PutPointer("__scriptPtr", static_cast<void *>(this));
 	}
 
@@ -310,7 +344,7 @@ namespace roingine {
 		m_CppFunctionCaller = std::move(other.m_CppFunctionCaller);
 
 		auto global{m_DukContext.AccessGlobalObject()};
-		duk_gameobject::PutGameObject(global, GetGameObjectPtr(), CURRENT_GAMEOBJECT_PROP_NAME, m_DukContext);
+		duk_gameobject::PutGameObject(global, *GetGameObjectPtr(), CURRENT_GAMEOBJECT_PROP_NAME, m_DukContext);
 		global.PutPointer("__scriptPtr", static_cast<void *>(this));
 
 		return *this;

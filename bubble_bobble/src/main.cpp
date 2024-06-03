@@ -18,46 +18,6 @@
 
 using namespace roingine;
 
-class Rotator final : public roingine::Component {
-public:
-	Rotator(GameObject &gameObject)
-	    : Component{gameObject}
-	    , m_Transform{GetGameObject().GetComponent<Transform>()} {
-	}
-
-	void Update() override {
-		m_Transform.Rotate(1.f);
-	}
-
-	void FixedUpdate() override {
-	}
-
-	void Render() const override {
-	}
-
-	[[nodiscard]]
-	char const *GetName() const override {
-		return "Rotator";
-	}
-
-	[[nodiscard]]
-	duk_function_list_entry const *SetUpScriptAPI(duk_context *) const override {
-		return nullptr;
-	}
-
-private:
-	Transform &m_Transform;
-};
-
-class KeyPressedCommand final : public roingine::Command {
-public:
-	~KeyPressedCommand() override = default;
-
-	void Execute() override {
-		std::cout << "key pressed" << std::endl;
-	}
-};
-
 enum class Sounds { TestSound };
 
 enum class EventType { PlaySoundRequest };

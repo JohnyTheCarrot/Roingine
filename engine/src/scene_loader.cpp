@@ -1,6 +1,7 @@
 #include "scene_loader_impl.h"
 #include <format>
 #include <fstream>
+#include <roingine/components/scripts.h>
 #include <roingine/scene_loader.h>
 
 namespace roingine {
@@ -22,17 +23,51 @@ namespace roingine {
 	Scene SceneLoader::operator()() {
 		auto sceneFile{m_Data.template get<SceneFile>()};
 
-		for (auto const &object: sceneFile.objects) { CreateGameObject(object); }
+		for (auto &object: sceneFile.objects) { CreateGameObject(object); }
 
 		return std::move(m_Scene);
 	}
 
-	void SceneLoader::CreateGameObject(GameObjectData const &data) {
+	void SceneLoader::CreateGameObject(GameObjectData &data) {
 		auto gameObject{m_Scene.AddGameObject()};
 
-		for (auto const &componentData: data.components) {
+		for (auto &componentData: data.components) {
+			std::for_each(m_Labels.cbegin(), m_Labels.cend(), [&](auto const &it) {
+				auto const &[label, handle] = it;
+
+				std::replace_if(
+				        componentData.args.begin(), componentData.args.end(),
+				        [&](auto &arg) {
+					        return std::holds_alternative<std::string>(arg) && std::get<std::string>(arg) == label;
+				        },
+				        static_cast<double>(handle)
+				);
+
+				std::ignore = label;
+				std::ignore = handle;
+			});
+
+			if (componentData.name == "Script") {
+				auto *scripts{gameObject.GetOptionalComponent<Scripts>()};
+				if (!scripts)
+					scripts = &gameObject.AddComponent<Scripts>();
+
+				auto                               fileName{comp_init::RequireString(0, componentData.args)};
+				std::vector<ComponentInitArgument> factoryArgs(
+				        std::max(componentData.args.size() - 1, static_cast<std::size_t>(0))
+				);
+				std::move(std::next(componentData.args.begin()), componentData.args.end(), factoryArgs.begin());
+
+				scripts->AddScript(fileName, factoryArgs);
+
+				continue;
+			}
+
 			gameObject.AddComponent(componentData.name, componentData.args);
 		}
+
+		if (data.label.has_value())
+			m_Labels.emplace(std::move(*data.label), gameObject.GetHandle());
 	}
 
 	void from_json(Json const &json, ComponentData &data) {
@@ -66,6 +101,11 @@ namespace roingine {
 	}
 
 	void from_json(Json const &json, GameObjectData &data) {
+		if (json.contains("label")) {
+			std::string label{};
+			json.at("label").get_to(label);
+			data.label = std::move(label);
+		}
 		json.at("components").get_to(data.components);
 	}
 

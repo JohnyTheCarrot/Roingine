@@ -2,16 +2,7 @@
 	"name": "Main",
 	"objects": [
 		{
-			"components": [
-				{
-					"name": "Scripts",
-					"args": [
-						"scripts/test.js"
-					]
-				}
-			]
-		},
-		{
+			"label": "__other",
 			"components": [
 				{
 					"name": "Transform",
@@ -33,6 +24,19 @@
 					"name": "RectCollider",
 					"args": [
 						100, 100
+					]
+				}
+			]
+		},
+		{
+			"components": [
+				{
+					"name": "Script",
+					"args": [
+						"scripts/test.js",
+						1,
+						2,
+						"__other"
 					]
 				}
 			]

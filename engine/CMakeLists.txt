@@ -71,7 +71,7 @@ set (SRC_FILES
 	src/duk_gameobject.cpp
 	src/scene_loader.cpp
 	src/component_init_types.cpp
-	src/collect_component_args.cpp
+	src/component_args.cpp
 )
 
 set (INTERNAL_HEADERS
@@ -79,7 +79,7 @@ set (INTERNAL_HEADERS
 	internal_headers/scene_manager_impl.h
 	internal_headers/sound_impl.h
 	internal_headers/duk_gameobject.h
-	internal_headers/collect_component_args.h
+	internal_headers/component_args.h
 	internal_headers/scene_loader_impl.h
 )
 

@@ -8,10 +8,12 @@ namespace roingine {
 	class GameObject;
 }
 
-namespace roingine::duk_gameobject {
-	void PushGameObject(GameObject *pGameObject, DukContext &ctx);
+using duk_context = struct duk_hthread;
 
-	void PutGameObject(DukObject &obj, GameObject *pGameObject, std::string const &key, DukContext &ctx);
+namespace roingine::duk_gameobject {
+	void PushGameObject(GameObject const &pGameObject, duk_context *);
+
+	void PutGameObject(DukObject &obj, GameObject const &pGameObject, std::string const &key, DukContext &ctx);
 }// namespace roingine::duk_gameobject
 
 #endif// DUK_GAMEOBJECT_H

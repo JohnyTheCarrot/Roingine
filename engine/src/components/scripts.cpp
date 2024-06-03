@@ -1,3 +1,4 @@
+#include "component_args.h"
 #include <algorithm>
 #include <duktape.h>
 #include <iostream>
@@ -25,14 +26,16 @@ namespace roingine {
 	}
 
 	int AddScript(duk_context *ctx) {
-		auto const fileName{duk_require_string(ctx, -1)};
+		auto const fileName{duk_require_string(ctx, 0)};
 
 		duk_push_this(ctx);
 		duk_get_prop_literal(ctx, -1, "__ptr");
 		Scripts *ptr{static_cast<Scripts *>(duk_get_pointer(ctx, -1))};
 		duk_pop(ctx);
 
-		ptr->AddScript(fileName);
+		auto args{CollectComponentArgs(ctx)};
+
+		ptr->AddScript(fileName, args);
 
 		return 0;
 	}
@@ -66,21 +69,16 @@ namespace roingine {
 		return API;
 	}
 
-	std::unique_ptr<Scripts>
-	Scripts::JSFactory(GameObject *pGameObject, std::vector<ComponentInitArgument> const &args) {
-		auto scripts{std::make_unique<Scripts>(*pGameObject)};
-
-		for (std::size_t idx{}; idx < args.size(); ++idx) {
-			auto const fileName{comp_init::RequireString(idx, args)};
-			scripts->AddScript(fileName);
-		}
-
-		return scripts;
+	std::unique_ptr<Scripts> Scripts::JSFactory(GameObject *pGameObject, std::vector<ComponentInitArgument> const &) {
+		return std::make_unique<Scripts>(*pGameObject);
 	}
 
-	Script *Scripts::AddScript(std::string_view fileName, std::optional<Script::CppFunctionCaller> const &caller) {
+	Script *Scripts::AddScript(
+	        std::string_view fileName, std::vector<ComponentInitArgument> const &args,
+	        std::optional<Script::CppFunctionCaller> const &caller
+	) {
 		try {
-			Script script{*this, fileName, caller};
+			Script script{*this, fileName, args, caller};
 
 			auto pair{m_Scripts.emplace(script.GetScriptName(), std::move(script)).first};
 

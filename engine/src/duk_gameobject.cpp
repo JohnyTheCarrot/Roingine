@@ -1,19 +1,24 @@
 #include "duk_gameobject.h"
-#include "collect_component_args.h"
+#include "component_args.h"
 #include <duktape.h>
 #include <roingine/components/component.h>
 #include <roingine/gameobject.h>
+#include <roingine/scene.h>
 
 namespace roingine::duk_gameobject {
 	int GetComponent(duk_context *ctx) {
 		auto const name{duk_require_string(ctx, 0)};
 
 		duk_push_this(ctx);
-		duk_get_prop_literal(ctx, -1, "__ptr");
-		auto *ptr{static_cast<GameObject *>(duk_require_pointer(ctx, -1))};
+		duk_get_prop_literal(ctx, -1, "__pScene");
+		auto *pScene{static_cast<Scene *>(duk_require_pointer(ctx, -1))};
 		duk_pop(ctx);
+		duk_get_prop_literal(ctx, -1, "__hGo");
+		auto const hGo{duk_require_int(ctx, -1)};
+		duk_pop(ctx);
+		auto go{pScene->GetGameObjectPtr(hGo)};
 
-		auto *comp{ptr->GetOptionalComponent(name)};
+		auto *comp{go->GetOptionalComponent(name)};
 		if (!comp) {
 			duk_push_undefined(ctx);
 			return 1;
@@ -32,12 +37,16 @@ namespace roingine::duk_gameobject {
 		auto const name{duk_require_string(ctx, 0)};
 
 		duk_push_this(ctx);
-		duk_get_prop_literal(ctx, -1, "__ptr");
-		auto *ptr{static_cast<GameObject *>(duk_require_pointer(ctx, -1))};
+		duk_get_prop_literal(ctx, -1, "__pScene");
+		auto *pScene{static_cast<Scene *>(duk_require_pointer(ctx, -1))};
+		duk_pop(ctx);
+		duk_get_prop_literal(ctx, -1, "__hGo");
+		auto const hGo{duk_require_int(ctx, -1)};
 		duk_pop(ctx);
 		auto args{CollectComponentArgs(ctx)};
+		auto go{pScene->GetGameObjectPtr(hGo)};
 
-		auto *comp{ptr->AddComponent(name, std::move(args))};
+		auto *comp{go->AddComponent(name, std::move(args))};
 
 		auto const api{comp->SetUpScriptAPI(ctx)};
 		duk_push_object(ctx);
@@ -54,11 +63,15 @@ namespace roingine::duk_gameobject {
 
 	int Destroy(duk_context *ctx) {
 		duk_push_this(ctx);
-		duk_get_prop_literal(ctx, -1, "__ptr");
-		auto *ptr{static_cast<GameObject *>(duk_require_pointer(ctx, -1))};
+		duk_get_prop_literal(ctx, -1, "__pScene");
+		auto *pScene{static_cast<Scene *>(duk_require_pointer(ctx, -1))};
 		duk_pop(ctx);
+		duk_get_prop_literal(ctx, -1, "__hGo");
+		auto const hGo{duk_require_int(ctx, -1)};
+		duk_pop(ctx);
+		auto go{pScene->GetGameObjectPtr(hGo)};
 
-		ptr->Destroy();
+		go->Destroy();
 
 		return 0;
 	}
@@ -70,15 +83,17 @@ namespace roingine::duk_gameobject {
 	        {nullptr, nullptr, 0}
 	};
 
-	void PushGameObject(GameObject *pGameObject, DukContext &ctx) {
-		duk_push_object(ctx.GetRawContext());
-		duk_push_pointer(ctx.GetRawContext(), pGameObject);
-		duk_put_prop_literal(ctx.GetRawContext(), -2, "__ptr");
-		duk_put_function_list(ctx.GetRawContext(), -1, gameObjectFunctions);
+	void PushGameObject(GameObject const &pGameObject, duk_context *ctx) {
+		duk_push_object(ctx);
+		duk_push_pointer(ctx, pGameObject.GetScene());
+		duk_put_prop_literal(ctx, -2, "__pScene");
+		duk_push_int(ctx, static_cast<int>(pGameObject.GetHandle()));
+		duk_put_prop_literal(ctx, -2, "__hGo");
+		duk_put_function_list(ctx, -1, gameObjectFunctions);
 	}
 
-	void PutGameObject(DukObject &obj, GameObject *pGameObject, std::string const &key, DukContext &ctx) {
-		PushGameObject(pGameObject, ctx);
+	void PutGameObject(DukObject &obj, GameObject const &pGameObject, std::string const &key, DukContext &ctx) {
+		PushGameObject(pGameObject, ctx.GetRawContext());
 		duk_put_prop_string(ctx.GetRawContext(), obj.GetStackIndex(), key.c_str());
 	}
 }// namespace roingine::duk_gameobject

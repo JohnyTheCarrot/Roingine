@@ -1,4 +1,4 @@
-#include "collect_component_args.h"
+#include "component_args.h"
 #include <duktape.h>
 #include <format>
 
@@ -35,5 +35,16 @@ namespace roingine {
 
 	char const *ComponentArgInvalidType::what() const {
 		return m_Message.c_str();
+	}
+
+	void PushComponentArgsToDuk(std::vector<ComponentInitArgument> const &args, duk_context *ctx) {
+		for (auto const &arg: args) {
+			if (std::holds_alternative<std::string>(arg))
+				duk_push_string(ctx, std::get<std::string>(arg).c_str());
+			else if (std::holds_alternative<double>(arg))
+				duk_push_number(ctx, std::get<double>(arg));
+			else if (std::holds_alternative<bool>(arg))
+				duk_push_boolean(ctx, std::get<bool>(arg));
+		}
 	}
 }// namespace roingine

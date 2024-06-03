@@ -1,5 +1,5 @@
-#ifndef COLLECT_COMPONENT_ARGS_H
-#define COLLECT_COMPONENT_ARGS_H
+#ifndef COMPONENT_ARGS_H
+#define COMPONENT_ARGS_H
 
 #include <roingine/component_init_types.h>
 #include <vector>
@@ -19,6 +19,8 @@ namespace roingine {
 
 	[[nodiscard]]
 	std::vector<ComponentInitArgument> CollectComponentArgs(duk_context *);
+
+	void PushComponentArgsToDuk(std::vector<ComponentInitArgument> const &args, duk_context *ctx);
 }// namespace roingine
 
-#endif// COLLECT_COMPONENT_ARGS_H
+#endif// COMPONENT_ARGS_H
