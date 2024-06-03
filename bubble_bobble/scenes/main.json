@@ -1,0 +1,41 @@
+{
+	"name": "Main",
+	"objects": [
+		{
+			"components": [
+				{
+					"name": "Scripts",
+					"args": [
+						"scripts/test.js"
+					]
+				}
+			]
+		},
+		{
+			"components": [
+				{
+					"name": "Transform",
+					"args": [
+						300, 100, 0
+					]
+				},
+				{
+					"name": "Rect",
+					"args": [
+						100, 100
+					]
+				},
+				{
+					"name": "RectRenderer",
+					"args": []
+				},
+				{
+					"name": "RectCollider",
+					"args": [
+						100, 100
+					]
+				}
+			]
+		}
+	]
+}

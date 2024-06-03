@@ -2,6 +2,7 @@
 #define GAMEOBJECT_H
 
 #include <optional>
+#include <roingine/component_init_types.h>
 #include <roingine/gameobject_types.h>
 #include <string>
 
@@ -15,12 +16,13 @@ namespace roingine {
 	template<class T>
 	concept ComponentImpl = requires(T comp) {
 		{
-			T::JSFactory(static_cast<GameObject *>(nullptr), static_cast<duk_context *>(nullptr))
+			T::JSFactory(static_cast<GameObject *>(nullptr), std::vector<ComponentInitArgument>{})
 		} -> std::same_as<std::unique_ptr<T>>;
 	};
 
 	struct JSFactoryMapEntry final {
-		using Function = std::function<std::unique_ptr<Component>(GameObject *, duk_context *)>;
+		using Function =
+		        std::function<std::unique_ptr<Component>(GameObject *, std::vector<ComponentInitArgument> const &)>;
 
 		Function    jsFactory;
 	};
@@ -61,7 +63,7 @@ namespace roingine {
 			return *rpComponent;
 		}
 
-		Component *AddComponent(std::string name, duk_context *ctx);
+		Component *AddComponent(std::string name, std::vector<ComponentInitArgument> const &args);
 
 		template<ComponentImpl TComponent>
 		[[nodiscard]]

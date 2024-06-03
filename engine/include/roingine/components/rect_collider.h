@@ -29,7 +29,8 @@ namespace roingine {
 		duk_function_list_entry const *SetUpScriptAPI(duk_context *ctx) const override;
 
 		[[nodiscard]]
-		static std::unique_ptr<RectCollider> JSFactory(GameObject *pGameObject, duk_context *ctx);
+		static std::unique_ptr<RectCollider>
+		JSFactory(GameObject *pGameObject, std::vector<ComponentInitArgument> const &args);
 
 		[[nodiscard]]
 		bool GetHasListener() const noexcept;

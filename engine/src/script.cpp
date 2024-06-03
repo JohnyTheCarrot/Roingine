@@ -227,6 +227,13 @@ namespace roingine {
 				roingineObject.PutNumberList(roingineNumberConstants);
 			}
 
+			{
+				auto scriptsObject{globalObject.PutObject("scripts")};
+				scriptsObject.PutPointer("__ptr", &scriptsComponent);
+				auto const api{scriptsComponent.SetUpScriptAPI(m_DukContext.GetRawContext())};
+				scriptsObject.PutFunctionList(api);
+			}
+
 			duk_gameobject::PutGameObject(globalObject, GetGameObjectPtr(), CURRENT_GAMEOBJECT_PROP_NAME, m_DukContext);
 
 			{

@@ -58,7 +58,8 @@ namespace roingine {
 		duk_function_list_entry const *SetUpScriptAPI(duk_context *) const override;
 
 		[[nodiscard]]
-		static std::unique_ptr<Transform> JSFactory(GameObject *pGameObject, duk_context *ctx);
+		static std::unique_ptr<Transform>
+		JSFactory(GameObject *pGameObject, std::vector<ComponentInitArgument> const &args);
 
 	private:
 		Transform          *m_pParent{nullptr};

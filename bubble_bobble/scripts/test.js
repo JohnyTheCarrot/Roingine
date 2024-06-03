@@ -3,9 +3,9 @@ const SCRIPT_NAME = "Test";
 const SPEED = 200;
 
 var transform;
-var scripts;
 var requireTest = require('require_test.js');
 var runtimeScript;
+var rectRenderer;
 
 function translate(x, y) {
     const transX = roingine.getDeltaTime() * x;
@@ -47,7 +47,6 @@ function Init() {
         transform.setLocalPosition(hitX, hitY);
     });
 
-    scripts = current.getComponent("Scripts");
     scripts.addScript("scripts/runtime_script.js");
 
     runtimeScript = scripts.getScript("RuntimeScript");
@@ -60,7 +59,8 @@ function Init() {
     roingine.println(script.callCpp("cppCallTest", 42, 24));
 
     current.addComponent("Rect", 50, 50);
-    current.addComponent("RectRenderer");
+    rectRenderer = current.addComponent("RectRenderer");
+    rectRenderer.setColor(0xFF0000);
 
     requireTest.hello();
 }

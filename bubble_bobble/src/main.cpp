@@ -11,6 +11,7 @@
 #include <roingine/input.h>
 #include <roingine/roingine.h>
 #include <roingine/scene.h>
+#include <roingine/scene_loader.h>
 #include <roingine/scene_manager.h>
 #include <roingine/service_locator.h>
 #include <unordered_map>
@@ -86,37 +87,9 @@ int main() {
 
 	KeyboardInput::Provide(std::make_unique<SDLKeyboardInputService>());
 
-	Scene      scene{};
-	GameObject parentGameObject{scene.AddGameObject()};
-
-	auto &scripts{parentGameObject.AddComponent<Scripts>()};
-	scripts.AddScript(
-	        "scripts/test.js",
-	        [](std::string_view name, GameObject, std::vector<Script::DukValue> &&args) -> Script::DukValue {
-		        if (name == "cppCallTest") {
-			        std::cout << "cppCallTest called with " << args.size() << " args!" << std::endl;
-			        return args.at(0);
-		        }
-
-		        return Script::DukUndefined{};
-	        }
-	);
-
-	GameObject collider{scene.AddGameObject()};
-	collider.AddComponent<Transform>(glm::vec2{300, 100}, 0.f);
-	collider.AddComponent<Rect>(100.f, 100.f);
-	collider.AddComponent<RectRenderer>();
-	collider.AddComponent<RectCollider>(100.f, 100.f);
-
-	GameEventQueue::GetInstance().AttachEventHandler<EventType::PlaySoundRequest>([](auto const &data) {
-		AudioServiceLocator::GetService().Play(data.sound);
-	});
-
-	event_queue::EventQueue::GetInstance().AttachEventHandler<event_queue::EventType::CleanShutdown>([](auto const &) {
-		std::cout << "Shutting down" << std::endl;
-	});
-
+	Scene scene{scene_loader::LoadScene("scenes/main.json")};
 	SceneManager::GetInstance().SetActive(std::move(scene));
+
 	roingine.Run([]() {
 		GameEventQueue::GetInstance().Update();
 	});

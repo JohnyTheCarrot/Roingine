@@ -45,6 +45,8 @@ set (INCLUDE_HEADERS
 	include/roingine/unique_duk_context.h
 	include/roingine/duk_wrappers.h
 	include/roingine/script.h
+	include/roingine/component_init_types.h
+	include/roingine/scene_loader.h
 )
 
 set (SRC_FILES
@@ -67,6 +69,9 @@ set (SRC_FILES
 	src/script.cpp
 	src/duk_wrappers.cpp
 	src/duk_gameobject.cpp
+	src/scene_loader.cpp
+	src/component_init_types.cpp
+	src/collect_component_args.cpp
 )
 
 set (INTERNAL_HEADERS
@@ -74,6 +79,8 @@ set (INTERNAL_HEADERS
 	internal_headers/scene_manager_impl.h
 	internal_headers/sound_impl.h
 	internal_headers/duk_gameobject.h
+	internal_headers/collect_component_args.h
+	internal_headers/scene_loader_impl.h
 )
 
 add_library(${PROJECT_NAME} STATIC
@@ -123,6 +130,14 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(glm)
+
+# Nlohmann JSON
+include(FetchContent)
+
+FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz)
+FetchContent_MakeAvailable(json)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 
 find_package(OpenGL REQUIRED)
 

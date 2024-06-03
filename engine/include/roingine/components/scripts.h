@@ -30,7 +30,7 @@ namespace roingine {
 		duk_function_list_entry const *SetUpScriptAPI(duk_context *ctx) const override;
 
 		[[nodiscard]]
-		static std::unique_ptr<Scripts> JSFactory(GameObject *, duk_context *);
+		static std::unique_ptr<Scripts> JSFactory(GameObject *, std::vector<ComponentInitArgument> const &args);
 
 		Script *
 		AddScript(std::string_view fileName, std::optional<Script::CppFunctionCaller> const &caller = std::nullopt);

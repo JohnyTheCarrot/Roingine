@@ -1,4 +1,5 @@
 #include "duk_gameobject.h"
+#include "collect_component_args.h"
 #include <duktape.h>
 #include <roingine/components/component.h>
 #include <roingine/gameobject.h>
@@ -34,8 +35,9 @@ namespace roingine::duk_gameobject {
 		duk_get_prop_literal(ctx, -1, "__ptr");
 		auto *ptr{static_cast<GameObject *>(duk_require_pointer(ctx, -1))};
 		duk_pop(ctx);
+		auto args{CollectComponentArgs(ctx)};
 
-		auto *comp{ptr->AddComponent(name, ctx)};
+		auto *comp{ptr->AddComponent(name, std::move(args))};
 
 		auto const api{comp->SetUpScriptAPI(ctx)};
 		duk_push_object(ctx);

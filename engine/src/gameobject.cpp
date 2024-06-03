@@ -12,7 +12,7 @@ namespace roingine {
 		return m_rpScene == other.m_rpScene && m_hGameObject == other.m_hGameObject;
 	}
 
-	Component *GameObject::AddComponent(std::string name, duk_context *ctx) {
+	Component *GameObject::AddComponent(std::string name, std::vector<ComponentInitArgument> const &args) {
 		if (auto *existing{GetOptionalComponent(name)}; existing != nullptr)
 			return existing;
 
@@ -23,7 +23,7 @@ namespace roingine {
 		auto const jsFactoryMapEntry{GetJSFactoryMapEntryByHash(hash.value())};
 		auto const factory{jsFactoryMapEntry.value().jsFactory};
 
-		std::unique_ptr<Component> pComp{factory(this, ctx)};
+		std::unique_ptr<Component> pComp{factory(this, args)};
 		auto const                 rpComp{pComp.get()};
 
 		ComponentHandle hComponent{m_hGameObject, hash.value()};

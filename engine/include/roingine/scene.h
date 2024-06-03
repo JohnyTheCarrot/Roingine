@@ -2,7 +2,6 @@
 #define SCENE_H
 
 #include <algorithm>
-#include <queue>
 #include <roingine/gameobject.h>
 #include <unordered_set>
 

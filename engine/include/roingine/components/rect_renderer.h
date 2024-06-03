@@ -27,11 +27,14 @@ namespace roingine {
 		duk_function_list_entry const *SetUpScriptAPI(duk_context *) const override;
 
 		[[nodiscard]]
-		static std::unique_ptr<RectRenderer> JSFactory(GameObject *, duk_context *);
+		static std::unique_ptr<RectRenderer> JSFactory(GameObject *, const std::vector<ComponentInitArgument> &args);
+
+		void SetColor(std::uint8_t r, std::uint8_t g, std::uint8_t b);
 
 	private:
 		Transform &m_Transform;
 		Rect      &m_Rect;
+		std::uint8_t m_ColorR{0xFF}, m_ColorG{0xFF}, m_ColorB{0xFF};
 	};
 }// namespace roingine
 

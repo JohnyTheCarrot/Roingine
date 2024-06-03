@@ -4,6 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <numbers>
+#include <roingine/component_init_types.h>
 #include <roingine/components/transform.h>
 #include <roingine/game_time.h>
 
@@ -180,9 +181,10 @@ namespace roingine {
 		return transformAPI;
 	}
 
-	std::unique_ptr<Transform> Transform::JSFactory(GameObject *pGameObject, duk_context *ctx) {
-		auto const posX{duk_require_number(ctx, 1)};
-		auto const posY{duk_require_number(ctx, 2)};
+	std::unique_ptr<Transform>
+	Transform::JSFactory(GameObject *pGameObject, std::vector<ComponentInitArgument> const &args) {
+		auto const posX{comp_init::RequireDouble(0, args)};
+		auto const posY{comp_init::RequireDouble(1, args)};
 
 		return std::make_unique<Transform>(*pGameObject, glm::vec2{posX, posY}, 0.f);
 	}

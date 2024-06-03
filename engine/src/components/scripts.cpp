@@ -66,8 +66,16 @@ namespace roingine {
 		return API;
 	}
 
-	std::unique_ptr<Scripts> Scripts::JSFactory(GameObject *pGameObject, duk_context *) {
-		return std::make_unique<Scripts>(*pGameObject);
+	std::unique_ptr<Scripts>
+	Scripts::JSFactory(GameObject *pGameObject, std::vector<ComponentInitArgument> const &args) {
+		auto scripts{std::make_unique<Scripts>(*pGameObject)};
+
+		for (std::size_t idx{}; idx < args.size(); ++idx) {
+			auto const fileName{comp_init::RequireString(idx, args)};
+			scripts->AddScript(fileName);
+		}
+
+		return scripts;
 	}
 
 	Script *Scripts::AddScript(std::string_view fileName, std::optional<Script::CppFunctionCaller> const &caller) {
