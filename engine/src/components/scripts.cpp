@@ -35,9 +35,10 @@ namespace roingine {
 
 		auto args{CollectDataFromDukArgs(ctx)};
 
-		ptr->AddScript(fileName, args);
+		auto pScript{ptr->AddScript(fileName, args)};
+		pScript->ReturnAPIObject(ctx);
 
-		return 0;
+		return 1;
 	}
 
 	int GetScript(duk_context *ctx) {
@@ -48,13 +49,13 @@ namespace roingine {
 		Scripts *ptr{static_cast<Scripts *>(duk_get_pointer(ctx, -1))};
 		duk_pop_2(ctx);
 
-		auto script{ptr->GetScript(scriptName)};
-		if (script == nullptr) {
+		auto pScript{ptr->GetScript(scriptName)};
+		if (pScript == nullptr) {
 			duk_push_undefined(ctx);
 			return 1;
 		}
 
-		script->ReturnAPIObject(ctx);
+		pScript->ReturnAPIObject(ctx);
 
 		return 1;
 	}
