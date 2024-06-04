@@ -59,7 +59,7 @@ namespace roingine {
 
 		[[nodiscard]]
 		static std::unique_ptr<Transform>
-		JSFactory(GameObject *pGameObject, std::vector<ComponentInitArgument> const &args);
+		JSFactory(GameObject *pGameObject, std::vector<JSData> const &args);
 
 	private:
 		Transform          *m_pParent{nullptr};

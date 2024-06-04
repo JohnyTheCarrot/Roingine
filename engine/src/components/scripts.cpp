@@ -31,9 +31,9 @@ namespace roingine {
 		duk_push_this(ctx);
 		duk_get_prop_literal(ctx, -1, "__ptr");
 		Scripts *ptr{static_cast<Scripts *>(duk_get_pointer(ctx, -1))};
-		duk_pop(ctx);
+		duk_pop_2(ctx);
 
-		auto args{CollectComponentArgs(ctx)};
+		auto args{CollectDataFromDukArgs(ctx)};
 
 		ptr->AddScript(fileName, args);
 
@@ -46,7 +46,7 @@ namespace roingine {
 		duk_push_this(ctx);
 		duk_get_prop_literal(ctx, -1, "__ptr");
 		Scripts *ptr{static_cast<Scripts *>(duk_get_pointer(ctx, -1))};
-		duk_pop(ctx);
+		duk_pop_2(ctx);
 
 		auto script{ptr->GetScript(scriptName)};
 		if (script == nullptr) {
@@ -69,12 +69,12 @@ namespace roingine {
 		return API;
 	}
 
-	std::unique_ptr<Scripts> Scripts::JSFactory(GameObject *pGameObject, std::vector<ComponentInitArgument> const &) {
+	std::unique_ptr<Scripts> Scripts::JSFactory(GameObject *pGameObject, std::vector<JSData> const &) {
 		return std::make_unique<Scripts>(*pGameObject);
 	}
 
 	Script *Scripts::AddScript(
-	        std::string_view fileName, std::vector<ComponentInitArgument> const &args,
+	        std::string_view fileName, std::vector<JSData> const &args,
 	        std::optional<Script::CppFunctionCaller> const &caller
 	) {
 		try {

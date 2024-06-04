@@ -5,6 +5,8 @@
 #include <roingine/commands/registered_keyboard_command.h>
 #include <roingine/components/component.h>
 #include <roingine/duk_wrappers.h>
+#include <roingine/engine_event_queue.h>
+#include <roingine/event_queue.h>
 #include <roingine/gameobject.h>
 #include <roingine/input.h>
 #include <string_view>
@@ -24,7 +26,7 @@ namespace roingine {
 
 		using CppFunctionCaller = std::function<DukValue(std::string_view, GameObject, std::vector<DukValue> &&)>;
 
-		Script(Scripts &scriptsComponent, std::string_view fileName, std::vector<ComponentInitArgument> const &args,
+		Script(Scripts &scriptsComponent, std::string_view fileName, std::vector<JSData> const &args,
 		       std::optional<CppFunctionCaller> const &caller);
 
 		~Script();
@@ -76,17 +78,22 @@ namespace roingine {
 		Script::DukValue
 		CallCppFunction(std::string_view name, GameObject gameObject, std::vector<DukValue> &&arguments);
 
+		void RegisterEventListenerKey(std::string &&key);
+
 	private:
 		void CallJsFunctionByName(std::string_view name);
+
+		void InitListener();
 
 		[[nodiscard]]
 		GameObject *GetGameObjectPtr() const noexcept;
 
-		std::filesystem::path                  m_FilePath;
-		std::reference_wrapper<Scripts>        m_ScriptsComponent;
-		std::vector<RegisteredKeyboardCommand> m_ListenedToKeys;
-		DukContext                             m_DukContext;
-		std::string                            m_ScriptName;
+		std::filesystem::path                       m_FilePath;
+		std::reference_wrapper<Scripts>             m_ScriptsComponent;
+		std::vector<RegisteredKeyboardCommand>      m_ListenedToKeys;
+		EventHandlerHandle<event_queue::EventQueue> m_EventListenerHandle;
+		DukContext                                  m_DukContext;
+		std::string                                 m_ScriptName;
 
 		std::optional<CppFunctionCaller> m_CppFunctionCaller{};
 	};

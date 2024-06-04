@@ -3,24 +3,75 @@
 
 #include <array>
 #include <functional>
+#include <optional>
 #include <roingine/Singleton.h>
 #include <unordered_map>
 #include <variant>
 
 namespace roingine {
-	// Note for person grading:
-	// These events are not used as they use the observer pattern instead.
-	// I didn't bother removing them because it's a good example for once I start using the event queue pattern.
 	template<typename EventType, EventType Specific>
 	    requires std::is_enum_v<EventType>
 	struct EventTypeData final {};
+
+	template<typename EventQueue>
+	class EventHandlerHandle final {
+	public:
+		EventHandlerHandle() = default;
+
+		EventHandlerHandle(EventQueue *eventQueue, EventQueue::EventTypeEnum eventType, std::size_t hHandler)
+		    : m_EventQueue{eventQueue}
+		    , m_hHandler{hHandler}
+		    , m_EventType{eventType} {};
+
+		~EventHandlerHandle() {
+			Destroy();
+		}
+
+		EventHandlerHandle(EventHandlerHandle &&other)
+		    : m_EventQueue{std::move(other.m_EventQueue)}
+		    , m_EventType{other.m_EventType} {
+			Destroy();
+			m_hHandler       = other.m_hHandler;
+			other.m_hHandler = std::nullopt;
+		}
+
+		EventHandlerHandle &operator=(EventHandlerHandle &&other) {
+			if (this == &other)
+				return *this;
+
+			Destroy();
+			m_EventQueue     = std::move(other.m_EventQueue);
+			m_hHandler       = other.m_hHandler;
+			m_EventType      = other.m_EventType;
+			other.m_hHandler = std::nullopt;
+
+			return *this;
+		}
+
+		EventHandlerHandle(EventHandlerHandle const &other) = delete;
+
+		EventHandlerHandle &operator=(EventHandlerHandle const &other) = delete;
+
+	private:
+		void Destroy() {
+			if (m_hHandler.has_value())
+				m_EventQueue->DetachEventHandler(m_EventType, m_hHandler.value());
+		}
+
+		EventQueue                *m_EventQueue{nullptr};
+		std::optional<std::size_t> m_hHandler{std::nullopt};
+		EventQueue::EventTypeEnum  m_EventType{};
+	};
 
 	template<typename EventType, class... EventDataTypes>
 	    requires std::is_enum_v<EventType>
 	class EventQueue final : public Singleton<EventQueue<EventType, EventDataTypes...>> {
 	public:
+		using EventTypeEnum    = EventType;
 		using EventDataVariant = std::variant<EventDataTypes...>;
-		using EventHandlers    = std::unordered_map<void const *, std::function<void(EventDataVariant const &)>>;
+		using EventHandlers    = std::unordered_map<std::size_t, std::function<void(EventDataVariant const &)>>;
+
+		using Self = EventQueue<EventType, EventDataTypes...>;
 
 		struct Event final {
 			EventType        type;
@@ -37,9 +88,9 @@ namespace roingine {
 		}
 
 		template<EventType EType>
-		void
-		AttachEventHandler(std::function<void(typename EventTypeData<EventType, EType>::Data_t const &)> const &handler
-		) {
+		[[nodiscard]]
+		EventHandlerHandle<Self>
+		AttachEventHandler(std::function<void(typename EventTypeData<EventType, EType>::Data_t const &)> &&handler) {
 			auto genericHandler{[=](EventDataVariant const &eventData) {
 				const auto &specificallyTypedEventData{
 				        std::get<typename EventTypeData<EventType, EType>::Data_t>(eventData)
@@ -52,19 +103,18 @@ namespace roingine {
 			if (!m_EventHandlers.contains(EType))
 				m_EventHandlers.emplace(EType, EventHandlers{});
 
-			auto pHandlerTarget{handler.target<void (*)(typename EventTypeData<EventType, EType>::Data_t const &)>()};
-			m_EventHandlers.at(EType).emplace(reinterpret_cast<void const *>(pHandlerTarget), genericHandler);
+			m_CurrentHandle++;
+
+			m_EventHandlers.at(EType).emplace(m_CurrentHandle, genericHandler);
+
+			return {this, EType, m_CurrentHandle};
 		}
 
-		template<EventType EType>
-		void
-		DetachEventHandler(std::function<void(typename EventTypeData<EventType, EType>::Data_t const &)> const &handler
-		) {
-			if (!m_EventHandlers.contains(EType))
+		void DetachEventHandler(EventType eType, std::size_t hHandler) {
+			if (!m_EventHandlers.contains(eType))
 				return;
 
-			auto pHandlerTarget{handler.target<void (*)(typename EventTypeData<EventType, EType>::Data_t const &)>()};
-			m_EventHandlers.at(EType).erase(reinterpret_cast<void const *>(pHandlerTarget));
+			m_EventHandlers.at(eType).erase(hHandler);
 		}
 
 		void Update() {
@@ -85,8 +135,9 @@ namespace roingine {
 	private:
 		static constexpr size_t       MAX_EVENTS{10};
 		std::array<Event, MAX_EVENTS> m_Events;
-		size_t                        m_Tail{0};
-		size_t                        m_Head{0};
+		std::size_t                   m_Tail{0};
+		std::size_t                   m_Head{0};
+		std::size_t                   m_CurrentHandle{0};
 
 		std::unordered_map<EventType, EventHandlers> m_EventHandlers;
 	};

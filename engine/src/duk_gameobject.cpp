@@ -15,7 +15,7 @@ namespace roingine::duk_gameobject {
 		duk_pop(ctx);
 		duk_get_prop_literal(ctx, -1, "__hGo");
 		auto const hGo{duk_require_int(ctx, -1)};
-		duk_pop(ctx);
+		duk_pop_2(ctx);
 		auto go{pScene->GetGameObjectPtr(hGo)};
 
 		auto *comp{go->GetOptionalComponent(name)};
@@ -42,8 +42,8 @@ namespace roingine::duk_gameobject {
 		duk_pop(ctx);
 		duk_get_prop_literal(ctx, -1, "__hGo");
 		auto const hGo{duk_require_int(ctx, -1)};
-		duk_pop(ctx);
-		auto args{CollectComponentArgs(ctx)};
+		duk_pop_2(ctx);
+		auto args{CollectDataFromDukArgs(ctx)};
 		auto go{pScene->GetGameObjectPtr(hGo)};
 
 		auto *comp{go->AddComponent(name, std::move(args))};
@@ -68,7 +68,7 @@ namespace roingine::duk_gameobject {
 		duk_pop(ctx);
 		duk_get_prop_literal(ctx, -1, "__hGo");
 		auto const hGo{duk_require_int(ctx, -1)};
-		duk_pop(ctx);
+		duk_pop_2(ctx);
 		auto go{pScene->GetGameObjectPtr(hGo)};
 
 		go->Destroy();

@@ -28,7 +28,7 @@ namespace roingine {
 		duk_function_list_entry const *SetUpScriptAPI(duk_context *) const override;
 
 		[[nodiscard]]
-		static std::unique_ptr<Rect> JSFactory(GameObject *, std::vector<ComponentInitArgument> const &args);
+		static std::unique_ptr<Rect> JSFactory(GameObject *, std::vector<JSData> const &args);
 
 		[[nodiscard]]
 		float GetWidth() const noexcept;

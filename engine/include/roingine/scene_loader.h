@@ -9,7 +9,7 @@
 namespace roingine {
 	struct ComponentData final {
 		std::string name;
-		std::vector<ComponentInitArgument> args;
+		std::vector<JSData> args;
 	};
 
 	struct GameObjectData final {

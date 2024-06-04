@@ -64,6 +64,8 @@ function Init(a, b, c) {
     rectRenderer.setColor(0xFF0000);
 
     requireTest.hello();
+    script.setEventListener("test_event", function (a, b, c){ roingine.println("Event caught!", a, b, c); });
+    roingine.fireEvent("test_event", 1, 2, 3);
 }
 
 function OnDispose() {

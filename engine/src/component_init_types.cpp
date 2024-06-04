@@ -15,7 +15,7 @@ namespace roingine {
 	}
 
 	namespace comp_init {
-		std::string_view GetTypeName(ComponentInitArgument const &arg) {
+		std::string_view GetTypeName(JSData const &arg) {
 			if (std::holds_alternative<std::string>(arg))
 				return "string";
 
@@ -28,7 +28,7 @@ namespace roingine {
 			return "unknown type";
 		}
 
-		std::string RequireString(std::size_t argIdx, std::vector<ComponentInitArgument> const &args) {
+		std::string RequireString(std::size_t argIdx, std::vector<JSData> const &args) {
 			auto const arg{args.at(argIdx)};
 
 			if (std::holds_alternative<std::string>(arg))
@@ -37,7 +37,7 @@ namespace roingine {
 			throw ComponentArgumentIncorrectType{argIdx, "string", GetTypeName(arg)};
 		}
 
-		double RequireDouble(std::size_t argIdx, std::vector<ComponentInitArgument> const &args) {
+		double RequireDouble(std::size_t argIdx, std::vector<JSData> const &args) {
 			auto const arg{args.at(argIdx)};
 
 			if (std::holds_alternative<double>(arg))
@@ -46,7 +46,7 @@ namespace roingine {
 			throw ComponentArgumentIncorrectType{argIdx, "double", GetTypeName(arg)};
 		}
 
-		bool RequireBool(std::size_t argIdx, std::vector<ComponentInitArgument> const &args) {
+		bool RequireBool(std::size_t argIdx, std::vector<JSData> const &args) {
 			auto const arg{args.at(argIdx)};
 
 			if (std::holds_alternative<bool>(arg))

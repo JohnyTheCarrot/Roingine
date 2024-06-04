@@ -30,7 +30,7 @@ namespace roingine {
 
 		[[nodiscard]]
 		static std::unique_ptr<RectCollider>
-		JSFactory(GameObject *pGameObject, std::vector<ComponentInitArgument> const &args);
+		JSFactory(GameObject *pGameObject, std::vector<JSData> const &args);
 
 		[[nodiscard]]
 		bool GetHasListener() const noexcept;

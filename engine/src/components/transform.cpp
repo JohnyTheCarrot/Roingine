@@ -182,7 +182,7 @@ namespace roingine {
 	}
 
 	std::unique_ptr<Transform>
-	Transform::JSFactory(GameObject *pGameObject, std::vector<ComponentInitArgument> const &args) {
+	Transform::JSFactory(GameObject *pGameObject, std::vector<JSData> const &args) {
 		auto const posX{comp_init::RequireDouble(0, args)};
 		auto const posY{comp_init::RequireDouble(1, args)};
 

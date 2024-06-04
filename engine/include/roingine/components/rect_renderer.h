@@ -27,7 +27,7 @@ namespace roingine {
 		duk_function_list_entry const *SetUpScriptAPI(duk_context *) const override;
 
 		[[nodiscard]]
-		static std::unique_ptr<RectRenderer> JSFactory(GameObject *, const std::vector<ComponentInitArgument> &args);
+		static std::unique_ptr<RectRenderer> JSFactory(GameObject *, const std::vector<JSData> &args);
 
 		void SetColor(std::uint8_t r, std::uint8_t g, std::uint8_t b);
 

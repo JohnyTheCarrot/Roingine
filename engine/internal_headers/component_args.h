@@ -7,9 +7,9 @@
 using duk_context = struct duk_hthread;
 
 namespace roingine {
-	class ComponentArgInvalidType final : public std::exception {
+	class JSDataInvalidType final : public std::exception {
 	public:
-		ComponentArgInvalidType(int argIdx);
+		JSDataInvalidType(int argIdx);
 
 		char const *what() const override;
 
@@ -18,9 +18,9 @@ namespace roingine {
 	};
 
 	[[nodiscard]]
-	std::vector<ComponentInitArgument> CollectComponentArgs(duk_context *);
+	std::vector<JSData> CollectDataFromDukArgs(duk_context *);
 
-	void PushComponentArgsToDuk(std::vector<ComponentInitArgument> const &args, duk_context *ctx);
+	void PushDataToDuk(std::vector<JSData> const &args, duk_context *ctx);
 }// namespace roingine
 
 #endif// COMPONENT_ARGS_H

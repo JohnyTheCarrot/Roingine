@@ -28,7 +28,7 @@ namespace roingine {
 		return nullptr;
 	}
 
-	std::unique_ptr<Rect> Rect::JSFactory(GameObject *pGameObject, std::vector<ComponentInitArgument> const &args) {
+	std::unique_ptr<Rect> Rect::JSFactory(GameObject *pGameObject, std::vector<JSData> const &args) {
 		auto const width{comp_init::RequireDouble(0, args)};
 		auto const height{comp_init::RequireDouble(0, args)};
 

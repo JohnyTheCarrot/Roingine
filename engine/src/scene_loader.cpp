@@ -53,7 +53,7 @@ namespace roingine {
 					scripts = &gameObject.AddComponent<Scripts>();
 
 				auto                               fileName{comp_init::RequireString(0, componentData.args)};
-				std::vector<ComponentInitArgument> factoryArgs(
+				std::vector<JSData> factoryArgs(
 				        std::max(componentData.args.size() - 1, static_cast<std::size_t>(0))
 				);
 				std::move(std::next(componentData.args.begin()), componentData.args.end(), factoryArgs.begin());
@@ -79,7 +79,7 @@ namespace roingine {
 
 		data.args.resize(args.size());
 
-		std::transform(args.cbegin(), args.cend(), data.args.begin(), [](Json const &el) -> ComponentInitArgument {
+		std::transform(args.cbegin(), args.cend(), data.args.begin(), [](Json const &el) -> JSData {
 			switch (el.type()) {
 				case Json::value_t::string:
 					return el.get<std::string>();

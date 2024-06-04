@@ -16,13 +16,13 @@ namespace roingine {
 	template<class T>
 	concept ComponentImpl = requires(T comp) {
 		{
-			T::JSFactory(static_cast<GameObject *>(nullptr), std::vector<ComponentInitArgument>{})
+			T::JSFactory(static_cast<GameObject *>(nullptr), std::vector<JSData>{})
 		} -> std::same_as<std::unique_ptr<T>>;
 	};
 
 	struct JSFactoryMapEntry final {
 		using Function =
-		        std::function<std::unique_ptr<Component>(GameObject *, std::vector<ComponentInitArgument> const &)>;
+		        std::function<std::unique_ptr<Component>(GameObject *, std::vector<JSData> const &)>;
 
 		Function    jsFactory;
 	};
@@ -63,7 +63,7 @@ namespace roingine {
 			return *rpComponent;
 		}
 
-		Component *AddComponent(std::string name, std::vector<ComponentInitArgument> const &args);
+		Component *AddComponent(std::string name, std::vector<JSData> const &args);
 
 		template<ComponentImpl TComponent>
 		[[nodiscard]]

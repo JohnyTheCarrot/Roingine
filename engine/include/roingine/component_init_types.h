@@ -20,20 +20,20 @@ namespace roingine {
 		std::string m_Message;
 	};
 
-	using ComponentInitArgument = std::variant<std::string, double, bool>;
+	using JSData = std::variant<std::string, double, bool>;
 
 	namespace comp_init {
 		[[nodiscard]]
-		std::string_view GetTypeName(ComponentInitArgument const &);
+		std::string_view GetTypeName(JSData const &);
 
 		[[nodiscard]]
-		std::string RequireString(std::size_t argIdx, std::vector<ComponentInitArgument> const &args);
+		std::string RequireString(std::size_t argIdx, std::vector<JSData> const &args);
 
 		[[nodiscard]]
-		double RequireDouble(std::size_t argIdx, std::vector<ComponentInitArgument> const &args);
+		double RequireDouble(std::size_t argIdx, std::vector<JSData> const &args);
 
 		[[nodiscard]]
-		bool RequireBool(std::size_t argIdx, std::vector<ComponentInitArgument> const &args);
+		bool RequireBool(std::size_t argIdx, std::vector<JSData> const &args);
 	}// namespace comp_init
 }// namespace roingine
 

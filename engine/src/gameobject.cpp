@@ -12,7 +12,7 @@ namespace roingine {
 		return m_rpScene == other.m_rpScene && m_hGameObject == other.m_hGameObject;
 	}
 
-	Component *GameObject::AddComponent(std::string name, std::vector<ComponentInitArgument> const &args) {
+	Component *GameObject::AddComponent(std::string name, std::vector<JSData> const &args) {
 		if (auto *existing{GetOptionalComponent(name)}; existing != nullptr)
 			return existing;
 

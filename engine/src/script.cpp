@@ -6,6 +6,7 @@
 #include <iostream>
 #include <roingine/commands/command.h>
 #include <roingine/components/scripts.h>
+#include <roingine/engine_event_queue.h>
 #include <roingine/game_time.h>
 #include <roingine/gameobject.h>
 #include <roingine/input.h>
@@ -16,8 +17,14 @@
 #include <roingine/script.h>
 
 namespace roingine {
+	[[nodiscard]]
 	std::string KeyEventListenerKey(KeyEventType eventType, InputKeys key) {
 		return std::format("_{}_{}", static_cast<int>(eventType), static_cast<int>(key));
+	}
+
+	[[nodiscard]]
+	std::string EventListenerKey(std::string_view key) {
+		return std::format("_{}", key);
 	}
 
 	class ScriptPressCommand final : public Command {
@@ -169,12 +176,34 @@ namespace roingine {
 		return 1;
 	}
 
+	int FireEvent(duk_context *ctx) {
+		auto eventName{duk_require_string(ctx, 0)};
+
+		auto data{CollectDataFromDukArgs(ctx)};
+
+		event_queue::EventQueue::GetInstance().FireEvent<event_queue::EventType::ScriptEvent>(
+		        std::move(eventName), std::move(data)
+		);
+
+		return 0;
+	}
+
+	int SetEventListener(duk_context *ctx) {
+		auto        eventName{duk_require_string(ctx, 0)};
+		std::string name{EventListenerKey(eventName)};
+
+		duk_push_global_stash(ctx);
+		duk_require_function(ctx, 1);
+		duk_dup(ctx, 1);
+		duk_put_prop_string(ctx, -2, name.c_str());
+		duk_pop_2(ctx);
+
+		return 0;
+	}
+
 	duk_function_list_entry const roingineFunctions[]{
-	        {"println", PrintLn, DUK_VARARGS},
-	        {"print", Print, DUK_VARARGS},
-	        {"getDeltaTime", GetDeltaTime, 0},
-	        {"readFile", ReadFile, 1},
-	        {nullptr, nullptr, 0}
+	        {"println", PrintLn, DUK_VARARGS}, {"print", Print, DUK_VARARGS},         {"getDeltaTime", GetDeltaTime, 0},
+	        {"readFile", ReadFile, 1},         {"fireEvent", FireEvent, DUK_VARARGS}, {nullptr, nullptr, 0}
 	};
 
 	int GetGameObject(duk_context *ctx) {
@@ -221,7 +250,11 @@ namespace roingine {
 	        {nullptr, nullptr, 0}
 	};
 
-	duk_function_list_entry const currentScriptFunctions[]{{"callCpp", CallCpp, DUK_VARARGS}, {nullptr, nullptr, 0}};
+	duk_function_list_entry const currentScriptFunctions[]{
+	        {"callCpp", CallCpp, DUK_VARARGS},
+	        {"setEventListener", SetEventListener, 2},
+	        {nullptr, nullptr, 0}
+	};
 
 	duk_number_list_entry const roingineNumberConstants[]{
 	        {"FIXED_UPDATE_DELTATIME", GameTime::FIXED_TIME_DELTA},
@@ -258,7 +291,7 @@ namespace roingine {
 	};
 
 	Script::Script(
-	        Scripts &scriptsComponent, std::string_view fileName, std::vector<ComponentInitArgument> const &args,
+	        Scripts &scriptsComponent, std::string_view fileName, std::vector<JSData> const &args,
 	        std::optional<CppFunctionCaller> const &caller
 	)
 	    : m_FilePath{fileName}
@@ -327,12 +360,14 @@ namespace roingine {
 			duk_pop(m_DukContext.GetRawContext());
 			return;
 		}
-		PushComponentArgsToDuk(args, m_DukContext.GetRawContext());
+		PushDataToDuk(args, m_DukContext.GetRawContext());
 		if (duk_pcall(m_DukContext.GetRawContext(), static_cast<int>(args.size())) != 0) {
 			std::cerr << "Error: " << duk_safe_to_string(m_DukContext.GetRawContext(), -1) << std::endl;
 		}
 
 		duk_pop(m_DukContext.GetRawContext());
+
+		InitListener();
 	}
 
 	Script::Script(Script &&other)
@@ -344,6 +379,8 @@ namespace roingine {
 		auto global{m_DukContext.AccessGlobalObject()};
 		duk_gameobject::PutGameObject(global, *GetGameObjectPtr(), CURRENT_GAMEOBJECT_PROP_NAME, m_DukContext);
 		global.PutPointer("__scriptPtr", static_cast<void *>(this));
+		other.m_EventListenerHandle = {};
+		InitListener();
 	}
 
 	Script::~Script() {
@@ -364,11 +401,13 @@ namespace roingine {
 		if (this == &other)
 			return *this;
 
-		m_ScriptsComponent  = std::move(other.m_ScriptsComponent);
-		m_ListenedToKeys    = std::move(other.m_ListenedToKeys);
-		m_DukContext        = std::move(other.m_DukContext);
-		m_ScriptName        = std::move(other.m_ScriptName);
-		m_CppFunctionCaller = std::move(other.m_CppFunctionCaller);
+		m_ScriptsComponent          = std::move(other.m_ScriptsComponent);
+		m_ListenedToKeys            = std::move(other.m_ListenedToKeys);
+		m_DukContext                = std::move(other.m_DukContext);
+		m_ScriptName                = std::move(other.m_ScriptName);
+		m_CppFunctionCaller         = std::move(other.m_CppFunctionCaller);
+		other.m_EventListenerHandle = {};
+		InitListener();
 
 		auto global{m_DukContext.AccessGlobalObject()};
 		duk_gameobject::PutGameObject(global, *GetGameObjectPtr(), CURRENT_GAMEOBJECT_PROP_NAME, m_DukContext);
@@ -687,6 +726,25 @@ namespace roingine {
 			return DukUndefined{};
 
 		return (*m_CppFunctionCaller)(name, gameObject, std::move(arguments));
+	}
+
+	void Script::InitListener() {
+		m_EventListenerHandle =
+		        event_queue::EventQueue::GetInstance().AttachEventHandler<event_queue::EventType::ScriptEvent>(
+		                [this](auto &data) {
+			                duk_context *ctx{m_DukContext.GetRawContext()};
+			                duk_push_global_stash(ctx);
+			                auto const key{EventListenerKey(data.eventName)};
+			                duk_get_prop_string(ctx, -1, key.c_str());
+			                if (!duk_is_undefined(ctx, -1)) {
+				                PushDataToDuk(data.data, ctx);
+				                if (duk_pcall(ctx, static_cast<int>(data.data.size())) != 0)
+					                std::cerr << "Error: " << duk_safe_to_string(m_DukContext.GetRawContext(), -1)
+					                          << std::endl;
+			                }
+			                duk_pop_2(ctx);
+		                }
+		        );
 	}
 
 	GameObject *Script::GetGameObjectPtr() const noexcept {

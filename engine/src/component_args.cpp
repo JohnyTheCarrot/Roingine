@@ -1,14 +1,15 @@
 #include "component_args.h"
 #include <duktape.h>
 #include <format>
+#include <iostream>
 
 namespace roingine {
-	std::vector<ComponentInitArgument> CollectComponentArgs(duk_context *ctx) {
+	std::vector<JSData> CollectDataFromDukArgs(duk_context *ctx) {
 		auto const                         nArgs{duk_get_top(ctx) - 1};
-		std::vector<ComponentInitArgument> collectedArgs{};
+		std::vector<JSData> collectedArgs{};
 		collectedArgs.reserve(nArgs);
 
-		for (int idx{1}; idx < duk_get_top_index(ctx); ++idx) {
+		for (int idx{1}; idx <= duk_get_top_index(ctx); ++idx) {
 			auto const type{duk_get_type(ctx, idx)};
 
 			switch (type) {
@@ -22,22 +23,22 @@ namespace roingine {
 					collectedArgs.push_back(duk_require_number(ctx, idx));
 					break;
 				default:
-					throw ComponentArgInvalidType{idx};
+					throw JSDataInvalidType{idx};
 			}
 		}
 
 		return collectedArgs;
 	}
 
-	ComponentArgInvalidType::ComponentArgInvalidType(int argIdx)
-	    : m_Message{std::format("Argument type at {} is invalid.", argIdx)} {
+	JSDataInvalidType::JSDataInvalidType(int argIdx)
+	    : m_Message{std::format("Data type at {} is invalid.", argIdx)} {
 	}
 
-	char const *ComponentArgInvalidType::what() const {
+	char const *JSDataInvalidType::what() const {
 		return m_Message.c_str();
 	}
 
-	void PushComponentArgsToDuk(std::vector<ComponentInitArgument> const &args, duk_context *ctx) {
+	void PushDataToDuk(std::vector<JSData> const &args, duk_context *ctx) {
 		for (auto const &arg: args) {
 			if (std::holds_alternative<std::string>(arg))
 				duk_push_string(ctx, std::get<std::string>(arg).c_str());

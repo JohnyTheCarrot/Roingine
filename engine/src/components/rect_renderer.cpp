@@ -85,7 +85,7 @@ namespace roingine {
 	}
 
 	std::unique_ptr<RectRenderer>
-	RectRenderer::JSFactory(GameObject *pGameObject, std::vector<ComponentInitArgument> const &) {
+	RectRenderer::JSFactory(GameObject *pGameObject, std::vector<JSData> const &) {
 		return std::make_unique<RectRenderer>(*pGameObject);
 	}
 
