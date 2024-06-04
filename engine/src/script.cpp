@@ -192,7 +192,22 @@ namespace roingine {
 		return 1;
 	}
 
-	duk_function_list_entry const sceneFunctions[]{{"getGameObject", GetGameObject, 1}, {nullptr, nullptr, 0}};
+	int AddGameObject(duk_context *ctx) {
+		duk_get_global_literal(ctx, "__scriptPtr");
+		Script *ptr{static_cast<Script *>(duk_get_pointer(ctx, -1))};
+		duk_pop(ctx);
+
+		auto gameObject{ptr->GetGameObject().GetScene()->AddGameObject()};
+
+		duk_gameobject::PushGameObject(gameObject, ctx);
+		return 1;
+	}
+
+	duk_function_list_entry const sceneFunctions[]{
+	        {"getGameObject", GetGameObject, 1},
+	        {"addGameObject", AddGameObject, 1},
+	        {nullptr, nullptr, 0}
+	};
 
 	duk_function_list_entry const currentScriptFunctions[]{{"callCpp", CallCpp, DUK_VARARGS}, {nullptr, nullptr, 0}};
 
