@@ -11,6 +11,8 @@
 #include <roingine/input.h>
 #include <roingine/roingine.h>
 #include <roingine/scene.h>
+#include <roingine/scene_loader.h>
+#include <roingine/scene_manager.h>
 #include <roingine/script.h>
 
 namespace roingine {
@@ -203,9 +205,19 @@ namespace roingine {
 		return 1;
 	}
 
+	int LoadScene(duk_context *ctx) {
+		auto const fileName{duk_require_string(ctx, 0)};
+
+		Scene scene{scene_loader::LoadScene(fileName)};
+		SceneManager::GetInstance().SetActive(std::move(scene));
+
+		return 0;
+	}
+
 	duk_function_list_entry const sceneFunctions[]{
 	        {"getGameObject", GetGameObject, 1},
 	        {"addGameObject", AddGameObject, 1},
+	        {"load", LoadScene, 1},
 	        {nullptr, nullptr, 0}
 	};
 

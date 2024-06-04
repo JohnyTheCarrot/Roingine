@@ -25,6 +25,7 @@ namespace roingine {
 
 	private:
 		std::optional<Scene> m_Scene{};
+		std::optional<Scene> m_NewScene{};
 	};
 
 	SceneManager::SceneManager()
