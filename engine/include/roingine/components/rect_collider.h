@@ -10,6 +10,13 @@ namespace roingine {
 
 	class RectCollider final : public Component {
 	public:
+		enum class HitDirection {
+			Top    = 0,
+			Bottom = 1,
+			Left   = 2,
+			Right  = 3,
+		};
+
 		RectCollider(GameObject &gameObject, float width, float height);
 
 		void Update() override;
@@ -38,7 +45,7 @@ namespace roingine {
 		void SetHasListener(bool hasListener) noexcept;
 
 	private:
-		void CallJSCallback(GameObject otherGameObject, glm::vec2 hitPoint);
+		void CallJSCallback(GameObject otherGameObject, glm::vec2 hitPoint, HitDirection hitDirection);
 
 		Transform &m_Transform;
 		float      m_Width, m_Height;

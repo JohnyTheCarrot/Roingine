@@ -57,16 +57,23 @@ namespace roingine {
 			auto const smallestXDistance{std::min(std::abs(left - otherLeft), std::abs(right - otherRight))};
 
 			glm::vec2 hitPoint{worldPos};
-			if (intersectTop && distanceTop > smallestXDistance)
-				hitPoint.y = otherTop;
-			else if (intersectBottom && distanceBottom > smallestXDistance)
-				hitPoint.y = otherBottom - m_Height;
-			else if (intersectLeft)
-				hitPoint.x = otherLeft - m_Width;
-			else if (intersectRight)
-				hitPoint.x = otherRight;
+			HitDirection hitDir{};
 
-			CallJSCallback(other.GetGameObject(), hitPoint);
+			if (intersectTop && distanceTop > smallestXDistance) {
+				hitPoint.y = otherTop;
+				hitDir     = HitDirection::Top;
+			} else if (intersectBottom && distanceBottom > smallestXDistance) {
+				hitPoint.y = otherBottom - m_Height;
+				hitDir     = HitDirection::Bottom;
+			} else if (intersectLeft) {
+				hitPoint.x = otherLeft - m_Width;
+				hitDir     = HitDirection::Left;
+			} else if (intersectRight) {
+				hitPoint.x = otherRight;
+				hitDir     = HitDirection::Right;
+			}
+
+			CallJSCallback(other.GetGameObject(), hitPoint, hitDir);
 		});
 	}
 
@@ -118,7 +125,7 @@ namespace roingine {
 		m_HasListener = hasListener;
 	}
 
-	void RectCollider::CallJSCallback(GameObject otherGameObject, glm::vec2 hitPoint) {
+	void RectCollider::CallJSCallback(GameObject otherGameObject, glm::vec2 hitPoint, HitDirection hitDirection) {
 		auto *pScripts{GetGameObject().GetOptionalComponent<Scripts>()};
 		if (pScripts == nullptr)
 			return;
@@ -136,7 +143,8 @@ namespace roingine {
 			duk_gameobject::PushGameObject(otherGameObject, ctx.GetRawContext());
 			duk_push_number(ctx.GetRawContext(), hitPoint.x);
 			duk_push_number(ctx.GetRawContext(), hitPoint.y);
-			if (duk_pcall(ctx.GetRawContext(), 3) != 0) {
+			duk_push_int(ctx.GetRawContext(), static_cast<int>(hitDirection));
+			if (duk_pcall(ctx.GetRawContext(), 4) != 0) {
 				std::cerr << "Error calling rect collider callback: " << duk_safe_to_string(ctx.GetRawContext(), -1)
 				          << std::endl;
 			}
