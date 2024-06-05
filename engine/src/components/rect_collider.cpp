@@ -51,6 +51,7 @@ namespace roingine {
 			auto const intersectBottom{bottom < otherBottom && top > otherBottom};
 			auto const intersectLeft{left < otherLeft && right > otherLeft};
 			auto const intersectRight{right > otherRight && left < otherRight};
+			auto const intersectX{intersectLeft || intersectRight};
 
 			auto const distanceTop{std::abs(top - otherTop)};
 			auto const distanceBottom{std::abs(bottom - otherBottom)};
@@ -59,10 +60,10 @@ namespace roingine {
 			glm::vec2 hitPoint{worldPos};
 			HitDirection hitDir{};
 
-			if (intersectTop && distanceTop > smallestXDistance) {
+			if (intersectTop && (!intersectX || distanceTop > smallestXDistance)) {
 				hitPoint.y = otherTop;
 				hitDir     = HitDirection::Top;
-			} else if (intersectBottom && distanceBottom > smallestXDistance) {
+			} else if (intersectBottom && (!intersectX || distanceBottom > smallestXDistance)) {
 				hitPoint.y = otherBottom - m_Height;
 				hitDir     = HitDirection::Bottom;
 			} else if (intersectLeft) {
