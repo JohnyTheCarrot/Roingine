@@ -65,6 +65,11 @@ namespace roingine {
 
 		Component *AddComponent(std::string name, std::vector<JSData> const &args);
 
+		void SetLabel(std::string &&label);
+
+		[[nodiscard]]
+		std::optional<std::string_view> GetLabel() const;
+
 		template<ComponentImpl TComponent>
 		[[nodiscard]]
 		TComponent &GetComponent() {

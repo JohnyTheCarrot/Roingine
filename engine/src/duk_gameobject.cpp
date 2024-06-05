@@ -76,10 +76,67 @@ namespace roingine::duk_gameobject {
 		return 0;
 	}
 
+	int SetLabel(duk_context *ctx) {
+		auto const name{duk_require_string(ctx, 0)};
+
+		duk_push_this(ctx);
+		duk_get_prop_literal(ctx, -1, "__pScene");
+		auto *pScene{static_cast<Scene *>(duk_require_pointer(ctx, -1))};
+		duk_pop(ctx);
+		duk_get_prop_literal(ctx, -1, "handle");
+		auto const hGo{duk_require_int(ctx, -1)};
+		duk_pop_2(ctx);
+		auto go{pScene->GetGameObjectPtr(hGo)};
+
+		go->SetLabel(name);
+
+		return 0;
+	}
+
+	int GetLabel(duk_context *ctx) {
+		duk_push_this(ctx);
+		duk_get_prop_literal(ctx, -1, "__pScene");
+		auto *pScene{static_cast<Scene *>(duk_require_pointer(ctx, -1))};
+		duk_pop(ctx);
+		duk_get_prop_literal(ctx, -1, "handle");
+		auto const hGo{duk_require_int(ctx, -1)};
+		duk_pop_2(ctx);
+		auto go{pScene->GetGameObjectPtr(hGo)};
+
+		auto const label{go->GetLabel()};
+		if (label.has_value())
+			duk_push_string(ctx, label->data());
+		else
+			duk_push_null(ctx);
+
+		return 1;
+	}
+
+	int HasLabel(duk_context *ctx) {
+		auto const name{duk_require_string(ctx, 0)};
+
+		duk_push_this(ctx);
+		duk_get_prop_literal(ctx, -1, "__pScene");
+		auto *pScene{static_cast<Scene *>(duk_require_pointer(ctx, -1))};
+		duk_pop(ctx);
+		duk_get_prop_literal(ctx, -1, "handle");
+		auto const hGo{duk_require_int(ctx, -1)};
+		duk_pop_2(ctx);
+		auto go{pScene->GetGameObjectPtr(hGo)};
+
+		auto const label{go->GetLabel()};
+		duk_push_boolean(ctx, label == name);
+
+		return 1;
+	}
+
 	duk_function_list_entry const gameObjectFunctions[]{
 	        {"getComponent", GetComponent, DUK_VARARGS},
 	        {"addComponent", AddComponent, DUK_VARARGS},
 	        {"destroy", Destroy, 0},
+	        {"setLabel", SetLabel, 1},
+	        {"getLabel", GetLabel, 0},
+	        {"hasLabel", HasLabel, 1},
 	        {nullptr, nullptr, 0}
 	};
 

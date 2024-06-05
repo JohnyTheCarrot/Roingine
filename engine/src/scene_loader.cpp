@@ -30,6 +30,8 @@ namespace roingine {
 
 	void SceneLoader::CreateGameObject(GameObjectData &data) {
 		auto gameObject{m_Scene.AddGameObject()};
+		if (data.label.has_value())
+			gameObject.SetLabel(std::move(data.label.value()));
 
 		for (auto &componentData: data.components) {
 			std::for_each(m_Labels.cbegin(), m_Labels.cend(), [&](auto const &it) {
@@ -42,9 +44,6 @@ namespace roingine {
 				        },
 				        static_cast<double>(handle)
 				);
-
-				std::ignore = label;
-				std::ignore = handle;
 			});
 
 			if (componentData.name == "Script") {

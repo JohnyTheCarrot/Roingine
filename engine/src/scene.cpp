@@ -96,6 +96,7 @@ namespace roingine {
 		});
 
 		m_GameObjects.erase(gameObject.GetHandle());
+		m_GameObjectLabels.erase(gameObject.GetHandle());
 	}
 
 	Scene::Scene() {
@@ -112,7 +113,8 @@ namespace roingine {
 	    : m_GameObjectComponents{std::move(other.m_GameObjectComponents)}
 	    , m_NameMap{std::move(other.m_NameMap)}
 	    , m_JSFactoryMap{std::move(other.m_JSFactoryMap)}
-	    , m_GameObjects{std::move(other.m_GameObjects)} {
+	    , m_GameObjects{std::move(other.m_GameObjects)}
+	    , m_GameObjectLabels{std::move(other.m_GameObjectLabels)} {
 		SetGameObjectScenes();
 	};
 
@@ -125,6 +127,7 @@ namespace roingine {
 		m_NameMap              = std::move(other.m_NameMap);
 		m_JSFactoryMap         = std::move(other.m_JSFactoryMap);
 		m_GameObjects          = std::move(other.m_GameObjects);
+		m_GameObjectLabels     = std::move(other.m_GameObjectLabels);
 
 		SetGameObjectScenes();
 

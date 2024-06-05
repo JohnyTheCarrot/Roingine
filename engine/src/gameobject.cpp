@@ -33,6 +33,18 @@ namespace roingine {
 		return rpComp;
 	}
 
+	void GameObject::SetLabel(std::string &&label) {
+		m_rpScene->m_GameObjectLabels.emplace(m_hGameObject, std::move(label));
+	}
+
+	std::optional<std::string_view> GameObject::GetLabel() const {
+		auto const it{m_rpScene->m_GameObjectLabels.find(m_hGameObject)};
+		if (it == m_rpScene->m_GameObjectLabels.cend())
+			return std::nullopt;
+
+		return it->second;
+	}
+
 	Component *GameObject::GetComponent(std::size_t typeHash) {
 		ComponentHandle hComponent{m_hGameObject, typeHash};
 		auto           &sceneComponents{GetSceneComponents()};

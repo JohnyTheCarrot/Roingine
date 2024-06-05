@@ -73,6 +73,7 @@ namespace roingine {
 		std::unordered_map<std::string, std::size_t>       m_NameMap;
 		std::unordered_map<std::size_t, JSFactoryMapEntry> m_JSFactoryMap;
 		std::unordered_map<std::size_t, GameObject>        m_GameObjects;
+		std::unordered_map<std::size_t, std::string>       m_GameObjectLabels;
 		std::vector<GameObject>                            m_GameObjectsToDestroy{};
 
 		void CleanupMarkedGameObjects();
