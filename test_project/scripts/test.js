@@ -42,9 +42,22 @@ function Init(a, b, c) {
     transform = current.addComponent("Transform", 200, 100);
     var collider = current.addComponent("RectCollider", 50, 50);
 
-    collider.onCollision(function(gameObject, hitX, hitY) {
+    collider.onCollision(function(gameObject, hitX, hitY, hitDir) {
         var otherTransform = gameObject.getComponent("Transform");
-        otherTransform.translate(1, 0);
+        switch (hitDir) {
+        case 0:
+            otherTransform.translate(0, -1);
+            break;
+        case 1:
+            otherTransform.translate(0, 1);
+            break;
+        case 2:
+            otherTransform.translate(1, 0);
+            break;
+        case 3:
+            otherTransform.translate(-1, 0);
+            break;
+        }
         transform.setLocalPosition(hitX, hitY);
     });
 

@@ -122,13 +122,14 @@ namespace roingine {
 	}
 
 	int JsAPISetLocalPosition(duk_context *ctx) {
-		float const x{static_cast<float>(duk_require_number(ctx, 0))};
-		float const y{static_cast<float>(duk_require_number(ctx, 1))};
-
 		duk_push_this(ctx);
 		duk_get_prop_literal(ctx, -1, "__ptr");
 		Transform *ptr{static_cast<Transform *>(duk_get_pointer(ctx, -1))};
 		duk_pop(ctx);
+		auto const localPos{ptr->GetLocalPosition()};
+
+		float const x{duk_is_null(ctx, 0) ? localPos.x : static_cast<float>(duk_require_number(ctx, 0))};
+		float const y{duk_is_null(ctx, 1) ? localPos.y : static_cast<float>(duk_require_number(ctx, 1))};
 
 		ptr->SetLocalPosition(glm::vec2{x, y});
 
