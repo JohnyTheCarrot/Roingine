@@ -34,15 +34,19 @@ namespace roingine {
 	}
 
 	void GameObject::SetLabel(std::string &&label) {
-		m_rpScene->m_GameObjectLabels.emplace(m_hGameObject, std::move(label));
+		m_rpScene->m_GameObjects.at(m_hGameObject).label = std::move(label);
 	}
 
 	std::optional<std::string_view> GameObject::GetLabel() const {
-		auto const it{m_rpScene->m_GameObjectLabels.find(m_hGameObject)};
-		if (it == m_rpScene->m_GameObjectLabels.cend())
-			return std::nullopt;
+		return m_rpScene->m_GameObjects.at(m_hGameObject).label;
+	}
 
-		return it->second;
+	void GameObject::SetUniqueID(std::string &&uniqueID) {
+		m_rpScene->m_GameObjects.at(m_hGameObject).uniqueID = std::move(uniqueID);
+	}
+
+	std::optional<std::string_view> GameObject::GetUniqueID() const {
+		return m_rpScene->m_GameObjects.at(m_hGameObject).uniqueID;
 	}
 
 	Component *GameObject::GetComponent(std::size_t typeHash) {

@@ -33,14 +33,19 @@ namespace roingine {
 		if (data.label.has_value())
 			gameObject.SetLabel(std::move(data.label.value()));
 
+		if (data.uniqueID.has_value()) {
+			m_UniqueIDs.emplace(data.uniqueID.value(), gameObject.GetHandle());
+			gameObject.SetUniqueID(std::move(data.uniqueID.value()));
+		}
+
 		for (auto &componentData: data.components) {
-			std::for_each(m_Labels.cbegin(), m_Labels.cend(), [&](auto const &it) {
-				auto const &[label, handle] = it;
+			std::for_each(m_UniqueIDs.cbegin(), m_UniqueIDs.cend(), [&](auto const &it) {
+				auto const &[uniqueID, handle] = it;
 
 				std::replace_if(
 				        componentData.args.begin(), componentData.args.end(),
 				        [&](auto &arg) {
-					        return std::holds_alternative<std::string>(arg) && std::get<std::string>(arg) == label;
+					        return std::holds_alternative<std::string>(arg) && std::get<std::string>(arg) == uniqueID;
 				        },
 				        static_cast<double>(handle)
 				);
@@ -51,10 +56,8 @@ namespace roingine {
 				if (!scripts)
 					scripts = &gameObject.AddComponent<Scripts>();
 
-				auto                               fileName{comp_init::RequireString(0, componentData.args)};
-				std::vector<JSData> factoryArgs(
-				        std::max(componentData.args.size() - 1, static_cast<std::size_t>(0))
-				);
+				auto                fileName{comp_init::RequireString(0, componentData.args)};
+				std::vector<JSData> factoryArgs(std::max(componentData.args.size() - 1, static_cast<std::size_t>(0)));
 				std::move(std::next(componentData.args.begin()), componentData.args.end(), factoryArgs.begin());
 
 				scripts->AddScript(fileName, factoryArgs);
@@ -64,9 +67,6 @@ namespace roingine {
 
 			gameObject.AddComponent(componentData.name, componentData.args);
 		}
-
-		if (data.label.has_value())
-			m_Labels.emplace(std::move(*data.label), gameObject.GetHandle());
 	}
 
 	void from_json(Json const &json, ComponentData &data) {
@@ -104,6 +104,11 @@ namespace roingine {
 			std::string label{};
 			json.at("label").get_to(label);
 			data.label = std::move(label);
+		}
+		if (json.contains("uid")) {
+			std::string uniqueID{};
+			json.at("uid").get_to(uniqueID);
+			data.uniqueID = std::move(uniqueID);
 		}
 		json.at("components").get_to(data.components);
 	}

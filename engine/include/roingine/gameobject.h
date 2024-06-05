@@ -70,6 +70,11 @@ namespace roingine {
 		[[nodiscard]]
 		std::optional<std::string_view> GetLabel() const;
 
+		void SetUniqueID(std::string &&uniqueID);
+
+		[[nodiscard]]
+		std::optional<std::string_view> GetUniqueID() const;
+
 		template<ComponentImpl TComponent>
 		[[nodiscard]]
 		TComponent &GetComponent() {

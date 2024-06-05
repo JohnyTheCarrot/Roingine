@@ -43,7 +43,7 @@ namespace roingine {
 	}
 
 	void Scene::SetGameObjectScenes() {
-		for (auto &go: m_GameObjects) { go.second.SetScene(this); }
+		for (auto &go: m_GameObjects) { go.second.gameObject.SetScene(this); }
 		for (auto &comp: m_GameObjectComponents) {
 			comp.second->GetGameObject().SetScene(this);
 		}
@@ -72,8 +72,10 @@ namespace roingine {
 	}
 
 	GameObject *Scene::GetGameObjectPtr(std::size_t handle) {
-		if (m_GameObjects.contains(handle))
-			return &m_GameObjects.at(handle);
+		auto it{m_GameObjects.find(handle)};
+
+		if (it != m_GameObjects.end())
+			return &m_GameObjects.at(handle).gameObject;
 
 		return nullptr;
 	}
@@ -84,7 +86,7 @@ namespace roingine {
 	}
 
 	void Scene::AddGameObject(GameObject gameObject) {
-		m_GameObjects.emplace(gameObject.GetHandle(), gameObject);
+		m_GameObjects.emplace(gameObject.GetHandle(), GameObjectData{.gameObject = gameObject});
 	}
 
 	void Scene::RemoveGameObject(GameObject gameObject) {
@@ -96,7 +98,6 @@ namespace roingine {
 		});
 
 		m_GameObjects.erase(gameObject.GetHandle());
-		m_GameObjectLabels.erase(gameObject.GetHandle());
 	}
 
 	Scene::Scene() {
@@ -113,8 +114,7 @@ namespace roingine {
 	    : m_GameObjectComponents{std::move(other.m_GameObjectComponents)}
 	    , m_NameMap{std::move(other.m_NameMap)}
 	    , m_JSFactoryMap{std::move(other.m_JSFactoryMap)}
-	    , m_GameObjects{std::move(other.m_GameObjects)}
-	    , m_GameObjectLabels{std::move(other.m_GameObjectLabels)} {
+	    , m_GameObjects{std::move(other.m_GameObjects)} {
 		SetGameObjectScenes();
 	};
 
@@ -127,7 +127,6 @@ namespace roingine {
 		m_NameMap              = std::move(other.m_NameMap);
 		m_JSFactoryMap         = std::move(other.m_JSFactoryMap);
 		m_GameObjects          = std::move(other.m_GameObjects);
-		m_GameObjectLabels     = std::move(other.m_GameObjectLabels);
 
 		SetGameObjectScenes();
 

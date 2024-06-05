@@ -13,6 +13,7 @@ namespace roingine {
 	};
 
 	struct GameObjectData final {
+		std::optional<std::string> uniqueID{std::nullopt};
 		std::optional<std::string> label{std::nullopt};
 		std::vector<ComponentData> components;
 	};

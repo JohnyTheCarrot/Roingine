@@ -59,6 +59,7 @@ function Init(a, b, c) {
             break;
         }
         transform.setLocalPosition(hitX, hitY);
+        roingine.println(gameObject.getLabel(), gameObject.getId());
     });
 
     scripts.addScript("scripts/runtime_script.js");

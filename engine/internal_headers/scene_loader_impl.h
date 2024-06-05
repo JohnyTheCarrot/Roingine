@@ -27,7 +27,7 @@ namespace roingine {
 		nlohmann::json        m_Data;
 		Scene                 m_Scene;
 		std::filesystem::path m_Path;
-		std::unordered_map<std::string, std::size_t> m_Labels;
+		std::unordered_map<std::string, std::size_t> m_UniqueIDs;
 	};
 }// namespace roingine
 
