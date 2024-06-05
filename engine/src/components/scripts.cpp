@@ -61,7 +61,7 @@ namespace roingine {
 	}
 
 	duk_function_list_entry const API[]{
-	        {"addScript", AddScript, 1},
+	        {"addScript", AddScript, DUK_VARARGS},
 	        {"getScript", GetScript, 1},
 	        {nullptr, nullptr, 0}
 	};
