@@ -127,6 +127,24 @@ namespace roingine::duk_gameobject {
 		return 1;
 	}
 
+	int SetEnabled(duk_context *ctx) {
+		auto const enabled{duk_require_boolean(ctx, 0)};
+		auto       go{GetGameObjectPtr(ctx)};
+
+		go->SetEnabled(enabled);
+
+		return 0;
+	}
+
+	int GetEnabled(duk_context *ctx) {
+		auto       go{GetGameObjectPtr(ctx)};
+		auto const enabled{go->GetEnabled()};
+
+		duk_push_boolean(ctx, enabled);
+
+		return 1;
+	}
+
 	duk_function_list_entry const gameObjectFunctions[]{
 	        {"getComponent", GetComponent, DUK_VARARGS},
 	        {"addComponent", AddComponent, DUK_VARARGS},
@@ -137,6 +155,8 @@ namespace roingine::duk_gameobject {
 	        {"setId", SetID, 1},
 	        {"getId", GetID, 0},
 	        {"hasId", HasID, 1},
+	        {"setEnabled", SetEnabled, 1},
+	        {"getEnabled", GetEnabled, 0},
 	        {nullptr, nullptr, 0}
 	};
 

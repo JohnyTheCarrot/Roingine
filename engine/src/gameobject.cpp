@@ -49,6 +49,14 @@ namespace roingine {
 		return m_rpScene->m_GameObjects.at(m_hGameObject).uniqueID;
 	}
 
+	void GameObject::SetEnabled(bool enabled) {
+		m_rpScene->m_GameObjects.at(m_hGameObject).isEnabled = enabled;
+	}
+
+	bool GameObject::GetEnabled() const {
+		return m_rpScene->m_GameObjects.at(m_hGameObject).isEnabled;
+	}
+
 	Component *GameObject::GetComponent(std::size_t typeHash) {
 		ComponentHandle hComponent{m_hGameObject, typeHash};
 		auto           &sceneComponents{GetSceneComponents()};
@@ -86,7 +94,7 @@ namespace roingine {
 	}
 
 	void GameObject::Destroy() {
-		m_rpScene->m_GameObjectsToDestroy.emplace_back(*this);
+		m_rpScene->m_GameObjectsToDestroy.emplace_back(m_hGameObject);
 	}
 
 	GameObject::Handle GameObject::GetHandle() const noexcept {

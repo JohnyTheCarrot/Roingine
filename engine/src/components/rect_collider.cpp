@@ -26,7 +26,7 @@ namespace roingine {
 		auto const worldPos{m_Transform.GetWorldPosition()};
 
 		GetGameObject().GetScene()->ForEveryComponentOfType<RectCollider>([&](RectCollider &other) {
-			if (&other == this)
+			if (&other == this || !other.GetGameObject().GetEnabled())
 				return;
 
 			auto const otherWorldPos{other.m_Transform.GetWorldPosition()};

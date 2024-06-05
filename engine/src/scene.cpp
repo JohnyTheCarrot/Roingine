@@ -8,24 +8,39 @@
 
 namespace roingine {
 	void Scene::PreUpdate() {
-		for (auto &component: m_GameObjectComponents) { component.second->PreUpdate(); }
+		for (auto &component: m_GameObjectComponents) {
+			if (component.second->GetGameObject().GetEnabled())
+				component.second->PreUpdate();
+		}
 	}
 
 	void Scene::Update() {
-		for (auto &component: m_GameObjectComponents) { component.second->Update(); }
+		for (auto &component: m_GameObjectComponents) {
+			if (component.second->GetGameObject().GetEnabled())
+				component.second->Update();
+		}
 	}
 
 	void Scene::PostUpdate() {
-		for (auto &component: m_GameObjectComponents) { component.second->PostUpdate(); }
+		for (auto &component: m_GameObjectComponents) {
+			if (component.second->GetGameObject().GetEnabled())
+				component.second->PostUpdate();
+		}
 		CleanupMarkedGameObjects();
 	}
 
 	void Scene::FixedUpdate() {
-		for (auto &component: m_GameObjectComponents) { component.second->FixedUpdate(); }
+		for (auto &component: m_GameObjectComponents) {
+			if (component.second->GetGameObject().GetEnabled())
+				component.second->FixedUpdate();
+		}
 	}
 
 	void Scene::Render() const {
-		for (auto const &component: m_GameObjectComponents) { component.second->Render(); }
+		for (auto const &component: m_GameObjectComponents) {
+			if (component.second->GetGameObject().GetEnabled())
+				component.second->Render();
+		}
 	}
 
 	GameObject Scene::AddGameObject() {
@@ -81,7 +96,7 @@ namespace roingine {
 	}
 
 	void Scene::CleanupMarkedGameObjects() {
-		for (GameObject gameObject: m_GameObjectsToDestroy) { RemoveGameObject(gameObject); }
+		for (GameObjectHandle gameObject: m_GameObjectsToDestroy) { RemoveGameObject(gameObject); }
 		m_GameObjectsToDestroy.clear();
 	}
 
@@ -89,15 +104,15 @@ namespace roingine {
 		m_GameObjects.emplace(gameObject.GetHandle(), GameObjectData{.gameObject = gameObject});
 	}
 
-	void Scene::RemoveGameObject(GameObject gameObject) {
+	void Scene::RemoveGameObject(GameObjectHandle handle) {
 		std::erase_if(m_GameObjectComponents, [&](auto &it) {
 			auto &[key, value]  = it;
 			auto currGameObject = key.first;
 
-			return currGameObject == gameObject.GetHandle();
+			return currGameObject == handle;
 		});
 
-		m_GameObjects.erase(gameObject.GetHandle());
+		m_GameObjects.erase(handle);
 	}
 
 	Scene::Scene() {

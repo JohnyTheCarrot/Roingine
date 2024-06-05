@@ -38,6 +38,8 @@ namespace roingine {
 			gameObject.SetUniqueID(std::move(data.uniqueID.value()));
 		}
 
+		gameObject.SetEnabled(data.isEnabled);
+
 		for (auto &componentData: data.components) {
 			std::for_each(m_UniqueIDs.cbegin(), m_UniqueIDs.cend(), [&](auto const &it) {
 				auto const &[uniqueID, handle] = it;
@@ -109,6 +111,9 @@ namespace roingine {
 			std::string uniqueID{};
 			json.at("uid").get_to(uniqueID);
 			data.uniqueID = std::move(uniqueID);
+		}
+		if (json.contains("isEnabled")) {
+			json.at("isEnabled").get_to(data.isEnabled);
 		}
 		json.at("components").get_to(data.components);
 	}

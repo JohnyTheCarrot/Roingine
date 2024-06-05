@@ -75,6 +75,11 @@ namespace roingine {
 		[[nodiscard]]
 		std::optional<std::string_view> GetUniqueID() const;
 
+		void SetEnabled(bool enabled);
+
+		[[nodiscard]]
+		bool GetEnabled() const;
+
 		template<ComponentImpl TComponent>
 		[[nodiscard]]
 		TComponent &GetComponent() {

@@ -71,6 +71,7 @@ namespace roingine {
 			std::optional<std::string> uniqueID{};
 			std::optional<std::string> label{};
 			GameObject                 gameObject;
+			bool                       isEnabled{true};
 		};
 
 		friend class GameObject;
@@ -79,13 +80,13 @@ namespace roingine {
 		std::unordered_map<std::string, std::size_t>       m_NameMap;
 		std::unordered_map<std::size_t, JSFactoryMapEntry> m_JSFactoryMap;
 		std::unordered_map<std::size_t, GameObjectData>    m_GameObjects;
-		std::vector<GameObject>                            m_GameObjectsToDestroy{};
+		std::vector<GameObjectHandle>                      m_GameObjectsToDestroy{};
 
 		void CleanupMarkedGameObjects();
 
 		void AddGameObject(GameObject gameObject);
 
-		void RemoveGameObject(GameObject gameObject);
+		void RemoveGameObject(GameObjectHandle handle);
 	};
 }// namespace roingine
 
