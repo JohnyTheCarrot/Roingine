@@ -470,11 +470,6 @@ namespace roingine {
 		duk_pop(m_DukContext.GetRawContext());
 	}
 
-	void Script::SceneChanged(Scene &) {
-		auto global{m_DukContext.AccessGlobalObject()};
-		duk_gameobject::PutGameObject(global, GetGameObject(), CURRENT_GAMEOBJECT_PROP_NAME, m_DukContext);
-	}
-
 	ScriptCompilationFailedException::ScriptCompilationFailedException(std::string errorMessage)
 	    : m_ErrorMessage{std::move(errorMessage)} {
 	}

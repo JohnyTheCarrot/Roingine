@@ -72,7 +72,6 @@ namespace roingine {
 		for (auto &componentList: m_GameObjectComponents) {
 			for (auto &component: componentList.second) {
 				component.second->GetGameObject().SetScene(this);
-				component.second->SceneChanged(*this);
 			}
 		}
 	}

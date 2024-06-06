@@ -40,9 +40,6 @@ namespace roingine {
 		virtual void OnDisabled() {
 		}
 
-		virtual void SceneChanged(Scene &) {
-		}
-
 		[[nodiscard]]
 		virtual char const *GetName() const = 0;
 

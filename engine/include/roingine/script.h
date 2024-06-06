@@ -45,8 +45,6 @@ namespace roingine {
 
 		void OnDisabled();
 
-		void SceneChanged(Scene &scene);
-
 		[[nodiscard]]
 		std::string_view GetScriptName() const;
 

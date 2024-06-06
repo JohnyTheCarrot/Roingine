@@ -29,10 +29,6 @@ namespace roingine {
 		for (auto &script: m_Scripts) { script.second.OnDisabled(); }
 	}
 
-	void Scripts::SceneChanged(Scene &scene) {
-		for (auto &script: m_Scripts) { script.second.SceneChanged(scene); }
-	}
-
 	char const *Scripts::GetName() const {
 		return NAME;
 	}

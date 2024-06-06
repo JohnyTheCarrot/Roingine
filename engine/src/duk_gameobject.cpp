@@ -4,13 +4,18 @@
 #include <roingine/components/component.h>
 #include <roingine/gameobject.h>
 #include <roingine/scene.h>
+#include <roingine/script.h>
 
 namespace roingine::duk_gameobject {
 	GameObject *GetGameObjectPtr(duk_context *ctx) {
+		duk_push_global_object(ctx);
+		duk_get_prop_literal(ctx, -1, "__scriptPtr");
+		auto *pScript{static_cast<Script *>(duk_require_pointer(ctx, -1))};
+		duk_pop_2(ctx);
+
+		auto pScene{pScript->GetGameObject().GetScene()};
+
 		duk_push_this(ctx);
-		duk_get_prop_literal(ctx, -1, "__pScene");
-		auto *pScene{static_cast<Scene *>(duk_require_pointer(ctx, -1))};
-		duk_pop(ctx);
 		duk_get_prop_literal(ctx, -1, "handle");
 		auto const hGo{duk_require_int(ctx, -1)};
 		duk_pop_2(ctx);
@@ -162,8 +167,6 @@ namespace roingine::duk_gameobject {
 
 	void PushGameObject(GameObject const &pGameObject, duk_context *ctx) {
 		duk_push_object(ctx);
-		duk_push_pointer(ctx, pGameObject.GetScene());
-		duk_put_prop_literal(ctx, -2, "__pScene");
 		duk_push_int(ctx, static_cast<int>(pGameObject.GetHandle()));
 		duk_put_prop_literal(ctx, -2, "handle");
 		duk_put_function_list(ctx, -1, gameObjectFunctions);
