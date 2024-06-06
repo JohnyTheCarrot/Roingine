@@ -21,6 +21,12 @@ namespace roingine {
 
 		void Render() const override;
 
+		void OnEnabled() override;
+
+		void OnDisabled() override;
+
+		void SceneChanged(Scene &scene) override;
+
 		static constexpr char const *NAME{"Scripts"};
 
 		[[nodiscard]]

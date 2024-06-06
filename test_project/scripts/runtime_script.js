@@ -4,9 +4,9 @@ function Init() {
     roingine.println("This script was added at runtime!");
 }
 
-input.onKeyDown(input.KEY_P, function() {
-    roingine.println("P key pressed!");
-});
+// input.onKeyDown(input.KEY_P, function() {
+//     roingine.println("P key pressed!");
+// });
 
 script.api = {
     testMethod: function (message) {

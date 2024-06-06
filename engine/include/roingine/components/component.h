@@ -34,6 +34,15 @@ namespace roingine {
 
 		virtual void Render() const = 0;
 
+		virtual void OnEnabled() {
+		}
+
+		virtual void OnDisabled() {
+		}
+
+		virtual void SceneChanged(Scene &) {
+		}
+
 		[[nodiscard]]
 		virtual char const *GetName() const = 0;
 

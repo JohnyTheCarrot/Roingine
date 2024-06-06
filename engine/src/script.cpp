@@ -377,7 +377,7 @@ namespace roingine {
 	    , m_ScriptName{std::move(other.m_ScriptName)}
 	    , m_CppFunctionCaller{std::move(other.m_CppFunctionCaller)} {
 		auto global{m_DukContext.AccessGlobalObject()};
-		duk_gameobject::PutGameObject(global, *GetGameObjectPtr(), CURRENT_GAMEOBJECT_PROP_NAME, m_DukContext);
+		duk_gameobject::PutGameObject(global, GetGameObject(), CURRENT_GAMEOBJECT_PROP_NAME, m_DukContext);
 		global.PutPointer("__scriptPtr", static_cast<void *>(this));
 		other.m_EventListenerHandle = {};
 		InitListener();
@@ -410,7 +410,7 @@ namespace roingine {
 		InitListener();
 
 		auto global{m_DukContext.AccessGlobalObject()};
-		duk_gameobject::PutGameObject(global, *GetGameObjectPtr(), CURRENT_GAMEOBJECT_PROP_NAME, m_DukContext);
+		duk_gameobject::PutGameObject(global, GetGameObject(), CURRENT_GAMEOBJECT_PROP_NAME, m_DukContext);
 		global.PutPointer("__scriptPtr", static_cast<void *>(this));
 
 		return *this;
@@ -444,6 +444,35 @@ namespace roingine {
 	}
 
 	void Script::Render() const {
+	}
+
+	void Script::OnEnabled() {
+		duk_get_global_literal(m_DukContext.GetRawContext(), "OnEnabled");
+		if (duk_is_undefined(m_DukContext.GetRawContext(), -1)) {
+			duk_pop(m_DukContext.GetRawContext());
+			return;
+		}
+
+		if (duk_pcall(m_DukContext.GetRawContext(), 0) != 0)
+			std::cerr << "Error: " << duk_safe_to_string(m_DukContext.GetRawContext(), -1) << std::endl;
+		duk_pop(m_DukContext.GetRawContext());
+	}
+
+	void Script::OnDisabled() {
+		duk_get_global_literal(m_DukContext.GetRawContext(), "OnDisabled");
+		if (duk_is_undefined(m_DukContext.GetRawContext(), -1)) {
+			duk_pop(m_DukContext.GetRawContext());
+			return;
+		}
+
+		if (duk_pcall(m_DukContext.GetRawContext(), 0) != 0)
+			std::cerr << "Error: " << duk_safe_to_string(m_DukContext.GetRawContext(), -1) << std::endl;
+		duk_pop(m_DukContext.GetRawContext());
+	}
+
+	void Script::SceneChanged(Scene &) {
+		auto global{m_DukContext.AccessGlobalObject()};
+		duk_gameobject::PutGameObject(global, GetGameObject(), CURRENT_GAMEOBJECT_PROP_NAME, m_DukContext);
 	}
 
 	ScriptCompilationFailedException::ScriptCompilationFailedException(std::string errorMessage)

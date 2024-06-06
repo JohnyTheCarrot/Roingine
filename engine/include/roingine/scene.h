@@ -52,14 +52,15 @@ namespace roingine {
 
 		template<ComponentImpl TComponent>
 		void ForEveryComponentOfType(std::function<void(TComponent &)> const &fn) {
-			std::for_each(m_GameObjectComponents.begin(), m_GameObjectComponents.end(), [&fn](auto &pair) {
-				auto &[key, pComponent] = pair;
-				auto componentHash      = key.second;
-				if (componentHash != typeid(TComponent).hash_code())
-					return;
+			std::for_each(m_GameObjectComponents.begin(), m_GameObjectComponents.end(), [&fn](auto &goCompPair) {
+				std::for_each(goCompPair.second.begin(), goCompPair.second.end(), [&fn](auto &pair) {
+					auto &[componentHash, pComponent] = pair;
+					if (componentHash != typeid(TComponent).hash_code())
+						return;
 
-				auto &component{*dynamic_cast<TComponent *>(pComponent.get())};
-				fn(component);
+					auto &component{*dynamic_cast<TComponent *>(pComponent.get())};
+					fn(component);
+				});
 			});
 		}
 

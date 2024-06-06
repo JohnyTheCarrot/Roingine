@@ -26,8 +26,8 @@ namespace roingine {
 		std::unique_ptr<Component> pComp{factory(this, args)};
 		auto const                 rpComp{pComp.get()};
 
-		ComponentHandle hComponent{m_hGameObject, hash.value()};
-		auto           &sceneComponents{GetSceneComponents()};
+		ComponentHandle hComponent{hash.value()};
+		auto           &sceneComponents{GetOrCreateComponentList()};
 
 		sceneComponents.insert({hComponent, std::move(pComp)});
 		return rpComp;
@@ -51,6 +51,13 @@ namespace roingine {
 
 	void GameObject::SetEnabled(bool enabled) {
 		m_rpScene->m_GameObjects.at(m_hGameObject).isEnabled = enabled;
+		if (auto *pComponents{GetComponents()}; pComponents != nullptr)
+			for (auto &comp: *pComponents) {
+				if (enabled)
+					comp.second->OnEnabled();
+				else
+					comp.second->OnDisabled();
+			}
 	}
 
 	bool GameObject::GetEnabled() const {
@@ -58,21 +65,20 @@ namespace roingine {
 	}
 
 	Component *GameObject::GetComponent(std::size_t typeHash) {
-		ComponentHandle hComponent{m_hGameObject, typeHash};
-		auto           &sceneComponents{GetSceneComponents()};
-
-		if (sceneComponents.contains(hComponent))
-			return sceneComponents.at(hComponent).get();
+		if (auto pComp{GetOptionalComponent(typeHash)}; pComp != nullptr)
+			return pComp;
 
 		throw ComponentNotFoundException{};
 	}
 
 	Component *GameObject::GetOptionalComponent(std::size_t typeHash) {
-		ComponentHandle hComponent{m_hGameObject, typeHash};
-		auto           &sceneComponents{GetSceneComponents()};
+		ComponentHandle hComponent{typeHash};
 
-		if (sceneComponents.contains(hComponent))
-			return sceneComponents.at(hComponent).get();
+		if (auto sceneComponents{GetComponents()}; sceneComponents != nullptr) {
+			auto it{sceneComponents->find(hComponent)};
+			if (it != sceneComponents->end())
+				return it->second.get();
+		}
 
 		return nullptr;
 	}
@@ -107,6 +113,32 @@ namespace roingine {
 
 	Scene *GameObject::GetScene() const noexcept {
 		return m_rpScene;
+	}
+
+	ComponentMap *GameObject::GetComponents() {
+		auto it{m_rpScene->m_GameObjectComponents.find(m_hGameObject)};
+		if (it == m_rpScene->m_GameObjectComponents.end())
+			return nullptr;
+
+		return &it->second;
+	}
+
+	ComponentMap const *GameObject::GetComponents() const {
+		auto it{m_rpScene->m_GameObjectComponents.find(m_hGameObject)};
+		if (it == m_rpScene->m_GameObjectComponents.end())
+			return nullptr;
+
+		return &it->second;
+	}
+
+	ComponentMap &GameObject::GetOrCreateComponentList() {
+		auto it{m_rpScene->m_GameObjectComponents.find(m_hGameObject)};
+		if (it == m_rpScene->m_GameObjectComponents.end()) {
+			auto newIt{m_rpScene->m_GameObjectComponents.emplace(m_hGameObject, ComponentMap{})};
+			return newIt.first->second;
+		}
+
+		return it->second;
 	}
 
 	// why not call this on scene directly? bc of sircular dependencies

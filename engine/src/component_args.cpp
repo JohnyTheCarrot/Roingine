@@ -1,7 +1,6 @@
 #include "component_args.h"
 #include <duktape.h>
 #include <format>
-#include <iostream>
 
 namespace roingine {
 	std::vector<JSData> CollectDataFromDukArgs(duk_context *ctx) {

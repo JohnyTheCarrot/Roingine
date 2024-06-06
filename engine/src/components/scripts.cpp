@@ -21,6 +21,18 @@ namespace roingine {
 		for (auto const &script: m_Scripts) { script.second.Render(); }
 	}
 
+	void Scripts::OnEnabled() {
+		for (auto &script: m_Scripts) { script.second.OnEnabled(); }
+	}
+
+	void Scripts::OnDisabled() {
+		for (auto &script: m_Scripts) { script.second.OnDisabled(); }
+	}
+
+	void Scripts::SceneChanged(Scene &scene) {
+		for (auto &script: m_Scripts) { script.second.SceneChanged(scene); }
+	}
+
 	char const *Scripts::GetName() const {
 		return NAME;
 	}

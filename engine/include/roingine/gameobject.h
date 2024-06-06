@@ -1,6 +1,7 @@
 #ifndef GAMEOBJECT_H
 #define GAMEOBJECT_H
 
+#include <functional>
 #include <optional>
 #include <roingine/component_init_types.h>
 #include <roingine/gameobject_types.h>
@@ -11,7 +12,7 @@ using duk_context = struct duk_hthread;
 namespace roingine {
 	class GameObject;
 
-	using ComponentHandle = std::pair<std::size_t, std::size_t>;
+	using ComponentHandle = std::size_t;
 
 	template<class T>
 	concept ComponentImpl = requires(T comp) {
@@ -57,7 +58,7 @@ namespace roingine {
 			TComponent                 *rpComponent{pComponent.get()};
 
 			ComponentHandle   hComponent{GetComponentHandle<TComponent>()};
-			auto             &sceneComponents{GetSceneComponents()};
+			auto             &sceneComponents{GetOrCreateComponentList()};
 
 			sceneComponents.insert({hComponent, std::move(pComponent)});
 			return *rpComponent;
@@ -84,10 +85,12 @@ namespace roingine {
 		[[nodiscard]]
 		TComponent &GetComponent() {
 			ComponentHandle   hComponent{GetComponentHandle<TComponent>()};
-			auto             &sceneComponents{GetSceneComponents()};
 
-			if (sceneComponents.contains(hComponent))
-				return *dynamic_cast<TComponent *>(sceneComponents.at(hComponent).get());
+			if (auto sceneComponents{GetComponents()}; sceneComponents != nullptr) {
+				auto it{sceneComponents->find(hComponent)};
+				if (it != sceneComponents->end())
+					return *dynamic_cast<TComponent *>(it->second.get());
+			}
 
 			throw ComponentNotFoundException{};
 		}
@@ -95,11 +98,13 @@ namespace roingine {
 		template<ComponentImpl TComponent>
 		[[nodiscard]]
 		TComponent const &GetComponent() const {
-			ComponentHandle   hComponent{GetComponentHandle<TComponent>()};
-			auto const       &sceneComponents{GetSceneComponents()};
+			ComponentHandle hComponent{GetComponentHandle<TComponent>()};
 
-			if (sceneComponents.contains(hComponent))
-				return *dynamic_cast<TComponent *>(sceneComponents.at(hComponent).get());
+			if (auto const *sceneComponents{GetComponents()}; sceneComponents != nullptr) {
+				auto it{sceneComponents->find(hComponent)};
+				if (it != sceneComponents->cend())
+					return *dynamic_cast<TComponent *>(it);
+			}
 
 			throw ComponentNotFoundException{};
 		}
@@ -119,11 +124,13 @@ namespace roingine {
 		template<ComponentImpl TComponent>
 		[[nodiscard]]
 		TComponent *GetOptionalComponent() noexcept {
-			ComponentHandle   hComponent{GetComponentHandle<TComponent>()};
-			auto             &sceneComponent{GetSceneComponents()};
+			ComponentHandle hComponent{GetComponentHandle<TComponent>()};
 
-			if (sceneComponent.contains(hComponent))
-				return dynamic_cast<TComponent *>(sceneComponent[hComponent].get());
+			if (auto sceneComponents{GetComponents()}; sceneComponents != nullptr) {
+				auto it{sceneComponents->find(hComponent)};
+				if (it != sceneComponents->end())
+					return dynamic_cast<TComponent *>(it->second.get());
+			}
 
 			return nullptr;
 		}
@@ -147,10 +154,16 @@ namespace roingine {
 		Scene *GetScene() const noexcept;
 
 	private:
+		ComponentMap *GetComponents();
+
+		ComponentMap const *GetComponents() const;
+
+		ComponentMap &GetOrCreateComponentList();
+
 		template<ComponentImpl TComponent>
 		[[nodiscard]]
 		ComponentHandle GetComponentHandle() const noexcept {
-			return {m_hGameObject, typeid(TComponent).hash_code()};
+			return typeid(TComponent).hash_code();
 		}
 
 		[[nodiscard]]

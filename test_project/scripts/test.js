@@ -33,7 +33,7 @@ input.onKeyHeld(input.KEY_D, function() {
 input.onKeyHeld(input.KEY_T, function() {
     var value = runtimeScript.getProperty("prop") || 0;
     runtimeScript.setProperty("prop", ++value);
-    var other = scene.getGameObject(0);
+    current.setEnabled(false);
 });
 
 function Init(a, b, c) {
@@ -80,6 +80,14 @@ function Init(a, b, c) {
     requireTest.hello();
     script.setEventListener("test_event", function (a, b, c){ roingine.println("Event caught!", a, b, c); });
     roingine.fireEvent("test_event", 1, 2, 3);
+}
+
+function OnEnabled() {
+    roingine.println("Enabled!");
+}
+
+function OnDisabled() {
+    roingine.println("Disabled!");
 }
 
 function OnDispose() {

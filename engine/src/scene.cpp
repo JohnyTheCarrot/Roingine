@@ -8,38 +8,48 @@
 
 namespace roingine {
 	void Scene::PreUpdate() {
-		for (auto &component: m_GameObjectComponents) {
-			if (component.second->GetGameObject().GetEnabled())
-				component.second->PreUpdate();
+		for (auto &componentList: m_GameObjectComponents) {
+			for (auto &component: componentList.second) {
+				if (component.second->GetGameObject().GetEnabled())
+					component.second->PreUpdate();
+			}
 		}
 	}
 
 	void Scene::Update() {
-		for (auto &component: m_GameObjectComponents) {
-			if (component.second->GetGameObject().GetEnabled())
-				component.second->Update();
+		for (auto &componentList: m_GameObjectComponents) {
+			for (auto &component: componentList.second) {
+				if (component.second->GetGameObject().GetEnabled())
+					component.second->Update();
+			}
 		}
 	}
 
 	void Scene::PostUpdate() {
-		for (auto &component: m_GameObjectComponents) {
-			if (component.second->GetGameObject().GetEnabled())
-				component.second->PostUpdate();
+		for (auto &componentList: m_GameObjectComponents) {
+			for (auto &component: componentList.second) {
+				if (component.second->GetGameObject().GetEnabled())
+					component.second->PostUpdate();
+			}
 		}
 		CleanupMarkedGameObjects();
 	}
 
 	void Scene::FixedUpdate() {
-		for (auto &component: m_GameObjectComponents) {
-			if (component.second->GetGameObject().GetEnabled())
-				component.second->FixedUpdate();
+		for (auto &componentList: m_GameObjectComponents) {
+			for (auto &component: componentList.second) {
+				if (component.second->GetGameObject().GetEnabled())
+					component.second->FixedUpdate();
+			}
 		}
 	}
 
 	void Scene::Render() const {
-		for (auto const &component: m_GameObjectComponents) {
-			if (component.second->GetGameObject().GetEnabled())
-				component.second->Render();
+		for (auto &componentList: m_GameObjectComponents) {
+			for (auto &component: componentList.second) {
+				if (component.second->GetGameObject().GetEnabled())
+					component.second->Render();
+			}
 		}
 	}
 
@@ -59,8 +69,11 @@ namespace roingine {
 
 	void Scene::SetGameObjectScenes() {
 		for (auto &go: m_GameObjects) { go.second.gameObject.SetScene(this); }
-		for (auto &comp: m_GameObjectComponents) {
-			comp.second->GetGameObject().SetScene(this);
+		for (auto &componentList: m_GameObjectComponents) {
+			for (auto &component: componentList.second) {
+				component.second->GetGameObject().SetScene(this);
+				component.second->SceneChanged(*this);
+			}
 		}
 	}
 
@@ -105,13 +118,7 @@ namespace roingine {
 	}
 
 	void Scene::RemoveGameObject(GameObjectHandle handle) {
-		std::erase_if(m_GameObjectComponents, [&](auto &it) {
-			auto &[key, value]  = it;
-			auto currGameObject = key.first;
-
-			return currGameObject == handle;
-		});
-
+		m_GameObjectComponents.erase(handle);
 		m_GameObjects.erase(handle);
 	}
 

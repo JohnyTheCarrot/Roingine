@@ -38,8 +38,6 @@ namespace roingine {
 			gameObject.SetUniqueID(std::move(data.uniqueID.value()));
 		}
 
-		gameObject.SetEnabled(data.isEnabled);
-
 		for (auto &componentData: data.components) {
 			std::for_each(m_UniqueIDs.cbegin(), m_UniqueIDs.cend(), [&](auto const &it) {
 				auto const &[uniqueID, handle] = it;
@@ -69,6 +67,8 @@ namespace roingine {
 
 			gameObject.AddComponent(componentData.name, componentData.args);
 		}
+
+		gameObject.SetEnabled(data.isEnabled);
 	}
 
 	void from_json(Json const &json, ComponentData &data) {
