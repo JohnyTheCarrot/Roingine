@@ -36,7 +36,19 @@ namespace roingine {
 		Space   = 27,
 		Enter   = 28,
 		Shift   = 29,
-		NumKeys = 30
+		F1      = 30,
+		F2      = 31,
+		F3      = 32,
+		F4      = 33,
+		F5      = 34,
+		F6      = 35,
+		F7      = 36,
+		F8      = 37,
+		F9      = 38,
+		F10     = 39,
+		F11     = 40,
+		F12     = 41,
+		NumKeys = 42
 	};
 
 	enum class KeyEventType { Up, Down, LongPress, Held };

@@ -150,6 +150,30 @@ namespace roingine {
 				return SDLKey::Enter;
 			case InputKeys::Shift:
 				return SDLKey::Shift;
+			case InputKeys::F1:
+				return SDLKey::F1;
+			case InputKeys::F2:
+				return SDLKey::F2;
+			case InputKeys::F3:
+				return SDLKey::F3;
+			case InputKeys::F4:
+				return SDLKey::F4;
+			case InputKeys::F5:
+				return SDLKey::F5;
+			case InputKeys::F6:
+				return SDLKey::F6;
+			case InputKeys::F7:
+				return SDLKey::F7;
+			case InputKeys::F8:
+				return SDLKey::F8;
+			case InputKeys::F9:
+				return SDLKey::F9;
+			case InputKeys::F10:
+				return SDLKey::F10;
+			case InputKeys::F11:
+				return SDLKey::F11;
+			case InputKeys::F12:
+				return SDLKey::F12;
 			default:
 				return SDLKey::A;
 		}

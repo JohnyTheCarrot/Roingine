@@ -287,7 +287,13 @@ namespace roingine {
 	        {"KEY_W", static_cast<int>(InputKeys::W)},         {"KEY_X", static_cast<int>(InputKeys::X)},
 	        {"KEY_Y", static_cast<int>(InputKeys::Y)},         {"KEY_Z", static_cast<int>(InputKeys::Z)},
 	        {"KEY_SPACE", static_cast<int>(InputKeys::Space)}, {"KEY_ENTER", static_cast<int>(InputKeys::Enter)},
-	        {"KEY_SHIFT", static_cast<int>(InputKeys::Shift)}, {nullptr, 0}
+	        {"KEY_SHIFT", static_cast<int>(InputKeys::Shift)}, {"KEY_F1", static_cast<int>(InputKeys::F1)},
+	        {"KEY_F2", static_cast<int>(InputKeys::F2)},       {"KEY_F3", static_cast<int>(InputKeys::F3)},
+	        {"KEY_F4", static_cast<int>(InputKeys::F4)},       {"KEY_F5", static_cast<int>(InputKeys::F5)},
+	        {"KEY_F6", static_cast<int>(InputKeys::F6)},       {"KEY_F7", static_cast<int>(InputKeys::F7)},
+	        {"KEY_F8", static_cast<int>(InputKeys::F8)},       {"KEY_F9", static_cast<int>(InputKeys::F9)},
+	        {"KEY_F10", static_cast<int>(InputKeys::F10)},     {"KEY_F11", static_cast<int>(InputKeys::F11)},
+	        {"KEY_F12", static_cast<int>(InputKeys::F12)},     {nullptr, 0}
 	};
 
 	Script::Script(
