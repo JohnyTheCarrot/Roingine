@@ -1,6 +1,7 @@
 #include "duk_gameobject.h"
 #include "component_args.h"
 #include <duktape.h>
+#include <iostream>
 #include <roingine/components/component.h>
 #include <roingine/gameobject.h>
 #include <roingine/scene.h>
@@ -48,6 +49,10 @@ namespace roingine::duk_gameobject {
 		auto args{CollectDataFromDukArgs(ctx)};
 
 		auto *comp{go->AddComponent(name, std::move(args))};
+		if (comp == nullptr) {
+			std::cerr << "AddComponent of " << name << " failed" << std::endl;
+			return 0;
+		}
 
 		auto const api{comp->SetUpScriptAPI(ctx)};
 		duk_push_object(ctx);
