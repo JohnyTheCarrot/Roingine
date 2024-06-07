@@ -1,16 +1,16 @@
 #include <SDL_opengl.h>
 #include <duktape.h>
 #include <iostream>
-#include <roingine/components/rect.h>
 #include <roingine/components/rect_renderer.h>
 #include <roingine/components/transform.h>
 #include <roingine/gameobject.h>
 
 namespace roingine {
-	RectRenderer::RectRenderer(GameObject &gameObject)
+	RectRenderer::RectRenderer(GameObject &gameObject, float width, float height)
 	    : Component{gameObject}
 	    , m_Transform{gameObject.GetComponent<Transform>()}
-	    , m_Rect{gameObject.GetComponent<Rect>()} {
+	    , m_Width{width}
+	    , m_Height{height} {
 	}
 
 	void RectRenderer::Update() {
@@ -26,14 +26,16 @@ namespace roingine {
 		float const g{m_ColorG / 255.f};
 		float const b{m_ColorB / 255.f};
 
-		glColor3f(r, g, b);
-
 		glBegin(GL_POLYGON);
 		{
+			glColor3f(r, g, b);
+
 			glVertex2f(0.f, 0.f);
-			glVertex2f(m_Rect.GetWidth(), 0.f);
-			glVertex2f(m_Rect.GetWidth(), m_Rect.GetHeight());
-			glVertex2f(0.f, m_Rect.GetHeight());
+			glVertex2f(m_Width, 0.f);
+			glVertex2f(m_Width, m_Height);
+			glVertex2f(0.f, m_Height);
+
+			glColor3f(1.f, 1.f, 1.f);
 		}
 		glEnd();
 	}
@@ -84,9 +86,11 @@ namespace roingine {
 		return rectRendererAPI;
 	}
 
-	std::unique_ptr<RectRenderer>
-	RectRenderer::JSFactory(GameObject *pGameObject, std::vector<JSData> const &) {
-		return std::make_unique<RectRenderer>(*pGameObject);
+	std::unique_ptr<RectRenderer> RectRenderer::JSFactory(GameObject *pGameObject, std::vector<JSData> const &args) {
+		auto const width{comp_init::RequireDouble(0, args)};
+		auto const height{comp_init::RequireDouble(1, args)};
+
+		return std::make_unique<RectRenderer>(*pGameObject, static_cast<float>(width), static_cast<float>(height));
 	}
 
 	void RectRenderer::SetColor(uint8_t r, uint8_t g, uint8_t b) {

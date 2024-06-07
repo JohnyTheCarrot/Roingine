@@ -73,8 +73,7 @@ function Init(a, b, c) {
 
     roingine.println(script.callCpp("cppCallTest", 42, 24));
 
-    current.addComponent("Rect", 50, 50);
-    rectRenderer = current.addComponent("RectRenderer");
+    rectRenderer = current.addComponent("RectRenderer", 50, 50);
     rectRenderer.setColor(0xFF0000);
 
     requireTest.hello();

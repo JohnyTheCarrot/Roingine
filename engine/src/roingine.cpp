@@ -7,6 +7,7 @@
 #include <GL/GLU.h>
 // clang-format on
 #include <SDL.h>
+#include <SDL_image.h>
 #include <SDL_mixer.h>
 #include <iostream>
 #include <roingine/engine_event_queue.h>
@@ -24,6 +25,10 @@ namespace roingine {
 		     std::optional<int> windowY) {
 			if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
 				std::runtime_error{std::string{"SDL_Init error: "} + SDL_GetError()};
+			}
+
+			if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
+				std::runtime_error{std::string{"IMG_Init error: "} + IMG_GetError()};
 			}
 
 			if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) != 0) {
@@ -82,6 +87,7 @@ namespace roingine {
 		~Impl() {
 			SDL_DestroyWindow(m_rpWindow);
 			SDL_Quit();
+			IMG_Quit();
 		}
 
 		void Run(std::function<void()> const &fn) {

@@ -115,6 +115,9 @@ configure_file("${CMAKE_CURRENT_LIST_DIR}/scripts/runtime_script.js" "scripts/ru
 configure_file("${CMAKE_CURRENT_LIST_DIR}/scripts/require_test.js" "scripts/require_test.js" COPYONLY)
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+	COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/res" "$<TARGET_FILE_DIR:${PROJECT_NAME}>/res"
+)
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 	COMMAND "${CMAKE_COMMAND}" -E copy "${SDL2_LIBRARY_DLL}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
 )
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

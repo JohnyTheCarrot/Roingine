@@ -1,7 +1,6 @@
 #include "duk_gameobject.h"
 #include <duktape.h>
 #include <iostream>
-#include <roingine/components/rect.h>
 #include <roingine/components/rect_collider.h>
 #include <roingine/components/scripts.h>
 #include <roingine/components/transform.h>

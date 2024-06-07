@@ -1,7 +1,7 @@
-#include <roingine/components/rect.h>
 #include <roingine/components/rect_collider.h>
 #include <roingine/components/rect_renderer.h>
 #include <roingine/components/scripts.h>
+#include <roingine/components/texture_renderer.h>
 #include <roingine/components/transform.h>
 #include <roingine/gameobject.h>
 #include <roingine/scene.h>
@@ -122,11 +122,11 @@ namespace roingine {
 	}
 
 	Scene::Scene() {
-		RegisterComponentType(Rect::NAME, typeid(Rect).hash_code(), Rect::JSFactory);
 		RegisterComponentType(RectRenderer::NAME, typeid(RectRenderer).hash_code(), RectRenderer::JSFactory);
 		RegisterComponentType(Transform::NAME, typeid(Transform).hash_code(), Transform::JSFactory);
 		RegisterComponentType(Scripts::NAME, typeid(Scripts).hash_code(), Scripts::JSFactory);
 		RegisterComponentType(RectCollider::NAME, typeid(RectCollider).hash_code(), RectCollider::JSFactory);
+		RegisterComponentType(TextureRenderer::NAME, typeid(TextureRenderer).hash_code(), TextureRenderer::JSFactory);
 	}
 
 	Scene::~Scene() = default;

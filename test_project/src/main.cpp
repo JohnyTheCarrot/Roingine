@@ -1,6 +1,5 @@
 #include <roingine/audio_service.h>
 #include <roingine/commands/command.h>
-#include <roingine/components/rect.h>
 #include <roingine/components/rect_collider.h>
 #include <roingine/components/rect_renderer.h>
 #include <roingine/components/scripts.h>

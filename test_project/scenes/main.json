@@ -12,14 +12,10 @@
 					]
 				},
 				{
-					"name": "Rect",
+					"name": "TextureRenderer",
 					"args": [
-						100, 100
+						"res/img/wires.png", 100, 100
 					]
-				},
-				{
-					"name": "RectRenderer",
-					"args": []
 				},
 				{
 					"name": "RectCollider",

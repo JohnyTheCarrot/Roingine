@@ -15,9 +15,9 @@ set (INCLUDE_HEADERS_COMPONENTS
 	include/roingine/components/component.h
 	include/roingine/components/rect_renderer.h
 	include/roingine/components/transform.h
-	include/roingine/components/rect.h
 	include/roingine/components/scripts.h
 	include/roingine/components/rect_collider.h
+	include/roingine/components/texture_renderer.h
 )
 
 set (INCLUDE_HEADERS_COMMANDS
@@ -59,7 +59,6 @@ set (SRC_FILES
 	src/sound_impl.cpp
 	src/components/rect_renderer.cpp
 	src/components/transform.cpp
-	src/components/rect.cpp
 	src/components/scripts.cpp
 	src/components/rect_collider.cpp
 	src/commands/gameobject_command.cpp
@@ -72,6 +71,7 @@ set (SRC_FILES
 	src/scene_loader.cpp
 	src/component_init_types.cpp
 	src/component_args.cpp
+	src/components/texture_renderer.cpp
 )
 
 set (INTERNAL_HEADERS
