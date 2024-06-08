@@ -14,6 +14,11 @@ namespace roingine {
 
 		TextureRenderer(GameObject &gameObject, std::string const &fileName, float width, float height);
 
+		TextureRenderer(
+		        GameObject &gameObject, std::string const &fileName, float width, float height, float unitWidth,
+		        float unitHeight
+		);
+
 		void Update() override;
 
 		void FixedUpdate() override;
@@ -35,6 +40,7 @@ namespace roingine {
 		Transform    &m_Transform;
 		std::uint32_t m_TextureID;
 		float         m_Width, m_Height;
+		float         m_UnitWidth, m_UnitHeight;
 	};
 }// namespace roingine
 
