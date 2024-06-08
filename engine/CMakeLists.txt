@@ -18,6 +18,7 @@ set (INCLUDE_HEADERS_COMPONENTS
 	include/roingine/components/scripts.h
 	include/roingine/components/rect_collider.h
 	include/roingine/components/texture_renderer.h
+	include/roingine/components/animation_renderer.h
 )
 
 set (INCLUDE_HEADERS_COMMANDS
@@ -72,6 +73,8 @@ set (SRC_FILES
 	src/component_init_types.cpp
 	src/component_args.cpp
 	src/components/texture_renderer.cpp
+	src/components/animation_renderer.cpp
+	src/unique_sdl_surface.cpp
 )
 
 set (INTERNAL_HEADERS
@@ -81,6 +84,7 @@ set (INTERNAL_HEADERS
 	internal_headers/duk_gameobject.h
 	internal_headers/component_args.h
 	internal_headers/scene_loader_impl.h
+	internal_headers/unique_sdl_surface.h
 )
 
 add_library(${PROJECT_NAME} STATIC

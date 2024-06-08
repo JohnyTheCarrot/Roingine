@@ -1,3 +1,4 @@
+#include "unique_sdl_surface.h"
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_opengl.h>
@@ -7,15 +8,6 @@
 #include <roingine/gameobject.h>
 
 namespace roingine {
-	class SDLSurfaceDestroyer final {
-	public:
-		void operator()(SDL_Surface *surface) {
-			SDL_FreeSurface(surface);
-		}
-	};
-
-	using UniqueSDLSurface = std::unique_ptr<SDL_Surface, SDLSurfaceDestroyer>;
-
 	TextureRenderer::TextureRenderer(GameObject &gameObject, std::string const &fileName)
 	    : Component{gameObject}
 	    , m_Transform{gameObject.GetComponent<Transform>()} {

@@ -1,3 +1,4 @@
+#include <roingine/components/animation_renderer.h>
 #include <roingine/components/rect_collider.h>
 #include <roingine/components/rect_renderer.h>
 #include <roingine/components/scripts.h>
@@ -127,6 +128,9 @@ namespace roingine {
 		RegisterComponentType(Scripts::NAME, typeid(Scripts).hash_code(), Scripts::JSFactory);
 		RegisterComponentType(RectCollider::NAME, typeid(RectCollider).hash_code(), RectCollider::JSFactory);
 		RegisterComponentType(TextureRenderer::NAME, typeid(TextureRenderer).hash_code(), TextureRenderer::JSFactory);
+		RegisterComponentType(
+		        AnimationRenderer::NAME, typeid(AnimationRenderer).hash_code(), AnimationRenderer::JSFactory
+		);
 	}
 
 	Scene::~Scene() = default;
