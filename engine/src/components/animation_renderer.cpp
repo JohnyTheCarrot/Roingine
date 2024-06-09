@@ -1,4 +1,4 @@
-#include "unique_sdl_surface.h"
+#include "sdl_smart_pointers.h"
 #include <SDL_image.h>
 #include <SDL_opengl.h>
 #include <roingine/components/animation_renderer.h>
@@ -20,9 +20,13 @@ namespace roingine {
 		m_Width  = static_cast<float>(sdlSurface->w);
 		m_Height = static_cast<float>(sdlSurface->h);
 
-		int const mode{sdlSurface->format->BytesPerPixel == 4 ? GL_RGBA : GL_RGB};
+		UniqueSDLPixelFormat target{SDL_AllocFormat(SDL_PIXELFORMAT_RGBA32)};
+		UniqueSDLSurface     actualSurface{SDL_ConvertSurface(sdlSurface.get(), target.get(), 0)};
+
+		constexpr int mode{GL_RGBA};
 		glTexImage2D(
-		        GL_TEXTURE_2D, 0, mode, sdlSurface->w, sdlSurface->h, 0, mode, GL_UNSIGNED_BYTE, sdlSurface->pixels
+		        GL_TEXTURE_2D, 0, mode, actualSurface->w, actualSurface->h, 0, mode, GL_UNSIGNED_BYTE,
+		        actualSurface->pixels
 		);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

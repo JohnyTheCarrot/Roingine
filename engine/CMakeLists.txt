@@ -74,7 +74,7 @@ set (SRC_FILES
 	src/component_args.cpp
 	src/components/texture_renderer.cpp
 	src/components/animation_renderer.cpp
-	src/unique_sdl_surface.cpp
+	src/sdl_smart_pointers.cpp
 )
 
 set (INTERNAL_HEADERS
@@ -84,7 +84,7 @@ set (INTERNAL_HEADERS
 	internal_headers/duk_gameobject.h
 	internal_headers/component_args.h
 	internal_headers/scene_loader_impl.h
-	internal_headers/unique_sdl_surface.h
+	internal_headers/sdl_smart_pointers.h
 )
 
 add_library(${PROJECT_NAME} STATIC
