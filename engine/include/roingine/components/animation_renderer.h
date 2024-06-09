@@ -36,6 +36,11 @@ namespace roingine {
 		[[nodiscard]]
 		static std::unique_ptr<AnimationRenderer> JSFactory(GameObject *, std::vector<JSData> const &args);
 
+		[[nodiscard]]
+		bool GetFlipped() const;
+
+		void SetFlipped(bool flipped);
+
 	private:
 		Transform    &m_Transform;
 		std::uint32_t m_TextureID;
@@ -44,6 +49,7 @@ namespace roingine {
 		float         m_SecondsPerFrame;
 		float         m_SecondsSinceFrame{0.f};
 		int           m_CurrentFrame{0};
+		bool          m_Flipped{false};
 	};
 }// namespace roingine
 
