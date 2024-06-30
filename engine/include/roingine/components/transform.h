@@ -7,7 +7,7 @@
 namespace roingine {
 	class Transform final : public Component {
 	public:
-		Transform(GameObject &gameObject, glm::vec2 position, float rotation);
+		Transform(GameObject gameObject, glm::vec2 position, float rotation);
 
 		void Update() override;
 
@@ -49,32 +49,22 @@ namespace roingine {
 		[[nodiscard]]
 		glm::mat4 GetTransformationMatrix() const noexcept;
 
-		static constexpr char const *NAME{"Transform"};
-
-		[[nodiscard]]
-		char const *GetName() const override;
-
-		[[nodiscard]]
-		duk_function_list_entry const *SetUpScriptAPI(duk_context *) const override;
-
-		[[nodiscard]]
-		static std::unique_ptr<Transform>
-		JSFactory(GameObject *pGameObject, std::vector<JSData> const &args);
-
 	private:
-		Transform          *m_pParent{nullptr};
-		glm::vec2           m_Position{};
-		glm::vec2           m_Pivot{};
-		float               m_Rotation{};
+		Transform *m_pParent{nullptr};
+		glm::vec2  m_Position{};
+		glm::vec2  m_Pivot{};
+		float      m_Rotation{};
 	};
 
 	class TransformContext final {
 	public:
-		TransformContext(Transform const &) noexcept;
+		explicit TransformContext(Transform const &) noexcept;
+
 		~TransformContext() noexcept;
 
-		TransformContext(TransformContext const &)            = delete;
-		TransformContext(TransformContext &&)                 = delete;
+		TransformContext(TransformContext const &) = delete;
+		TransformContext(TransformContext &&)      = delete;
+
 		TransformContext &operator=(TransformContext const &) = delete;
 		TransformContext &operator=(TransformContext &&)      = delete;
 	};

@@ -10,12 +10,12 @@ using duk_context = struct duk_hthread;
 namespace roingine {
 	class Scene final {
 	public:
-		Scene();
+		 Scene();
 		~Scene();
 
-		Scene(Scene &&);
+		Scene(Scene &&) noexcept;
 
-		Scene &operator=(Scene &&);
+		Scene &operator=(Scene &&) noexcept;
 
 		Scene(Scene const &) = delete;
 
@@ -34,8 +34,6 @@ namespace roingine {
 		[[nodiscard]]
 		GameObject AddGameObject();
 
-		void RegisterComponentType(std::string name, std::size_t hash, JSFactoryMapEntry::Function jsFactory);
-
 		void SetGameObjectScenes();
 
 		[[nodiscard]]
@@ -44,13 +42,7 @@ namespace roingine {
 		[[nodiscard]]
 		GameObjectComponents const &GetGameObjectComponents() const noexcept;
 
-		[[nodiscard]]
-		std::optional<std::size_t> GetTypeHashFromName(std::string const &name) const;
-
-		[[nodiscard]]
-		std::optional<JSFactoryMapEntry> GetJSFactoryMapEntryByHash(std::size_t hash) const;
-
-		template<ComponentImpl TComponent>
+		template<class TComponent>
 		void ForEveryComponentOfType(std::function<void(TComponent &)> const &fn) {
 			std::for_each(m_GameObjectComponents.begin(), m_GameObjectComponents.end(), [&fn](auto &goCompPair) {
 				std::for_each(goCompPair.second.begin(), goCompPair.second.end(), [&fn](auto &pair) {
@@ -77,11 +69,9 @@ namespace roingine {
 
 		friend class GameObject;
 
-		GameObjectComponents                               m_GameObjectComponents;
-		std::unordered_map<std::string, std::size_t>       m_NameMap;
-		std::unordered_map<std::size_t, JSFactoryMapEntry> m_JSFactoryMap;
-		std::unordered_map<std::size_t, GameObjectData>    m_GameObjects;
-		std::vector<GameObjectHandle>                      m_GameObjectsToDestroy{};
+		GameObjectComponents                            m_GameObjectComponents;
+		std::unordered_map<std::size_t, GameObjectData> m_GameObjects;
+		std::vector<GameObjectHandle>                   m_GameObjectsToDestroy{};
 
 		void CleanupMarkedGameObjects();
 

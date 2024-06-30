@@ -1,55 +1,50 @@
-#include <roingine/components/animation_renderer.h>
 #include <roingine/components/rect_collider.h>
-#include <roingine/components/rect_renderer.h>
-#include <roingine/components/scripts.h>
-#include <roingine/components/texture_renderer.h>
-#include <roingine/components/transform.h>
 #include <roingine/gameobject.h>
 #include <roingine/scene.h>
 
 namespace roingine {
 	void Scene::PreUpdate() {
-		for (auto &componentList: m_GameObjectComponents) {
-			for (auto &component: componentList.second) {
-				if (component.second->GetGameObject().GetEnabled())
-					component.second->PreUpdate();
+		for (auto &[goHandle, components]: m_GameObjectComponents) {
+			for (auto &[compHash, component]: components) {
+				if (component->GetGameObject().GetEnabled())
+					component->PreUpdate();
 			}
 		}
 	}
 
 	void Scene::Update() {
-		for (auto &componentList: m_GameObjectComponents) {
-			for (auto &component: componentList.second) {
-				if (component.second->GetGameObject().GetEnabled())
-					component.second->Update();
+		for (auto &[goHandle, components]: m_GameObjectComponents) {
+			for (auto &[compHash, component]: components) {
+				if (component->GetGameObject().GetEnabled())
+					component->Update();
 			}
 		}
 	}
 
 	void Scene::PostUpdate() {
-		for (auto &componentList: m_GameObjectComponents) {
-			for (auto &component: componentList.second) {
-				if (component.second->GetGameObject().GetEnabled())
-					component.second->PostUpdate();
+		for (auto &[goHandle, components]: m_GameObjectComponents) {
+			for (auto &[compHash, component]: components) {
+				if (component->GetGameObject().GetEnabled())
+					component->PostUpdate();
 			}
 		}
 		CleanupMarkedGameObjects();
 	}
 
 	void Scene::FixedUpdate() {
-		for (auto &componentList: m_GameObjectComponents) {
-			for (auto &component: componentList.second) {
-				if (component.second->GetGameObject().GetEnabled())
-					component.second->FixedUpdate();
+		for (auto &[goHandle, components]: m_GameObjectComponents) {
+			for (auto &[compHash, component]: components) {
+				if (component->GetGameObject().GetEnabled())
+					component->FixedUpdate();
 			}
 		}
 	}
 
 	void Scene::Render() const {
-		for (auto &componentList: m_GameObjectComponents) {
-			for (auto &component: componentList.second) {
-				if (component.second->GetGameObject().GetEnabled())
-					component.second->Render();
+		for (auto &[goHandle, components]: m_GameObjectComponents) {
+			for (auto &[compHash, component]: components) {
+				if (component->GetGameObject().GetEnabled())
+					component->Render();
 			}
 		}
 	}
@@ -63,17 +58,10 @@ namespace roingine {
 		return go;
 	}
 
-	void Scene::RegisterComponentType(std::string name, std::size_t hash, JSFactoryMapEntry::Function jsFactory) {
-		m_NameMap.emplace(std::move(name), hash);
-		m_JSFactoryMap.emplace(hash, JSFactoryMapEntry{jsFactory});
-	}
-
 	void Scene::SetGameObjectScenes() {
-		for (auto &go: m_GameObjects) { go.second.gameObject.SetScene(this); }
-		for (auto &componentList: m_GameObjectComponents) {
-			for (auto &component: componentList.second) {
-				component.second->GetGameObject().SetScene(this);
-			}
+		for (auto &[handle, gameObjectData]: m_GameObjects) { gameObjectData.gameObject.SetScene(this); }
+		for (auto &[gameObjectHandle, componentList]: m_GameObjectComponents) {
+			for (auto &[compHash, pComponent]: componentList) { pComponent->GetGameObject().SetScene(this); }
 		}
 	}
 
@@ -85,31 +73,15 @@ namespace roingine {
 		return m_GameObjectComponents;
 	}
 
-	std::optional<std::size_t> Scene::GetTypeHashFromName(std::string const &name) const {
-		if (!m_NameMap.contains(name))
-			return std::nullopt;
-
-		return m_NameMap.at(name);
-	}
-
-	std::optional<JSFactoryMapEntry> Scene::GetJSFactoryMapEntryByHash(std::size_t hash) const {
-		if (!m_JSFactoryMap.contains(hash))
-			return std::nullopt;
-
-		return m_JSFactoryMap.at(hash);
-	}
-
 	GameObject *Scene::GetGameObjectPtr(std::size_t handle) {
-		auto it{m_GameObjects.find(handle)};
-
-		if (it != m_GameObjects.end())
+		if (auto const it{m_GameObjects.find(handle)}; it != m_GameObjects.end())
 			return &m_GameObjects.at(handle).gameObject;
 
 		return nullptr;
 	}
 
 	void Scene::CleanupMarkedGameObjects() {
-		for (GameObjectHandle gameObject: m_GameObjectsToDestroy) { RemoveGameObject(gameObject); }
+		for (GameObjectHandle const gameObject: m_GameObjectsToDestroy) { RemoveGameObject(gameObject); }
 		m_GameObjectsToDestroy.clear();
 	}
 
@@ -122,35 +94,22 @@ namespace roingine {
 		m_GameObjects.erase(handle);
 	}
 
-	Scene::Scene() {
-		RegisterComponentType(RectRenderer::NAME, typeid(RectRenderer).hash_code(), RectRenderer::JSFactory);
-		RegisterComponentType(Transform::NAME, typeid(Transform).hash_code(), Transform::JSFactory);
-		RegisterComponentType(Scripts::NAME, typeid(Scripts).hash_code(), Scripts::JSFactory);
-		RegisterComponentType(RectCollider::NAME, typeid(RectCollider).hash_code(), RectCollider::JSFactory);
-		RegisterComponentType(TextureRenderer::NAME, typeid(TextureRenderer).hash_code(), TextureRenderer::JSFactory);
-		RegisterComponentType(
-		        AnimationRenderer::NAME, typeid(AnimationRenderer).hash_code(), AnimationRenderer::JSFactory
-		);
-	}
+	Scene::Scene() = default;
 
 	Scene::~Scene() = default;
 
-	Scene::Scene(Scene &&other)
+	Scene::Scene(Scene &&other) noexcept
 	    : m_GameObjectComponents{std::move(other.m_GameObjectComponents)}
-	    , m_NameMap{std::move(other.m_NameMap)}
-	    , m_JSFactoryMap{std::move(other.m_JSFactoryMap)}
 	    , m_GameObjects{std::move(other.m_GameObjects)} {
 		SetGameObjectScenes();
 	};
 
-	Scene &Scene::operator=(Scene &&other) {
+	Scene &Scene::operator=(Scene &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
 
 		m_GameObjectComponents = std::move(other.m_GameObjectComponents);
-		m_NameMap              = std::move(other.m_NameMap);
-		m_JSFactoryMap         = std::move(other.m_JSFactoryMap);
 		m_GameObjects          = std::move(other.m_GameObjects);
 
 		SetGameObjectScenes();

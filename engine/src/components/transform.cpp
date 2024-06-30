@@ -1,15 +1,13 @@
 #include <SDL_opengl.h>
 #include <cmath>
-#include <duktape.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <numbers>
-#include <roingine/component_init_types.h>
 #include <roingine/components/transform.h>
 #include <roingine/game_time.h>
 
 namespace roingine {
-	Transform::Transform(GameObject &gameObject, glm::vec2 position, float rotation)
+	Transform::Transform(GameObject gameObject, glm::vec2 position, float rotation)
 	    : Component{gameObject}
 	    , m_Position{position}
 	    , m_Rotation{rotation} {
@@ -101,93 +99,6 @@ namespace roingine {
 		} while ((pCurrentTransform = &pCurrentTransform->GetParent()) != nullptr);
 
 		return transMat;
-	}
-
-	char const *Transform::GetName() const {
-		return NAME;
-	}
-
-	int JsAPITranslate(duk_context *ctx) {
-		float const x{static_cast<float>(duk_require_number(ctx, 0))};
-		float const y{static_cast<float>(duk_require_number(ctx, 1))};
-
-		duk_push_this(ctx);
-		duk_get_prop_literal(ctx, -1, "__ptr");
-		Transform *ptr{static_cast<Transform *>(duk_get_pointer(ctx, -1))};
-		duk_pop(ctx);
-
-		ptr->Translate(x, y);
-
-		return 0;
-	}
-
-	int JsAPISetLocalPosition(duk_context *ctx) {
-		duk_push_this(ctx);
-		duk_get_prop_literal(ctx, -1, "__ptr");
-		Transform *ptr{static_cast<Transform *>(duk_get_pointer(ctx, -1))};
-		duk_pop(ctx);
-		auto const localPos{ptr->GetLocalPosition()};
-
-		float const x{duk_is_null(ctx, 0) ? localPos.x : static_cast<float>(duk_require_number(ctx, 0))};
-		float const y{duk_is_null(ctx, 1) ? localPos.y : static_cast<float>(duk_require_number(ctx, 1))};
-
-		ptr->SetLocalPosition(glm::vec2{x, y});
-
-		return 0;
-	}
-
-	int JsAPIGetWorldPosition(duk_context *ctx) {
-		duk_push_this(ctx);
-		duk_get_prop_literal(ctx, -1, "__ptr");
-		Transform *ptr{static_cast<Transform *>(duk_get_pointer(ctx, -1))};
-		duk_pop(ctx);
-
-		auto const worldPos{ptr->GetWorldPosition()};
-
-		duk_push_object(ctx);
-		duk_push_number(ctx, worldPos.x);
-		duk_put_prop_literal(ctx, -2, "x");
-		duk_push_number(ctx, worldPos.y);
-		duk_put_prop_literal(ctx, -2, "y");
-
-		return 1;
-	}
-
-	int JsAPIGetLocalPosition(duk_context *ctx) {
-		duk_push_this(ctx);
-		duk_get_prop_literal(ctx, -1, "__ptr");
-		Transform *ptr{static_cast<Transform *>(duk_get_pointer(ctx, -1))};
-		duk_pop(ctx);
-
-		auto const localPos{ptr->GetLocalPosition()};
-
-		duk_push_object(ctx);
-		duk_push_number(ctx, localPos.x);
-		duk_put_prop_literal(ctx, -2, "x");
-		duk_push_number(ctx, localPos.y);
-		duk_put_prop_literal(ctx, -2, "y");
-
-		return 1;
-	}
-
-	duk_function_list_entry const transformAPI[]{
-	        {"translate", JsAPITranslate, 2},
-	        {"setLocalPosition", JsAPISetLocalPosition, 2},
-	        {"getWorldPosition", JsAPIGetWorldPosition, 0},
-	        {"getLocalPosition", JsAPIGetLocalPosition, 0},
-	        {nullptr, nullptr, 0}
-	};
-
-	duk_function_list_entry const *Transform::SetUpScriptAPI(duk_context *) const {
-		return transformAPI;
-	}
-
-	std::unique_ptr<Transform>
-	Transform::JSFactory(GameObject *pGameObject, std::vector<JSData> const &args) {
-		auto const posX{comp_init::RequireDouble(0, args)};
-		auto const posY{comp_init::RequireDouble(1, args)};
-
-		return std::make_unique<Transform>(*pGameObject, glm::vec2{posX, posY}, 0.f);
 	}
 
 	TransformContext::TransformContext(Transform const &transform) noexcept {

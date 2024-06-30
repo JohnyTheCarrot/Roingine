@@ -1,8 +1,4 @@
 #include <roingine/audio_service.h>
-#include <roingine/commands/command.h>
-#include <roingine/components/rect_collider.h>
-#include <roingine/components/rect_renderer.h>
-#include <roingine/components/scripts.h>
 #include <roingine/components/transform.h>
 #include <roingine/engine_event_queue.h>
 #include <roingine/event_queue.h>
@@ -10,7 +6,6 @@
 #include <roingine/input.h>
 #include <roingine/roingine.h>
 #include <roingine/scene.h>
-#include <roingine/scene_loader.h>
 #include <roingine/scene_manager.h>
 #include <roingine/service_locator.h>
 #include <unordered_map>
@@ -46,10 +41,8 @@ int main() {
 
 	KeyboardInput::Provide(std::make_unique<SDLKeyboardInputService>());
 
-	Scene scene{scene_loader::LoadScene("scenes/main.json")};
+	Scene scene{};
 	SceneManager::GetInstance().SetActive(std::move(scene));
 
-	roingine.Run([]() {
-		GameEventQueue::GetInstance().Update();
-	});
+	roingine.Run([]() { GameEventQueue::GetInstance().Update(); });
 }

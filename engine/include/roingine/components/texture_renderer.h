@@ -1,6 +1,9 @@
 #ifndef TEXTURE_RENDERER_H
 #define TEXTURE_RENDERER_H
 
+#include "gl_texture.h"
+
+
 #include <roingine/components/component.h>
 
 struct SDL_Texture;
@@ -12,11 +15,9 @@ namespace roingine {
 	public:
 		TextureRenderer(GameObject &gameObject, std::string const &fileName);
 
-		TextureRenderer(GameObject &gameObject, std::string const &fileName, float width, float height);
-
 		TextureRenderer(
-		        GameObject &gameObject, std::string const &fileName, float width, float height, float unitWidth,
-		        float unitHeight
+		        GameObject &gameObject, std::string const &fileName, float width, float height,
+		        std::optional<float> unitWidth = std::nullopt, std::optional<float> unitHeight = std::nullopt
 		);
 
 		void Update() override;
@@ -25,22 +26,11 @@ namespace roingine {
 
 		void Render() const override;
 
-		static constexpr char const *NAME{"TextureRenderer"};
-
-		[[nodiscard]]
-		char const *GetName() const override;
-
-		[[nodiscard]]
-		duk_function_list_entry const *SetUpScriptAPI(duk_context *) const override;
-
-		[[nodiscard]]
-		static std::unique_ptr<TextureRenderer> JSFactory(GameObject *, std::vector<JSData> const &args);
-
 	private:
-		Transform    &m_Transform;
-		std::uint32_t m_TextureID;
-		float         m_Width, m_Height;
-		float         m_UnitWidth, m_UnitHeight;
+		Transform      &m_Transform;
+		UniqueGLTexture m_TextureID{};
+		float           m_Width, m_Height;
+		float           m_UnitWidth, m_UnitHeight;
 	};
 }// namespace roingine
 

@@ -12,27 +12,6 @@ namespace roingine {
 		return m_rpScene == other.m_rpScene && m_hGameObject == other.m_hGameObject;
 	}
 
-	Component *GameObject::AddComponent(std::string name, std::vector<JSData> const &args) {
-		if (auto *existing{GetOptionalComponent(name)}; existing != nullptr)
-			return existing;
-
-		auto const hash{GetTypeHashFromName(name)};
-		if (!hash.has_value())
-			return nullptr;
-
-		auto const jsFactoryMapEntry{GetJSFactoryMapEntryByHash(hash.value())};
-		auto const factory{jsFactoryMapEntry.value().jsFactory};
-
-		std::unique_ptr<Component> pComp{factory(this, args)};
-		auto const                 rpComp{pComp.get()};
-
-		ComponentHandle hComponent{hash.value()};
-		auto           &sceneComponents{GetOrCreateComponentList()};
-
-		sceneComponents.insert({hComponent, std::move(pComp)});
-		return rpComp;
-	}
-
 	void GameObject::SetLabel(std::string &&label) {
 		m_rpScene->m_GameObjects.at(m_hGameObject).label = std::move(label);
 	}
@@ -83,22 +62,6 @@ namespace roingine {
 		return nullptr;
 	}
 
-	Component *GameObject::GetComponent(std::string const &name) {
-		auto const hash{GetTypeHashFromName(name)};
-		if (!hash.has_value())
-			return nullptr;
-
-		return GetComponent(hash.value());
-	}
-
-	Component *GameObject::GetOptionalComponent(std::string const &name) {
-		auto const hash{GetTypeHashFromName(name)};
-		if (!hash.has_value())
-			return nullptr;
-
-		return GetOptionalComponent(hash.value());
-	}
-
 	void GameObject::Destroy() {
 		m_rpScene->m_GameObjectsToDestroy.emplace_back(m_hGameObject);
 	}
@@ -139,15 +102,6 @@ namespace roingine {
 		}
 
 		return it->second;
-	}
-
-	// why not call this on scene directly? bc of sircular dependencies
-	std::optional<std::size_t> GameObject::GetTypeHashFromName(std::string const &name) const {
-		return m_rpScene->GetTypeHashFromName(name);
-	}
-
-	std::optional<JSFactoryMapEntry> GameObject::GetJSFactoryMapEntryByHash(std::size_t hash) const {
-		return m_rpScene->GetJSFactoryMapEntryByHash(hash);
 	}
 
 	GameObjectComponents const &GameObject::GetSceneComponents() const noexcept {

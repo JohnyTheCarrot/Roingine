@@ -18,17 +18,6 @@ namespace roingine {
 
 		void Render() const override;
 
-		static constexpr char const *NAME{"RectRenderer"};
-
-		[[nodiscard]]
-		char const *GetName() const override;
-
-		[[nodiscard]]
-		duk_function_list_entry const *SetUpScriptAPI(duk_context *) const override;
-
-		[[nodiscard]]
-		static std::unique_ptr<RectRenderer> JSFactory(GameObject *, const std::vector<JSData> &args);
-
 		void SetColor(std::uint8_t r, std::uint8_t g, std::uint8_t b);
 
 	private:

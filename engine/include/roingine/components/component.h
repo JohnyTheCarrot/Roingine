@@ -18,9 +18,9 @@ namespace roingine {
 		    : m_GameObject{gameObject} {
 		}
 
-		Component(Component &&other);
+		Component(Component &&other) noexcept;
 
-		virtual ~Component(){};
+		virtual ~Component() = default;
 
 		virtual void PreUpdate() {
 		}
@@ -39,12 +39,6 @@ namespace roingine {
 
 		virtual void OnDisabled() {
 		}
-
-		[[nodiscard]]
-		virtual char const *GetName() const = 0;
-
-		[[nodiscard]]
-		virtual duk_function_list_entry const *SetUpScriptAPI(duk_context *ctx) const = 0;
 
 		friend class Scene;
 

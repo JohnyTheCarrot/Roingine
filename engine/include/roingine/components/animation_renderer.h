@@ -25,17 +25,6 @@ namespace roingine {
 
 		void Render() const override;
 
-		static constexpr char const *NAME{"AnimationRenderer"};
-
-		[[nodiscard]]
-		char const *GetName() const override;
-
-		[[nodiscard]]
-		duk_function_list_entry const *SetUpScriptAPI(duk_context *) const override;
-
-		[[nodiscard]]
-		static std::unique_ptr<AnimationRenderer> JSFactory(GameObject *, std::vector<JSData> const &args);
-
 		[[nodiscard]]
 		bool GetFlipped() const;
 

@@ -2,7 +2,6 @@
 #define RECT_COLLIDER_H
 
 #include <glm/glm.hpp>
-#include <memory>
 #include <roingine/components/component.h>
 
 namespace roingine {
@@ -26,18 +25,6 @@ namespace roingine {
 		void FixedUpdate() override;
 
 		void Render() const override;
-
-		static constexpr char const *NAME{"RectCollider"};
-
-		static constexpr char const *JS_CALLBACK_NAME{"rectColliderCallback"};
-
-		char const *GetName() const override;
-
-		duk_function_list_entry const *SetUpScriptAPI(duk_context *ctx) const override;
-
-		[[nodiscard]]
-		static std::unique_ptr<RectCollider>
-		JSFactory(GameObject *pGameObject, std::vector<JSData> const &args);
 
 		[[nodiscard]]
 		bool GetHasListener() const noexcept;

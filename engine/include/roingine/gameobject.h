@@ -14,24 +14,17 @@ namespace roingine {
 
 	using ComponentHandle = std::size_t;
 
-	template<class T>
-	concept ComponentImpl = requires(T comp) {
-		{
-			T::JSFactory(static_cast<GameObject *>(nullptr), std::vector<JSData>{})
-		} -> std::same_as<std::unique_ptr<T>>;
-	};
-
 	struct JSFactoryMapEntry final {
-		using Function =
-		        std::function<std::unique_ptr<Component>(GameObject *, std::vector<JSData> const &)>;
+		using Function = std::function<std::unique_ptr<Component>(GameObject *, std::vector<JSData> const &)>;
 
-		Function    jsFactory;
+		Function jsFactory;
 	};
 
 	class Scene;
 
 	class ComponentNotFoundException final : public std::exception {
 	public:
+		[[nodiscard]]
 		char const *what() const override {
 			return "component not found";
 		}
@@ -48,7 +41,7 @@ namespace roingine {
 		operator==(GameObject const &other) const noexcept;
 
 		template<
-		        ComponentImpl TComponent, class... Args,
+		        class TComponent, class... Args,
 		        std::enable_if_t<std::is_constructible_v<TComponent, GameObject &, Args &&...>, bool> = true>
 		TComponent &AddComponent(Args &&...args) {
 			if (auto *existing{GetOptionalComponent<TComponent>()}; existing != nullptr)
@@ -57,14 +50,12 @@ namespace roingine {
 			std::unique_ptr<TComponent> pComponent{std::make_unique<TComponent>(*this, std::forward<Args>(args)...)};
 			TComponent                 *rpComponent{pComponent.get()};
 
-			ComponentHandle   hComponent{GetComponentHandle<TComponent>()};
-			auto             &sceneComponents{GetOrCreateComponentList()};
+			ComponentHandle hComponent{GetComponentHandle<TComponent>()};
+			auto           &sceneComponents{GetOrCreateComponentList()};
 
 			sceneComponents.insert({hComponent, std::move(pComponent)});
 			return *rpComponent;
 		}
-
-		Component *AddComponent(std::string name, std::vector<JSData> const &args);
 
 		void SetLabel(std::string &&label);
 
@@ -81,24 +72,23 @@ namespace roingine {
 		[[nodiscard]]
 		bool GetEnabled() const;
 
-		template<ComponentImpl TComponent>
+		template<class TComponent>
 		[[nodiscard]]
 		TComponent &GetComponent() {
-			ComponentHandle   hComponent{GetComponentHandle<TComponent>()};
+			ComponentHandle const hComponent{GetComponentHandle<TComponent>()};
 
-			if (auto sceneComponents{GetComponents()}; sceneComponents != nullptr) {
-				auto it{sceneComponents->find(hComponent)};
-				if (it != sceneComponents->end())
+			if (auto const sceneComponents{GetComponents()}; sceneComponents != nullptr) {
+				if (auto const it{sceneComponents->find(hComponent)}; it != sceneComponents->end())
 					return *dynamic_cast<TComponent *>(it->second.get());
 			}
 
 			throw ComponentNotFoundException{};
 		}
 
-		template<ComponentImpl TComponent>
+		template<class TComponent>
 		[[nodiscard]]
 		TComponent const &GetComponent() const {
-			ComponentHandle hComponent{GetComponentHandle<TComponent>()};
+			ComponentHandle const hComponent{GetComponentHandle<TComponent>()};
 
 			if (auto const *sceneComponents{GetComponents()}; sceneComponents != nullptr) {
 				auto it{sceneComponents->find(hComponent)};
@@ -115,30 +105,23 @@ namespace roingine {
 		[[nodiscard]]
 		Component *GetOptionalComponent(std::size_t typeHash);
 
-		[[nodiscard]]
-		Component *GetComponent(std::string const &name);
-
-		[[nodiscard]]
-		Component *GetOptionalComponent(std::string const &name);
-
-		template<ComponentImpl TComponent>
+		template<class TComponent>
 		[[nodiscard]]
 		TComponent *GetOptionalComponent() noexcept {
-			ComponentHandle hComponent{GetComponentHandle<TComponent>()};
+			ComponentHandle const hComponent{GetComponentHandle<TComponent>()};
 
-			if (auto sceneComponents{GetComponents()}; sceneComponents != nullptr) {
-				auto it{sceneComponents->find(hComponent)};
-				if (it != sceneComponents->end())
+			if (auto const sceneComponents{GetComponents()}; sceneComponents != nullptr) {
+				if (auto const it{sceneComponents->find(hComponent)}; it != sceneComponents->end())
 					return dynamic_cast<TComponent *>(it->second.get());
 			}
 
 			return nullptr;
 		}
 
-		template<ComponentImpl TComponent>
+		template<class TComponent>
 		void DestroyComponent() {
-			ComponentHandle   hComponent{GetComponentHandle<TComponent>()};
-			auto             &sceneComponent{GetSceneComponents()};
+			ComponentHandle const hComponent{GetComponentHandle<TComponent>()};
+			auto                 &sceneComponent{GetSceneComponents()};
 
 			sceneComponent.erase(hComponent);
 		}
@@ -154,23 +137,20 @@ namespace roingine {
 		Scene *GetScene() const noexcept;
 
 	private:
+		[[nodiscard]]
 		ComponentMap *GetComponents();
 
+		[[nodiscard]]
 		ComponentMap const *GetComponents() const;
 
+		[[nodiscard]]
 		ComponentMap &GetOrCreateComponentList();
 
-		template<ComponentImpl TComponent>
+		template<class TComponent>
 		[[nodiscard]]
-		ComponentHandle GetComponentHandle() const noexcept {
+		static ComponentHandle GetComponentHandle() noexcept {
 			return typeid(TComponent).hash_code();
 		}
-
-		[[nodiscard]]
-		std::optional<std::size_t> GetTypeHashFromName(std::string const &name) const;
-
-		[[nodiscard]]
-		std::optional<JSFactoryMapEntry> GetJSFactoryMapEntryByHash(std::size_t hash) const;
 
 		[[nodiscard]]
 		GameObjectComponents const &GetSceneComponents() const noexcept;
