@@ -15,8 +15,10 @@ namespace roingine {
 	    , m_SecondsPerFrame{secondsPerFrame} {
 		UniqueSDLSurface const sdlSurface{IMG_Load(fileName.c_str())};
 
-		glGenTextures(1, &m_TextureID);
-		glBindTexture(GL_TEXTURE_2D, m_TextureID);
+		GLuint textureId;
+		glGenTextures(1, &textureId);
+		m_TextureID = UniqueGLTexture{textureId};
+		glBindTexture(GL_TEXTURE_2D, m_TextureID.Get());
 		m_Width  = static_cast<float>(sdlSurface->w);
 		m_Height = static_cast<float>(sdlSurface->h);
 
@@ -58,7 +60,7 @@ namespace roingine {
 
 	void AnimationRenderer::Render() const {
 		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, m_TextureID);
+		glBindTexture(GL_TEXTURE_2D, m_TextureID.Get());
 		TransformContext context{m_Transform};
 		if (m_Flipped) {
 			glTranslatef(m_Width, 0.f, 0.f);

@@ -43,6 +43,7 @@ set(INCLUDE_HEADERS
         include/roingine/game_info.h
         include/roingine/engine_event_queue.h
         include/roingine/component_init_types.h
+        include/roingine/gl_texture.h
 )
 
 set(SRC_FILES
@@ -72,7 +73,6 @@ set(INTERNAL_HEADERS
         internal_headers/sound_impl.h
         internal_headers/scene_loader_impl.h
         internal_headers/sdl_smart_pointers.h
-        internal_headers/gl_texture.h
 )
 
 add_library(${PROJECT_NAME} STATIC

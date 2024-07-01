@@ -2,6 +2,7 @@
 #define ANIMATION_RENDERER_H
 
 #include <roingine/components/component.h>
+#include <roingine/gl_texture.h>
 
 struct SDL_Texture;
 
@@ -31,14 +32,14 @@ namespace roingine {
 		void SetFlipped(bool flipped);
 
 	private:
-		Transform    &m_Transform;
-		std::uint32_t m_TextureID;
-		std::size_t   m_NumFrames;
-		float         m_Width, m_Height;
-		float         m_SecondsPerFrame;
-		float         m_SecondsSinceFrame{0.f};
-		int           m_CurrentFrame{0};
-		bool          m_Flipped{false};
+		Transform      &m_Transform;
+		UniqueGLTexture m_TextureID{};
+		std::size_t     m_NumFrames;
+		float           m_Width, m_Height;
+		float           m_SecondsPerFrame;
+		float           m_SecondsSinceFrame{0.f};
+		int             m_CurrentFrame{0};
+		bool            m_Flipped{false};
 	};
 }// namespace roingine
 

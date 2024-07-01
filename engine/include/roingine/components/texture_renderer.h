@@ -1,10 +1,8 @@
 #ifndef TEXTURE_RENDERER_H
 #define TEXTURE_RENDERER_H
 
-#include "gl_texture.h"
-
-
 #include <roingine/components/component.h>
+#include <roingine/gl_texture.h>
 
 struct SDL_Texture;
 

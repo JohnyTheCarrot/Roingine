@@ -1,4 +1,4 @@
-#include "gl_texture.h"
+#include <roingine/gl_texture.h>
 
 namespace roingine {
 	UniqueGLTexture::UniqueGLTexture() = default;
