@@ -2,6 +2,7 @@
 #define RECT_RENDERER_H
 
 #include "component.h"
+#include <cstdint>
 
 namespace roingine {
 	struct Rect;

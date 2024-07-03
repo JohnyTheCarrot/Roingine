@@ -2,7 +2,7 @@
 #define INPUT_INTERNAL_H
 
 #include <SDL_scancode.h>
-#include <roingine/input.h>
+#include <roingine/keyboard_input.h>
 #include <roingine/pair_hash.h>
 #include <unordered_map>
 

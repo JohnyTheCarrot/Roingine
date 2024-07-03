@@ -25,7 +25,7 @@ namespace roingine {
 	class ComponentNotFoundException final : public std::exception {
 	public:
 		[[nodiscard]]
-		char const *what() const override {
+		char const *what() const noexcept override {
 			return "component not found";
 		}
 	};

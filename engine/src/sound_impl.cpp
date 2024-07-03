@@ -31,9 +31,9 @@ namespace roingine {
 		m_pImpl->Play();
 	}
 
-	SoundClip::SoundClip(SoundClip &&) = default;
+	SoundClip::SoundClip(SoundClip &&) noexcept = default;
 
-	SoundClip &SoundClip::operator=(SoundClip &&) = default;
+	SoundClip &SoundClip::operator=(SoundClip &&) noexcept = default;
 
 	void MixChunkDestroyer::operator()(Mix_Chunk *ptr) {
 		Mix_FreeChunk(ptr);

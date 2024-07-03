@@ -10,7 +10,7 @@ namespace roingine {
 	      )} {
 	}
 
-	char const *ComponentArgumentIncorrectType::what() const {
+	char const *ComponentArgumentIncorrectType::what() const noexcept {
 		return m_Message.c_str();
 	}
 

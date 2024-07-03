@@ -7,7 +7,7 @@
 #include <roingine/engine_event_queue.h>
 #include <roingine/event_queue.h>
 #include <roingine/game_info.h>
-#include <roingine/input.h>
+#include <roingine/keyboard_input.h>
 #include <roingine/roingine.h>
 #include <roingine/scene.h>
 #include <roingine/scene_manager.h>
@@ -21,13 +21,13 @@ enum class Sounds { TestSound };
 enum class EventType { PlaySoundRequest };
 
 template<>
-struct EventTypeData<EventType, EventType::PlaySoundRequest> final {
+struct roingine::EventTypeData<EventType, EventType::PlaySoundRequest> final {
 	struct Data_t final {
 		Sounds sound;
 	};
-};
+};// namespace roingine
 
-using PlaySoundRequestData = typename EventTypeData<EventType, EventType::PlaySoundRequest>::Data_t;
+using PlaySoundRequestData = EventTypeData<EventType, EventType::PlaySoundRequest>::Data_t;
 
 using GameEventQueue = EventQueue<EventType, PlaySoundRequestData>;
 

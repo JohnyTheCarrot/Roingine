@@ -55,7 +55,7 @@ namespace roingine {
 
 	class KeyboardInputService {
 	public:
-		virtual ~KeyboardInputService() = default;
+		virtual ~KeyboardInputService();
 
 		virtual void ProcessInput() = 0;
 
@@ -66,10 +66,9 @@ namespace roingine {
 
 	class NullKeyboardInputService final : public KeyboardInputService {
 	public:
-		~NullKeyboardInputService() override = default;
+		~NullKeyboardInputService() override;
 
-		void ProcessInput() override {
-		}
+		void ProcessInput() override;
 
 		void AddCommand(InputKeys, KeyEventType, std::unique_ptr<Command>) override;
 
@@ -93,7 +92,6 @@ namespace roingine {
 
 		std::unique_ptr<Impl> m_pImpl;
 	};
-
 }// namespace roingine
 
 #endif// INPUT_H

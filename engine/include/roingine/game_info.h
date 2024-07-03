@@ -1,7 +1,6 @@
 #ifndef GAME_INFO_H
 #define GAME_INFO_H
 
-#include <roingine/input.h>
 #include <roingine/singleton.h>
 
 namespace roingine {

@@ -4,17 +4,18 @@
 #include <exception>
 #include <format>
 #include <iostream>
+#include <memory>
 #include <string_view>
 
-class SoundFileLoadFailed : public std::exception {
+class SoundFileLoadFailed final : public std::exception {
 public:
-	SoundFileLoadFailed(char const *mixError)
+	explicit SoundFileLoadFailed(char const *mixError)
 	    : m_ErrorMessage{std::format("Failed to load sound file{}", mixError)} {
 		std::cout << mixError << std::endl;
 	};
 
 	[[nodiscard]]
-	char const *what() const noexcept {
+	char const *what() const noexcept override {
 		return m_ErrorMessage.c_str();
 	}
 
@@ -27,12 +28,12 @@ namespace roingine {
 	public:
 		enum class FileType { WAV };
 
-		SoundClip(FileType fileType, std::string_view path);
+		 SoundClip(FileType fileType, std::string_view path);
 		~SoundClip();
 
-		SoundClip(SoundClip &&);
+		SoundClip(SoundClip &&) noexcept;
 
-		SoundClip &operator=(SoundClip &&);
+		SoundClip &operator=(SoundClip &&) noexcept;
 
 		void Play() const;
 

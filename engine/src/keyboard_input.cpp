@@ -1,6 +1,6 @@
 #include <SDL_events.h>
 #include <algorithm>
-#include <input_impl.h>
+#include <keyboard_input_impl.h>
 #include <roingine/commands/command.h>
 #include <roingine/game_info.h>
 #include <roingine/game_time.h>
@@ -13,13 +13,6 @@ namespace roingine {
 	};
 
 	void SDLKeyboardInputService::Impl::ProcessInput() {
-		SDL_Event event;
-
-		while (SDL_PollEvent(&event)) {
-			if (event.type == SDL_QUIT)
-				GameInfo::GetInstance().QuitGame();
-		}
-
 		SDL_PumpEvents();
 
 		auto const executeCommands{[&](size_t keyStateIdx, KeyEventType eventType) {
@@ -192,6 +185,13 @@ namespace roingine {
 
 	void SDLKeyboardInputService::RemoveCommand(InputKeys input, KeyEventType eventType, Command *command) {
 		m_pImpl->RemoveCommand(input, eventType, command);
+	}
+
+	KeyboardInputService::~KeyboardInputService() = default;
+
+	NullKeyboardInputService::~NullKeyboardInputService() = default;
+
+	void NullKeyboardInputService::ProcessInput() {
 	}
 
 	void NullKeyboardInputService::AddCommand(InputKeys, KeyEventType, std::unique_ptr<Command>) {

@@ -25,11 +25,12 @@ set(INCLUDE_HEADERS_COMMANDS
         include/roingine/commands/command.h
         include/roingine/commands/gameobject_command.h
         include/roingine/commands/registered_keyboard_command.h
+        include/roingine/commands/registered_controller_command.h
 )
 
 set(INCLUDE_HEADERS
         include/roingine/game_time.h
-        include/roingine/input.h
+        include/roingine/keyboard_input.h
         include/roingine/scene.h
         include/roingine/scene_manager.h
         include/roingine/gameobject.h
@@ -45,12 +46,13 @@ set(INCLUDE_HEADERS
         include/roingine/engine_event_queue.h
         include/roingine/component_init_types.h
         include/roingine/gl_texture.h
+        include/roingine/controller.h
 )
 
 set(SRC_FILES
         src/roingine.cpp
         src/game_time.cpp
-        src/input.cpp
+        src/keyboard_input.cpp
         src/scene.cpp
         src/scene_manager.cpp
         src/gameobject.cpp
@@ -67,14 +69,21 @@ set(SRC_FILES
         src/sdl_smart_pointers.cpp
         src/gl_texture.cpp
         src/components/camera.cpp
+        src/controller.cpp
+        src/unique_sdl_game_controller.cpp
+        src/commands/registered_controller_command.cpp
+        src/sdl_context.cpp
 )
 
 set(INTERNAL_HEADERS
-        internal_headers/input_impl.h
+        internal_headers/keyboard_input_impl.h
         internal_headers/scene_manager_impl.h
         internal_headers/sound_impl.h
         internal_headers/scene_loader_impl.h
         internal_headers/sdl_smart_pointers.h
+        internal_headers/controller_impl.h
+        internal_headers/unique_sdl_game_controller.h
+        internal_headers/sdl_context.h
 )
 
 add_library(${PROJECT_NAME} STATIC

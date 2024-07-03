@@ -14,7 +14,8 @@ namespace roingine {
 		        std::size_t argIdx, std::string_view expectedTypeName, std::string_view actualTypeName
 		);
 
-		char const *what() const override;
+		[[nodiscard]]
+		char const *what() const noexcept override;
 
 	private:
 		std::string m_Message;

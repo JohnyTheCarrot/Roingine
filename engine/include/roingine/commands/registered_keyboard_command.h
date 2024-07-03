@@ -1,7 +1,7 @@
 #ifndef REGISTERED_KEYBOARD_COMMAND_H
 #define REGISTERED_KEYBOARD_COMMAND_H
 
-#include <roingine/input.h>
+#include <roingine/keyboard_input.h>
 
 namespace roingine {
 	class Command;

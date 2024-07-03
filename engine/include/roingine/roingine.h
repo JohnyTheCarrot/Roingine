@@ -4,7 +4,7 @@
 #include <functional>
 #include <memory>
 #include <optional>
-#include <roingine/input.h>
+#include <roingine/keyboard_input.h>
 #include <roingine/service_locator.h>
 #include <string_view>
 
