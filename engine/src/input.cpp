@@ -5,7 +5,6 @@
 #include <roingine/game_info.h>
 #include <roingine/game_time.h>
 
-
 namespace roingine {
 	SDLKeyboardInputService::Impl::Impl()
 	    : m_pKeyData{SDL_GetKeyboardState(&m_NumKeys)} {
@@ -24,7 +23,7 @@ namespace roingine {
 		SDL_PumpEvents();
 
 		auto const executeCommands{[&](size_t keyStateIdx, KeyEventType eventType) {
-			SDLKey const sdlKey{static_cast<SDLKey>(keyStateIdx)};
+			auto const sdlKey{static_cast<SDLKey>(keyStateIdx)};
 
 			auto const [first, last] = m_Commands.equal_range(std::pair{sdlKey, eventType});
 
@@ -79,10 +78,7 @@ namespace roingine {
 		if (start == m_Commands.end())
 			return;
 
-		auto toEraseIt{std::find_if(start, end, [command](auto &pair) {
-			//
-			return pair.second.get() == command;
-		})};
+		auto const toEraseIt{std::find_if(start, end, [command](auto &pair) { return pair.second.get() == command; })};
 		if (toEraseIt == m_Commands.end())
 			return;
 

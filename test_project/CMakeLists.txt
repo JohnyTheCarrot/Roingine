@@ -7,6 +7,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(${PROJECT_NAME}
         src/main.cpp
+        src/components/player.h
+        src/components/player.cpp
+        src/move_command.h
+        src/move_command.cpp
+        src/components/moving_entity.h
+        src/components/moving_entity.cpp
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE Roingine)
 

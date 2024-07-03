@@ -12,18 +12,18 @@ namespace roingine {
 
 		~RegisteredKeyboardCommand();
 
-		RegisteredKeyboardCommand(RegisteredKeyboardCommand &&);
+		RegisteredKeyboardCommand(RegisteredKeyboardCommand &&) noexcept;
 
 		RegisteredKeyboardCommand(RegisteredKeyboardCommand const &) = delete;
 
-		RegisteredKeyboardCommand &operator=(RegisteredKeyboardCommand &&);
+		RegisteredKeyboardCommand &operator=(RegisteredKeyboardCommand &&) noexcept;
 
 		RegisteredKeyboardCommand &operator=(RegisteredKeyboardCommand const &) = delete;
 
 	private:
+		Command     *m_rpCommand;
 		InputKeys    m_InputKey;
 		KeyEventType m_EventType;
-		Command     *m_rpCommand;
 	};
 }// namespace roingine
 

@@ -65,13 +65,13 @@ namespace roingine {
 		using Commands = std::unordered_multimap<std::pair<SDLKey, KeyEventType>, std::unique_ptr<Command>, PairHash>;
 
 		[[nodiscard]]
-		constexpr SDLKey GetSDLKeyFromInputKey(InputKeys inputKey);
+		static constexpr SDLKey GetSDLKeyFromInputKey(InputKeys inputKey);
 
 		Commands           m_Commands;
+		int                m_NumKeys{};
+		uint8_t const     *m_pKeyData;
 		std::vector<bool>  m_KeyStates;
 		std::vector<float> m_KeyHeldTimes;
-		uint8_t const     *m_pKeyData;
-		int                m_NumKeys;
 	};
 }// namespace roingine
 

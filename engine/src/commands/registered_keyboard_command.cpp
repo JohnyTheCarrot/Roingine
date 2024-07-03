@@ -6,9 +6,9 @@ namespace roingine {
 	RegisteredKeyboardCommand::RegisteredKeyboardCommand(
 	        InputKeys inputKey, KeyEventType eventType, std::unique_ptr<Command> pCommand
 	)
-	    : m_InputKey{inputKey}
-	    , m_EventType{eventType}
-	    , m_rpCommand{pCommand.get()} {
+	    : m_rpCommand{pCommand.get()}
+	    , m_InputKey{inputKey}
+	    , m_EventType{eventType} {
 		KeyboardInput::GetService().AddCommand(inputKey, eventType, std::move(pCommand));
 	}
 
@@ -19,14 +19,14 @@ namespace roingine {
 		KeyboardInput::GetService().RemoveCommand(m_InputKey, m_EventType, m_rpCommand);
 	}
 
-	RegisteredKeyboardCommand::RegisteredKeyboardCommand(RegisteredKeyboardCommand &&other)
-	    : m_InputKey{other.m_InputKey}
-	    , m_EventType{other.m_EventType}
-	    , m_rpCommand{other.m_rpCommand} {
+	RegisteredKeyboardCommand::RegisteredKeyboardCommand(RegisteredKeyboardCommand &&other) noexcept
+	    : m_rpCommand{other.m_rpCommand}
+	    , m_InputKey{other.m_InputKey}
+	    , m_EventType{other.m_EventType} {
 		other.m_rpCommand = nullptr;
 	}
 
-	RegisteredKeyboardCommand &RegisteredKeyboardCommand::operator=(RegisteredKeyboardCommand &&other) {
+	RegisteredKeyboardCommand &RegisteredKeyboardCommand::operator=(RegisteredKeyboardCommand &&other) noexcept {
 		if (this == &other)
 			return *this;
 

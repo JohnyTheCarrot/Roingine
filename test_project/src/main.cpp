@@ -1,3 +1,5 @@
+#include "components/moving_entity.h"
+#include "components/player.h"
 #include <roingine/audio_service.h>
 #include <roingine/components/camera.h>
 #include <roingine/components/rect_renderer.h>
@@ -34,7 +36,7 @@ using Audio               = AudioSystem<Sounds>;
 using AudioServiceLocator = ServiceLocator<AudioService<Sounds>>;
 
 constexpr int WINDOW_WIDTH  = 640;
-constexpr int WINDOW_HEIGHT = 480;
+constexpr int WINDOW_HEIGHT = 580;
 
 int main() {
 	roingine::Engine roingine{"Test", WINDOW_WIDTH, WINDOW_HEIGHT};
@@ -47,13 +49,15 @@ int main() {
 	KeyboardInput::Provide(std::make_unique<SDLKeyboardInputService>());
 
 	Scene scene{};
-	auto  go1{scene.AddGameObject()};
-	go1.AddComponent<Transform>(glm::vec2{50.f, 50.f}, 0.f);
-	go1.AddComponent<RectRenderer>(50.f, 50.f);
+	auto  player1{scene.AddGameObject()};
+	player1.AddComponent<Transform>(glm::vec2{50.f, 50.f}, 0.f);
+	player1.AddComponent<RectRenderer>(50.f, 50.f);
+	auto *rpMovingEntity{&player1.AddComponent<bomberman::MovingEntity>(100.f)};
+	player1.AddComponent<bomberman::Player>(rpMovingEntity, true);
 
-	auto go2{scene.AddGameObject()};
-	go2.AddComponent<Transform>(glm::vec2{50.f, 250.f}, 0.f);
-	go2.AddComponent<RectRenderer>(50.f, 50.f);
+	auto player2{scene.AddGameObject()};
+	player2.AddComponent<Transform>(glm::vec2{50.f, 250.f}, 0.f);
+	player2.AddComponent<RectRenderer>(50.f, 50.f);
 
 	auto camera1{scene.AddGameObject()};
 	camera1.AddComponent<Transform>(glm::vec2{0.f, 0.f}, 0.f);

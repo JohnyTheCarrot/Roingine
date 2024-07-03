@@ -25,14 +25,17 @@ namespace roingine {
 		virtual void PreUpdate() {
 		}
 
-		virtual void Update(){};
+		virtual void Update() {
+		}
 
 		virtual void PostUpdate() {
 		}
 
-		virtual void FixedUpdate(){};
+		virtual void FixedUpdate() {
+		}
 
-		virtual void Render() const = 0;
+		virtual void Render() const {
+		}
 
 		virtual void OnEnabled() {
 		}
