@@ -13,12 +13,13 @@ namespace roingine {
 
 	class Engine final {
 	public:
-		Engine(std::string_view windowTitle, int windowWidth, int windowHeight,
-		       std::optional<int> windowX = std::nullopt, std::optional<int> windowY = std::nullopt);
+		 Engine(std::string_view windowTitle, int windowWidth, int windowHeight,
+		        std::optional<int> windowX = std::nullopt, std::optional<int> windowY = std::nullopt);
 		~Engine();
 
-		Engine(Engine &&);
-		Engine &operator=(Engine &&);
+		Engine(Engine &&) noexcept;
+
+		Engine &operator=(Engine &&) noexcept;
 
 		void Run(std::function<void()> const &fn);
 

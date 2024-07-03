@@ -31,6 +31,8 @@ namespace roingine {
 
 		void Render() const;
 
+		void RenderFromCameras() const;
+
 		[[nodiscard]]
 		GameObject AddGameObject();
 

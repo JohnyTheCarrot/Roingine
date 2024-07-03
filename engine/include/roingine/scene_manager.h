@@ -9,8 +9,8 @@ namespace roingine {
 
 	class SceneManager final : public Singleton<SceneManager> {
 	public:
-		SceneManager();
-		~SceneManager();
+		 SceneManager();
+		~SceneManager() override;
 
 		void SetActive(Scene &&scene);
 
@@ -25,7 +25,7 @@ namespace roingine {
 
 		void FixedUpdate();
 
-		void Render() const;
+		void RenderFromCameras() const;
 
 	private:
 		class Impl;

@@ -104,7 +104,7 @@ namespace roingine {
 	TransformContext::TransformContext(Transform const &transform) noexcept {
 		auto const transformationMat{transform.GetTransformationMatrix()};
 
-		glLoadIdentity();
+		glPushMatrix();
 		glMultMatrixf(glm::value_ptr(transformationMat));
 	}
 

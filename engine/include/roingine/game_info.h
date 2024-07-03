@@ -7,9 +7,10 @@
 namespace roingine {
 	class GameInfo final : public Singleton<GameInfo> {
 	public:
-		GameInfo();
-		~GameInfo();
+		 GameInfo();
+		~GameInfo() override;
 
+		// TODO: these are trivial.
 		[[nodiscard]]
 		float GetKeyHeldThresholdMs() const noexcept;
 

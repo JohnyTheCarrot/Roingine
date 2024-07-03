@@ -47,7 +47,7 @@ namespace roingine {
 		if (!m_Scene.has_value())
 			return;
 
-		m_Scene->Render();
+		m_Scene->RenderFromCameras();
 	}
 
 	void SceneManager::SetActive(Scene &&scene) {
@@ -74,7 +74,7 @@ namespace roingine {
 		m_pImpl->FixedUpdate();
 	}
 
-	void SceneManager::Render() const {
+	void SceneManager::RenderFromCameras() const {
 		m_pImpl->Render();
 	}
 }// namespace roingine

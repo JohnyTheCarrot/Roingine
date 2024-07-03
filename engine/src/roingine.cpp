@@ -22,17 +22,21 @@ namespace roingine {
 	class Engine::Impl final {
 	public:
 		Impl(std::string_view windowTitle, int windowWidth, int windowHeight, std::optional<int> windowX,
-		     std::optional<int> windowY) {
+		     std::optional<int> windowY)
+		    : m_WindowWidth{windowWidth}
+		    , m_WindowHeight{windowHeight} {
 			if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
-				std::runtime_error{std::string{"SDL_Init error: "} + SDL_GetError()};
+				throw std::runtime_error{std::string{"SDL_Init error: "} + SDL_GetError()};
 			}
 
 			if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
-				std::runtime_error{std::string{"IMG_Init error: "} + IMG_GetError()};
+				throw std::runtime_error{std::string{"IMG_Init error: "} + IMG_GetError()};
 			}
 
 			if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) != 0) {
-				std::runtime_error{std::string{"SDL_mixer could not initialize! SDL_mixer Error: "} + SDL_GetError()};
+				throw std::runtime_error{
+				        std::string{"SDL_mixer could not initialize! SDL_mixer Error: "} + SDL_GetError()
+				};
 			}
 
 			int const windowPosX{windowX.value_or(SDL_WINDOWPOS_CENTERED)};
@@ -63,18 +67,18 @@ namespace roingine {
 			glLoadIdentity();
 
 			if (auto const error{glGetError()}; error != GL_NO_ERROR) {
-				char const *errStr{reinterpret_cast<char const *>(gluErrorString(error))};
+				auto const *errStr{reinterpret_cast<char const *>(gluErrorString(error))};
 				throw std::runtime_error{std::string{"OpenGL error: "} + errStr};
 			}
 
-			glOrtho(0, windowWidth, 0, windowHeight, -1, 1);
+			gluOrtho2D(0, windowWidth, 0, windowHeight);
 			glViewport(0, 0, windowWidth, windowHeight);
 
 			glMatrixMode(GL_MODELVIEW);
 			glLoadIdentity();
 
 			if (auto const error{glGetError()}; error != GL_NO_ERROR) {
-				char const *errStr{reinterpret_cast<char const *>(gluErrorString(error))};
+				auto const errStr{reinterpret_cast<char const *>(gluErrorString(error))};
 				throw std::runtime_error{std::string{"OpenGL error: "} + errStr};
 			}
 
@@ -106,6 +110,7 @@ namespace roingine {
 	private:
 		SDL_Window   *m_rpWindow;
 		SDL_GLContext m_rpContext;
+		int           m_WindowWidth{}, m_WindowHeight{};
 
 		void RunOneFrame(std::function<void()> const &fn) {
 			GameTime &gameTime{GameTime::GetInstance()};
@@ -131,7 +136,7 @@ namespace roingine {
 			fn();
 
 			glClear(GL_COLOR_BUFFER_BIT);
-			sceneManager.Render();
+			sceneManager.RenderFromCameras();
 
 			SDL_GL_SwapWindow(m_rpWindow);
 
@@ -149,9 +154,9 @@ namespace roingine {
 
 	Engine::~Engine() = default;
 
-	Engine::Engine(Engine &&) = default;
+	Engine::Engine(Engine &&) noexcept = default;
 
-	Engine &Engine::operator=(Engine &&) = default;
+	Engine &Engine::operator=(Engine &&) noexcept = default;
 
 	void Engine::Run(std::function<void()> const &fn) {
 		m_pImpl->Run(fn);

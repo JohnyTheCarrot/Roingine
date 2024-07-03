@@ -1,11 +1,13 @@
+#include <ranges>
+#include <roingine/components/camera.h>
 #include <roingine/components/rect_collider.h>
 #include <roingine/gameobject.h>
 #include <roingine/scene.h>
 
 namespace roingine {
 	void Scene::PreUpdate() {
-		for (auto &[goHandle, components]: m_GameObjectComponents) {
-			for (auto &[compHash, component]: components) {
+		for (auto &components: m_GameObjectComponents | std::views::values) {
+			for (auto const &component: components | std::views::values) {
 				if (component->GetGameObject().GetEnabled())
 					component->PreUpdate();
 			}
@@ -13,8 +15,8 @@ namespace roingine {
 	}
 
 	void Scene::Update() {
-		for (auto &[goHandle, components]: m_GameObjectComponents) {
-			for (auto &[compHash, component]: components) {
+		for (auto &components: m_GameObjectComponents | std::views::values) {
+			for (auto const &component: components | std::views::values) {
 				if (component->GetGameObject().GetEnabled())
 					component->Update();
 			}
@@ -22,8 +24,8 @@ namespace roingine {
 	}
 
 	void Scene::PostUpdate() {
-		for (auto &[goHandle, components]: m_GameObjectComponents) {
-			for (auto &[compHash, component]: components) {
+		for (auto &components: m_GameObjectComponents | std::views::values) {
+			for (auto const &component: components | std::views::values) {
 				if (component->GetGameObject().GetEnabled())
 					component->PostUpdate();
 			}
@@ -32,8 +34,8 @@ namespace roingine {
 	}
 
 	void Scene::FixedUpdate() {
-		for (auto &[goHandle, components]: m_GameObjectComponents) {
-			for (auto &[compHash, component]: components) {
+		for (auto &components: m_GameObjectComponents | std::views::values) {
+			for (auto const &component: components | std::views::values) {
 				if (component->GetGameObject().GetEnabled())
 					component->FixedUpdate();
 			}
@@ -41,10 +43,24 @@ namespace roingine {
 	}
 
 	void Scene::Render() const {
-		for (auto &[goHandle, components]: m_GameObjectComponents) {
-			for (auto &[compHash, component]: components) {
+		for (auto const &components: m_GameObjectComponents | std::views::values) {
+			for (auto const &component: components | std::views::values) {
 				if (component->GetGameObject().GetEnabled())
 					component->Render();
+			}
+		}
+	}
+
+	void Scene::RenderFromCameras() const {
+		for (auto const &components: m_GameObjectComponents | std::views::values) {
+			for (auto &[compHash, pComponent]: components) {
+				if (compHash != typeid(Camera).hash_code())
+					continue;
+
+				auto &camera{*dynamic_cast<Camera *>(pComponent.get())};
+
+				// render everything from the camera
+				camera.RenderScene();
 			}
 		}
 	}
@@ -59,9 +75,11 @@ namespace roingine {
 	}
 
 	void Scene::SetGameObjectScenes() {
-		for (auto &[handle, gameObjectData]: m_GameObjects) { gameObjectData.gameObject.SetScene(this); }
-		for (auto &[gameObjectHandle, componentList]: m_GameObjectComponents) {
-			for (auto &[compHash, pComponent]: componentList) { pComponent->GetGameObject().SetScene(this); }
+		for (auto &gameObjectData: m_GameObjects | std::views::values) { gameObjectData.gameObject.SetScene(this); }
+		for (auto &componentList: m_GameObjectComponents | std::views::values) {
+			for (auto const &pComponent: componentList | std::views::values) {
+				pComponent->GetGameObject().SetScene(this);
+			}
 		}
 	}
 

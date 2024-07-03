@@ -18,6 +18,7 @@ set(INCLUDE_HEADERS_COMPONENTS
         include/roingine/components/rect_collider.h
         include/roingine/components/texture_renderer.h
         include/roingine/components/animation_renderer.h
+        include/roingine/components/camera.h
 )
 
 set(INCLUDE_HEADERS_COMMANDS
@@ -65,6 +66,7 @@ set(SRC_FILES
         src/components/animation_renderer.cpp
         src/sdl_smart_pointers.cpp
         src/gl_texture.cpp
+        src/components/camera.cpp
 )
 
 set(INTERNAL_HEADERS

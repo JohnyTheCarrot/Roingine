@@ -25,12 +25,12 @@ namespace roingine {
 		virtual void PreUpdate() {
 		}
 
-		virtual void Update() = 0;
+		virtual void Update(){};
 
 		virtual void PostUpdate() {
 		}
 
-		virtual void FixedUpdate() = 0;
+		virtual void FixedUpdate(){};
 
 		virtual void Render() const = 0;
 
@@ -47,11 +47,14 @@ namespace roingine {
 			return m_GameObject;
 		}
 
+		[[nodiscard]]
+		GameObject const &GetGameObject() const {
+			return m_GameObject;
+		}
+
 	private:
 		GameObject m_GameObject;
 	};
-
-	static_assert(std::is_abstract_v<Component>, "Component must be abstract");
 }// namespace roingine
 
 #endif// COMPONENT_H
