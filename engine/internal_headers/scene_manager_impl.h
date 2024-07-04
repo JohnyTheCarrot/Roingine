@@ -6,9 +6,17 @@
 #include <roingine/scene_manager.h>
 
 namespace roingine {
+	struct SceneUnload final {};
+
+	struct NoNewScene final {};
+
 	class SceneManager::Impl final {
+		void LoadNextImmediately();
+
 	public:
 		void SetActive(Scene &&scene);
+
+		void UnloadScene(bool immediate);
 
 		[[nodiscard]]
 		Scene *GetActive();
@@ -24,15 +32,9 @@ namespace roingine {
 		void Render() const;
 
 	private:
-		std::optional<Scene> m_Scene{};
-		std::optional<Scene> m_NewScene{};
+		std::optional<Scene>                         m_Scene{};
+		std::variant<SceneUnload, NoNewScene, Scene> m_NewScene{};
 	};
-
-	SceneManager::SceneManager()
-	    : m_pImpl{std::make_unique<SceneManager::Impl>()} {
-	}
-
-	SceneManager::~SceneManager() = default;
 }// namespace roingine
 
 #endif// SCENE_MANAGER_IMPL_H

@@ -7,7 +7,8 @@
 namespace roingine {
 	class NoServiceProvidedException final : public std::exception {
 	public:
-		char const *what() const noexcept {
+		[[nodiscard]]
+		char const *what() const noexcept override {
 			return "No service provided";
 		}
 	};

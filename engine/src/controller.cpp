@@ -46,7 +46,7 @@ namespace roingine {
 		throw std::runtime_error{"Invalid controller button"};
 	}
 
-	ControllerButton SDLToControllerButton(SDLControllerButton button) {
+	std::optional<ControllerButton> SDLToControllerButton(SDLControllerButton button) {
 		switch (button) {
 			case SDLControllerButton::A:
 				return ControllerButton::A;
@@ -80,7 +80,7 @@ namespace roingine {
 				return ControllerButton::DPadRight;
 		}
 
-		throw std::runtime_error{"Invalid controller button"};
+		return std::nullopt;
 	}
 
 	ButtonState ToButtonState(bool pressed) {
@@ -89,7 +89,7 @@ namespace roingine {
 
 	ButtonState Controller::Impl::MergeButtonStates(ControllerButton button, ButtonState state1, ButtonState state2) {
 		// If the button was pressed between the two states, it is held
-		if (state1 == ButtonState::Pressed && state2 == ButtonState::Pressed) {
+		if ((state1 == ButtonState::Pressed || state1 == ButtonState::Held) && state2 == ButtonState::Pressed) {
 			ExecuteCommandsForButtonState(button, ButtonState::Held);
 			return ButtonState::Held;
 		}
@@ -136,19 +136,29 @@ namespace roingine {
 		return SDL_JoystickInstanceID(joystick);
 	}
 
+	void Controller::Impl::MarkForDeletion() {
+		m_MarkedForDeletion = true;
+	}
+
+	bool Controller::Impl::IsMarkedForDeletion() const {
+		return m_MarkedForDeletion;
+	}
+
 	void Controller::Impl::Update() {
 		std::ranges::generate(m_ButtonStates, [this, buttonIndex = 0]() mutable {
 			auto const button{static_cast<SDL_GameControllerButton>(buttonIndex)};
-			++buttonIndex;
 
 			auto const pressed{SDL_GameControllerGetButton(m_pController.get(), button) != 0};
 
-			auto const             newButtonState{ToButtonState(pressed)};
-			auto const             oldButtonState{m_ButtonStates[buttonIndex]};
-			auto const             sdlControllerButton{static_cast<SDLControllerButton>(buttonIndex)};
-			ControllerButton const controllerButton{SDLToControllerButton(sdlControllerButton)};
+			auto const newButtonState{ToButtonState(pressed)};
+			auto const oldButtonState{m_ButtonStates[buttonIndex]};
+			auto const sdlControllerButton{static_cast<SDLControllerButton>(buttonIndex)};
+			auto const controllerButton{SDLToControllerButton(sdlControllerButton)};
+			if (!controllerButton.has_value())
+				return ButtonState::NotPressed;
 
-			return MergeButtonStates(controllerButton, oldButtonState, newButtonState);
+			++buttonIndex;
+			return MergeButtonStates(controllerButton.value(), oldButtonState, newButtonState);
 		});
 	}
 
@@ -182,6 +192,14 @@ namespace roingine {
 
 	int Controller::GetInstanceID() const {
 		return m_pImpl->GetInstanceID();
+	}
+
+	void Controller::MarkForDeletion() const {
+		m_pImpl->MarkForDeletion();
+	}
+
+	bool Controller::IsMarkedForDeletion() const {
+		return m_pImpl->IsMarkedForDeletion();
 	}
 
 	void Controller::Update() const {

@@ -3,6 +3,7 @@
 
 #include "unique_sdl_game_controller.h"
 #include <array>
+#include <optional>
 #include <roingine/controller.h>
 #include <vector>
 
@@ -29,7 +30,7 @@ namespace roingine {
 	SDLControllerButton ToSDLControllerButton(ControllerButton button);
 
 	[[nodiscard]]
-	ControllerButton SDLToControllerButton(SDLControllerButton button);
+	std::optional<ControllerButton> SDLToControllerButton(SDLControllerButton button);
 
 	[[nodiscard]]
 	ButtonState ToButtonState(bool pressed);
@@ -38,6 +39,7 @@ namespace roingine {
 		UniqueSDLGameController                            m_pController;
 		std::array<ButtonState, SDL_CONTROLLER_BUTTON_MAX> m_ButtonStates{};
 		std::vector<ControllerCommand>                     m_Commands;
+		bool                                               m_MarkedForDeletion{false};
 
 		[[nodiscard]]
 		ButtonState MergeButtonStates(ControllerButton button, ButtonState state1, ButtonState state2);
@@ -49,6 +51,11 @@ namespace roingine {
 
 		[[nodiscard]]
 		int GetInstanceID() const;
+
+		void MarkForDeletion();
+
+		[[nodiscard]]
+		bool IsMarkedForDeletion() const;
 
 		void Update();
 

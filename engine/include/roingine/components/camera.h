@@ -17,6 +17,8 @@ namespace roingine {
 		void Render() const override;
 
 		void RenderScene() const;
+
+		void SetView(int viewX, int viewY, int viewWidth, int viewHeight);
 	};
 }// namespace roingine
 

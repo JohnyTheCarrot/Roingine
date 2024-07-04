@@ -99,7 +99,10 @@ namespace roingine {
 	}
 
 	void Scene::CleanupMarkedGameObjects() {
-		for (GameObjectHandle const gameObject: m_GameObjectsToDestroy) { RemoveGameObject(gameObject); }
+		for (GameObjectHandle const gameObject: m_GameObjectsToDestroy) {//
+
+			RemoveGameObject(gameObject);
+		}
 		m_GameObjectsToDestroy.clear();
 	}
 

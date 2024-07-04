@@ -1,5 +1,6 @@
 #include "components/moving_entity.h"
 #include "components/player.h"
+#include "game.h"
 #include <roingine/audio_service.h>
 #include <roingine/components/camera.h>
 #include <roingine/components/rect_renderer.h>
@@ -48,26 +49,8 @@ int main() {
 
 	KeyboardInput::Provide(std::make_unique<SDLKeyboardInputService>());
 
-	Scene scene{};
-	auto  player1{scene.AddGameObject()};
-	player1.AddComponent<Transform>(glm::vec2{50.f, 50.f}, 0.f);
-	player1.AddComponent<RectRenderer>(50.f, 50.f);
-	auto *rpMovingEntity{&player1.AddComponent<bomberman::MovingEntity>(100.f)};
-	player1.AddComponent<bomberman::Player>(rpMovingEntity, true);
-
-	auto player2{scene.AddGameObject()};
-	player2.AddComponent<Transform>(glm::vec2{50.f, 250.f}, 0.f);
-	player2.AddComponent<RectRenderer>(50.f, 50.f);
-
-	auto camera1{scene.AddGameObject()};
-	camera1.AddComponent<Transform>(glm::vec2{0.f, 0.f}, 0.f);
-	camera1.AddComponent<Camera>(0, 0, WINDOW_WIDTH / 2, WINDOW_HEIGHT);
-
-	auto camera2{scene.AddGameObject()};
-	camera2.AddComponent<Transform>(glm::vec2{-50.f, 50.f}, 0.f);
-	camera2.AddComponent<Camera>(WINDOW_WIDTH / 2, 0, WINDOW_WIDTH / 2, WINDOW_HEIGHT);
-
-	SceneManager::GetInstance().SetActive(std::move(scene));
+	Scene           scene{};
+	bomberman::Game game{std::move(scene), WINDOW_WIDTH, WINDOW_HEIGHT};
 
 	roingine.Run([]() { GameEventQueue::GetInstance().Update(); });
 }

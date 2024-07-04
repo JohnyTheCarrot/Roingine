@@ -40,4 +40,11 @@ namespace roingine {
 		GetGameObject().GetScene()->Render();
 		glPopMatrix();
 	}
+
+	void Camera::SetView(int viewX, int viewY, int viewWidth, int viewHeight) {
+		m_ViewX      = viewX;
+		m_ViewY      = viewY;
+		m_ViewWidth  = viewWidth;
+		m_ViewHeight = viewHeight;
+	}
 }// namespace roingine

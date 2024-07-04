@@ -51,6 +51,11 @@ namespace roingine {
 		[[nodiscard]]
 		int GetInstanceID() const;
 
+		void MarkForDeletion() const;
+
+		[[nodiscard]]
+		bool IsMarkedForDeletion() const;
+
 		void Update() const;
 
 		void RegisterCommand(ControllerButton button, ButtonState buttonState, std::unique_ptr<Command> pCommand) const;

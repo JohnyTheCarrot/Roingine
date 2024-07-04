@@ -11,7 +11,6 @@
 
 
 #include <SDL.h>
-#include <SDL_image.h>
 #include <SDL_mixer.h>
 #include <iostream>
 #include <roingine/engine_event_queue.h>
@@ -19,8 +18,6 @@
 #include <roingine/game_info.h>
 #include <roingine/scene_manager.h>
 #include <roingine/service_locator.h>
-#include <stdexcept>
-#include <string>
 
 namespace roingine {
 	class Engine::Impl final {
@@ -81,18 +78,18 @@ namespace roingine {
 						if (it == m_Controllers.end())
 							break;
 
-						event_queue::EventQueue::GetInstance().FireEvent<event_queue::EventType::ControllerConnected>(
-						        it->get()
-						);
+						event_queue::EventQueue::GetInstance()
+						        .FireEvent<event_queue::EventType::ControllerDisconnected>(it->get());
 
-						std::erase(m_Controllers, *it);
+						(*it)->MarkForDeletion();
 						break;
 					}
 				}
 			}
 
+			for (auto const &controller: m_Controllers) { controller->Update(); }
 			KeyboardInput::GetService().ProcessInput();
-			auto &sceneManager{SceneManager::GetInstance()};
+			auto const &sceneManager{SceneManager::GetInstance()};
 
 			while (accumulator >= GameTime::FIXED_TIME_DELTA) {
 				accumulator -= GameTime::FIXED_TIME_DELTA;
@@ -101,9 +98,11 @@ namespace roingine {
 
 			sceneManager.PreUpdate();
 			sceneManager.Update();
-			sceneManager.PostUpdate();
 			event_queue::EventQueue::GetInstance().Update();
+			sceneManager.PostUpdate();
 			fn();
+
+			std::erase_if(m_Controllers, [](auto const &pController) { return pController->IsMarkedForDeletion(); });
 
 			glClear(GL_COLOR_BUFFER_BIT);
 			sceneManager.RenderFromCameras();
@@ -122,7 +121,10 @@ namespace roingine {
 	    : m_pImpl{std::make_unique<Impl>(windowTitle, windowWidth, windowHeight, windowX, windowY)} {
 	}
 
-	Engine::~Engine() = default;
+	Engine::~Engine() {
+		// Due to SceneManager being a singleton, we need to unload the scene before the engine is destroyed.
+		SceneManager::GetInstance().UnloadScene(true);
+	}
 
 	Engine::Engine(Engine &&) noexcept = default;
 

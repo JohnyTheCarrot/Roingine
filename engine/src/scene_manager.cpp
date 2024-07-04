@@ -1,8 +1,37 @@
 #include "scene_manager_impl.h"
 
 namespace roingine {
+	SceneManager::SceneManager()
+	    : m_pImpl{std::make_unique<Impl>()} {
+	}
+
+	SceneManager::~SceneManager() = default;
+
 	void SceneManager::Impl::SetActive(Scene &&scene) {
 		m_NewScene = std::move(scene);
+	}
+
+	void SceneManager::Impl::UnloadScene(bool immediate) {
+		m_NewScene = SceneUnload{};
+
+		if (immediate) {
+			LoadNextImmediately();
+		}
+	}
+
+	void SceneManager::Impl::LoadNextImmediately() {
+		if (std::holds_alternative<Scene>(m_NewScene)) {
+			auto &newScene{std::get<Scene>(m_NewScene)};
+
+			m_Scene    = std::move(newScene);
+			m_NewScene = NoNewScene{};
+			return;
+		}
+
+		if (std::holds_alternative<SceneUnload>(m_NewScene)) {
+			m_Scene.reset();
+			m_NewScene = NoNewScene{};
+		}
 	}
 
 	Scene *SceneManager::Impl::GetActive() {
@@ -30,10 +59,7 @@ namespace roingine {
 		if (m_Scene.has_value())
 			m_Scene->PostUpdate();
 
-		if (m_NewScene.has_value()) {
-			m_Scene    = std::move(m_NewScene);
-			m_NewScene = std::nullopt;
-		}
+		LoadNextImmediately();
 	}
 
 	void SceneManager::Impl::FixedUpdate() {
@@ -50,27 +76,31 @@ namespace roingine {
 		m_Scene->RenderFromCameras();
 	}
 
-	void SceneManager::SetActive(Scene &&scene) {
+	void SceneManager::SetActive(Scene &&scene) const {
 		m_pImpl->SetActive(std::move(scene));
 	}
 
-	Scene *SceneManager::GetActive() {
+	void SceneManager::UnloadScene(bool immediate) const {
+		m_pImpl->UnloadScene(immediate);
+	}
+
+	Scene *SceneManager::GetActive() const {
 		return m_pImpl->GetActive();
 	}
 
-	void SceneManager::PreUpdate() {
+	void SceneManager::PreUpdate() const {
 		m_pImpl->PreUpdate();
 	}
 
-	void SceneManager::Update() {
+	void SceneManager::Update() const {
 		m_pImpl->Update();
 	}
 
-	void SceneManager::PostUpdate() {
+	void SceneManager::PostUpdate() const {
 		m_pImpl->PostUpdate();
 	}
 
-	void SceneManager::FixedUpdate() {
+	void SceneManager::FixedUpdate() const {
 		m_pImpl->FixedUpdate();
 	}
 

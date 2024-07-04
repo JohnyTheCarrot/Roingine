@@ -13,6 +13,8 @@ add_executable(${PROJECT_NAME}
         src/move_command.cpp
         src/components/moving_entity.h
         src/components/moving_entity.cpp
+        src/game.h
+        src/game.cpp
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE Roingine)
 

@@ -9,21 +9,24 @@ namespace roingine {
 
 	class SceneManager final : public Singleton<SceneManager> {
 	public:
-		 SceneManager();
+		SceneManager();
+
 		~SceneManager() override;
 
-		void SetActive(Scene &&scene);
+		void SetActive(Scene &&scene) const;
+
+		void UnloadScene(bool immediate = false) const;
 
 		[[nodiscard]]
-		Scene *GetActive();
+		Scene *GetActive() const;
 
-		void PreUpdate();
+		void PreUpdate() const;
 
-		void Update();
+		void Update() const;
 
-		void PostUpdate();
+		void PostUpdate() const;
 
-		void FixedUpdate();
+		void FixedUpdate() const;
 
 		void RenderFromCameras() const;
 
