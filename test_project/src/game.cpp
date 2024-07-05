@@ -26,6 +26,39 @@ namespace bomberman {
 		m_rpPlayer = &playerObject.AddComponent<Player>(cameraTransform, rpMovingEntity, hasKeyboardSupport);
 	}
 
+	PlayerAndCamera::~PlayerAndCamera() {
+		if (m_rpCamera)
+			m_rpCamera->GetGameObject().Destroy();
+
+		if (m_rpPlayer)
+			m_rpPlayer->GetGameObject().Destroy();
+	}
+
+	PlayerAndCamera::PlayerAndCamera(PlayerAndCamera &&other) noexcept
+	    : m_rpPlayer{other.m_rpPlayer}
+	    , m_rpCamera{other.m_rpCamera} {
+		other.m_rpPlayer = nullptr;
+		other.m_rpCamera = nullptr;
+	}
+
+	PlayerAndCamera &PlayerAndCamera::operator=(PlayerAndCamera &&other) noexcept {
+		if (this == &other)
+			return *this;
+
+		if (m_rpCamera)
+			m_rpCamera->GetGameObject().Destroy();
+		if (m_rpPlayer)
+			m_rpPlayer->GetGameObject().Destroy();
+
+		m_rpPlayer = other.m_rpPlayer;
+		m_rpCamera = other.m_rpCamera;
+
+		other.m_rpPlayer = nullptr;
+		other.m_rpCamera = nullptr;
+
+		return *this;
+	}
+
 	roingine::Camera &PlayerAndCamera::GetCamera() const {
 		return *m_rpCamera;
 	}
@@ -56,8 +89,6 @@ namespace bomberman {
 		}
 
 		if (m_PlayerTwo.has_value() && m_PlayerTwo->GetPlayer().HasSpecificController(data.rpController)) {
-			m_PlayerTwo->GetCamera().GetGameObject().Destroy();
-			m_PlayerTwo->GetPlayer().GetGameObject().Destroy();
 			m_PlayerTwo.reset();
 			m_PlayerOne.GetCamera().SetView(0, 0, m_WindowWidth, m_WindowHeight);
 		}

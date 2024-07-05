@@ -23,6 +23,16 @@ namespace bomberman {
 		        roingine::Scene &scene, bool hasKeyboardSupport, int viewX, int viewY, int viewWidth, int viewHeight
 		);
 
+		~PlayerAndCamera();
+
+		PlayerAndCamera(PlayerAndCamera const &) = delete;
+
+		PlayerAndCamera(PlayerAndCamera &&) noexcept;
+
+		PlayerAndCamera &operator=(PlayerAndCamera const &) = delete;
+
+		PlayerAndCamera &operator=(PlayerAndCamera &&) noexcept;
+
 		[[nodiscard]]
 		roingine::Camera &GetCamera() const;
 
