@@ -55,6 +55,6 @@ namespace bomberman {
 	}
 
 	void Player::Update() {
-		// m_rpCameraTransform->SetLocalPosition(m_rpTransform->GetWorldPosition());
+		m_rpCameraTransform->SetLocalPosition(m_rpTransform->GetWorldPosition());
 	}
 }// namespace bomberman

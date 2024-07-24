@@ -15,6 +15,8 @@ add_executable(${PROJECT_NAME}
         src/components/moving_entity.cpp
         src/game.h
         src/game.cpp
+        src/level_loader.cpp
+        src/level_loader.h
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE Roingine)
 

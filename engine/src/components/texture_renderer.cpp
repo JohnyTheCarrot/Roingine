@@ -8,9 +8,10 @@
 #include <roingine/gameobject.h>
 
 namespace roingine {
-	TextureRenderer::TextureRenderer(GameObject &gameObject, std::string const &fileName)
+	TextureRenderer::TextureRenderer(GameObject &gameObject, std::string const &fileName, ScalingMethod scalingMethod)
 	    : Component{gameObject}
-	    , m_Transform{gameObject.GetComponent<Transform>()} {
+	    , m_Transform{gameObject.GetComponent<Transform>()}
+	    , m_ScalingMethod(scaling_method::ToOpenGLScalingMethod(scalingMethod)) {
 		UniqueSDLSurface const sdlSurface{IMG_Load(fileName.c_str())};
 
 		GLuint textureId;
@@ -36,10 +37,10 @@ namespace roingine {
 	}
 
 	TextureRenderer::TextureRenderer(
-	        GameObject &gameObject, std::string const &fileName, float width, float height,
+	        GameObject &gameObject, std::string const &fileName, float width, float height, ScalingMethod scalingMethod,
 	        std::optional<float> unitWidth, std::optional<float> unitHeight
 	)
-	    : TextureRenderer{gameObject, fileName} {
+	    : TextureRenderer{gameObject, fileName, scalingMethod} {
 		m_Width      = width;
 		m_Height     = height;
 		m_UnitWidth  = unitWidth.value_or(width);
@@ -55,6 +56,8 @@ namespace roingine {
 	void TextureRenderer::Render() const {
 		glEnable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, m_TextureID.Get());
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_ScalingMethod);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_ScalingMethod);
 		TransformContext context{m_Transform};
 
 		float const x      = 0.f;

@@ -1,9 +1,10 @@
+#include <SDL_opengl.h>
 #include <roingine/gl_texture.h>
 
 namespace roingine {
 	UniqueGLTexture::UniqueGLTexture() = default;
 
-	UniqueGLTexture::UniqueGLTexture(GLuint textureID)
+	UniqueGLTexture::UniqueGLTexture(std::uint32_t textureID)
 	    : m_TextureID{textureID} {
 	}
 
@@ -25,7 +26,7 @@ namespace roingine {
 		return *this;
 	}
 
-	GLuint UniqueGLTexture::Get() const {
+	std::uint32_t UniqueGLTexture::Get() const {
 		return m_TextureID.value();
 	}
 }// namespace roingine

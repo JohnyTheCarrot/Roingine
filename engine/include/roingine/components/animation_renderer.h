@@ -1,6 +1,9 @@
 #ifndef ANIMATION_RENDERER_H
 #define ANIMATION_RENDERER_H
 
+#include "roingine/image_scaling.h"
+
+
 #include <roingine/components/component.h>
 #include <roingine/gl_texture.h>
 
@@ -12,12 +15,9 @@ namespace roingine {
 	class AnimationRenderer final : public Component {
 	public:
 		AnimationRenderer(
-		        GameObject &gameObject, std::string const &fileName, std::size_t numFrames, float secondsPerFrame
-		);
-
-		AnimationRenderer(
-		        GameObject &gameObject, std::string const &fileName, std::size_t numFrames, float secondsPerFrame,
-		        float width, float height
+		        GameObject &gameObject, std::string const &fileName, int numFrames, float secondsPerFrame,
+		        std::optional<float> width = std::nullopt, std::optional<float> height = std::nullopt,
+		        ScalingMethod scalingMethod = ScalingMethod::Linear
 		);
 
 		void Update() override;
@@ -34,11 +34,12 @@ namespace roingine {
 	private:
 		Transform      &m_Transform;
 		UniqueGLTexture m_TextureID{};
-		std::size_t     m_NumFrames;
+		int             m_ScalingMethod;
+		int             m_NumFrames;
+		int             m_CurrentFrame{0};
 		float           m_Width, m_Height;
 		float           m_SecondsPerFrame;
 		float           m_SecondsSinceFrame{0.f};
-		int             m_CurrentFrame{0};
 		bool            m_Flipped{false};
 	};
 }// namespace roingine

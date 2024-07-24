@@ -1,6 +1,8 @@
 #include "components/moving_entity.h"
 #include "components/player.h"
 #include "game.h"
+#include "roingine/components/texture_renderer.h"
+
 #include <roingine/audio_service.h>
 #include <roingine/components/camera.h>
 #include <roingine/components/rect_renderer.h>
@@ -49,7 +51,8 @@ int main() {
 
 	KeyboardInput::Provide(std::make_unique<SDLKeyboardInputService>());
 
-	Scene           scene{};
+	Scene scene{};
+
 	bomberman::Game game{std::move(scene), WINDOW_WIDTH, WINDOW_HEIGHT};
 
 	roingine.Run([]() { GameEventQueue::GetInstance().Update(); });

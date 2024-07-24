@@ -2,6 +2,7 @@
 
 #include "components/moving_entity.h"
 #include "components/player.h"
+#include "level_loader.h"
 
 #include <roingine/components/camera.h>
 #include <roingine/components/rect_renderer.h>
@@ -20,9 +21,9 @@ namespace bomberman {
 
 		m_rpCamera = &cameraObject.AddComponent<roingine::Camera>(viewX, viewY, viewWidth, viewHeight);
 
-		playerObject.AddComponent<roingine::Transform>(glm::vec2{50.f, 50.f}, 0.f);
+		playerObject.AddComponent<roingine::Transform>(glm::vec2{50.f, -50.f}, 0.f);
 		playerObject.AddComponent<roingine::RectRenderer>(50.f, 50.f);
-		auto *rpMovingEntity{&playerObject.AddComponent<MovingEntity>(100.f)};
+		auto *rpMovingEntity{&playerObject.AddComponent<MovingEntity>(200.f)};
 		m_rpPlayer = &playerObject.AddComponent<Player>(cameraTransform, rpMovingEntity, hasKeyboardSupport);
 	}
 
@@ -77,7 +78,7 @@ namespace bomberman {
 			return;// max 2 players
 
 		m_PlayerOne.GetCamera().SetView(0, 0, m_WindowWidth / 2, m_WindowHeight);
-		auto const scene{roingine::SceneManager::GetInstance().GetActive()};
+		auto *const scene{roingine::SceneManager::GetInstance().GetActive()};
 		m_PlayerTwo.emplace(*scene, false, m_WindowWidth / 2, 0, m_WindowWidth / 2, m_WindowHeight);
 		m_PlayerTwo->GetPlayer().TieToController(data.rpController);
 	}
@@ -110,6 +111,9 @@ namespace bomberman {
 	                                              )}
 	    , m_WindowWidth{windowWidth}
 	    , m_WindowHeight{windowHeight} {
+
+		level_loader::LoadScene(scene, level_loader::LevelLoadInfo{});
+
 		roingine::SceneManager::GetInstance().SetActive(std::move(scene));
 	}
 }// namespace bomberman

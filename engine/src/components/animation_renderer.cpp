@@ -7,10 +7,12 @@
 
 namespace roingine {
 	AnimationRenderer::AnimationRenderer(
-	        GameObject &gameObject, std::string const &fileName, std::size_t numFrames, float secondsPerFrame
+	        GameObject &gameObject, std::string const &fileName, int numFrames, float secondsPerFrame,
+	        std::optional<float> width, std::optional<float> height, ScalingMethod scalingMethod
 	)
 	    : Component{gameObject}
 	    , m_Transform{gameObject.GetComponent<Transform>()}
+	    , m_ScalingMethod{scaling_method::ToOpenGLScalingMethod(scalingMethod)}
 	    , m_NumFrames{numFrames}
 	    , m_SecondsPerFrame{secondsPerFrame} {
 		UniqueSDLSurface const sdlSurface{IMG_Load(fileName.c_str())};
@@ -19,8 +21,11 @@ namespace roingine {
 		glGenTextures(1, &textureId);
 		m_TextureID = UniqueGLTexture{textureId};
 		glBindTexture(GL_TEXTURE_2D, m_TextureID.Get());
-		m_Width  = static_cast<float>(sdlSurface->w);
-		m_Height = static_cast<float>(sdlSurface->h);
+
+		if (!width.has_value())
+			m_Width = static_cast<float>(sdlSurface->w);
+		if (!height.has_value())
+			m_Height = static_cast<float>(sdlSurface->h);
 
 		UniqueSDLPixelFormat const target{SDL_AllocFormat(SDL_PIXELFORMAT_RGBA32)};
 		UniqueSDLSurface const     actualSurface{SDL_ConvertSurface(sdlSurface.get(), target.get(), 0)};
@@ -33,15 +38,6 @@ namespace roingine {
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	}
-
-	AnimationRenderer::AnimationRenderer(
-	        GameObject &gameObject, std::string const &fileName, std::size_t numFrames, float secondsPerFrame,
-	        float width, float height
-	)
-	    : AnimationRenderer{gameObject, fileName, numFrames, secondsPerFrame} {
-		m_Width  = width;
-		m_Height = height;
 	}
 
 	void AnimationRenderer::Update() {
@@ -61,6 +57,8 @@ namespace roingine {
 	void AnimationRenderer::Render() const {
 		glEnable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, m_TextureID.Get());
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_ScalingMethod);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_ScalingMethod);
 		TransformContext context{m_Transform};
 		if (m_Flipped) {
 			glTranslatef(m_Width, 0.f, 0.f);

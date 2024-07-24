@@ -47,6 +47,7 @@ set(INCLUDE_HEADERS
         include/roingine/component_init_types.h
         include/roingine/gl_texture.h
         include/roingine/controller.h
+        include/roingine/image_scaling.h
 )
 
 set(SRC_FILES
@@ -73,6 +74,7 @@ set(SRC_FILES
         src/unique_sdl_game_controller.cpp
         src/commands/registered_controller_command.cpp
         src/sdl_context.cpp
+        src/image_scaling.cpp
 )
 
 set(INTERNAL_HEADERS

@@ -1,17 +1,16 @@
 #ifndef GL_TEXTURE_H
 #define GL_TEXTURE_H
 
-#include <SDL_opengl.h>
 #include <optional>
 
 namespace roingine {
 	class UniqueGLTexture final {
-		std::optional<GLuint> m_TextureID{};
+		std::optional<std::uint32_t> m_TextureID{};
 
 	public:
 		UniqueGLTexture();
 
-		explicit UniqueGLTexture(GLuint textureID);
+		explicit UniqueGLTexture(std::uint32_t textureID);
 
 		~UniqueGLTexture();
 
@@ -24,7 +23,7 @@ namespace roingine {
 		UniqueGLTexture &operator=(UniqueGLTexture &&) noexcept;
 
 		[[nodiscard]]
-		GLuint Get() const;
+		std::uint32_t Get() const;
 	};
 }// namespace roingine
 
