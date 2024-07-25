@@ -1,3 +1,4 @@
+#include <ranges>
 #include <roingine/components/component.h>
 #include <roingine/gameobject.h>
 #include <roingine/scene.h>
@@ -12,7 +13,7 @@ namespace roingine {
 		return m_rpScene == other.m_rpScene && m_hGameObject == other.m_hGameObject;
 	}
 
-	void GameObject::SetLabel(std::string &&label) {
+	void GameObject::SetLabel(std::string &&label) const {
 		m_rpScene->m_GameObjects.at(m_hGameObject).label = std::move(label);
 	}
 
@@ -20,7 +21,7 @@ namespace roingine {
 		return m_rpScene->m_GameObjects.at(m_hGameObject).label;
 	}
 
-	void GameObject::SetUniqueID(std::string &&uniqueID) {
+	void GameObject::SetUniqueID(std::string &&uniqueID) const {
 		m_rpScene->m_GameObjects.at(m_hGameObject).uniqueID = std::move(uniqueID);
 	}
 
@@ -30,12 +31,13 @@ namespace roingine {
 
 	void GameObject::SetEnabled(bool enabled) {
 		m_rpScene->m_GameObjects.at(m_hGameObject).isEnabled = enabled;
+
 		if (auto *pComponents{GetComponents()}; pComponents != nullptr)
-			for (auto &comp: *pComponents) {
+			for (auto const &pComponent: *pComponents | std::views::values) {
 				if (enabled)
-					comp.second->OnEnabled();
+					pComponent->OnEnabled();
 				else
-					comp.second->OnDisabled();
+					pComponent->OnDisabled();
 			}
 	}
 
@@ -44,18 +46,17 @@ namespace roingine {
 	}
 
 	Component *GameObject::GetComponent(std::size_t typeHash) {
-		if (auto pComp{GetOptionalComponent(typeHash)}; pComp != nullptr)
+		if (auto const pComp{GetOptionalComponent(typeHash)}; pComp != nullptr)
 			return pComp;
 
 		throw ComponentNotFoundException{};
 	}
 
 	Component *GameObject::GetOptionalComponent(std::size_t typeHash) {
-		ComponentHandle hComponent{typeHash};
+		ComponentHandle const hComponent{typeHash};
 
-		if (auto sceneComponents{GetComponents()}; sceneComponents != nullptr) {
-			auto it{sceneComponents->find(hComponent)};
-			if (it != sceneComponents->end())
+		if (auto const sceneComponents{GetComponents()}; sceneComponents != nullptr) {
+			if (auto const it{sceneComponents->find(hComponent)}; it != sceneComponents->end())
 				return it->second.get();
 		}
 
@@ -79,7 +80,7 @@ namespace roingine {
 	}
 
 	ComponentMap *GameObject::GetComponents() {
-		auto it{m_rpScene->m_GameObjectComponents.find(m_hGameObject)};
+		auto const it{m_rpScene->m_GameObjectComponents.find(m_hGameObject)};
 		if (it == m_rpScene->m_GameObjectComponents.end())
 			return nullptr;
 
@@ -87,7 +88,7 @@ namespace roingine {
 	}
 
 	ComponentMap const *GameObject::GetComponents() const {
-		auto it{m_rpScene->m_GameObjectComponents.find(m_hGameObject)};
+		auto const it{m_rpScene->m_GameObjectComponents.find(m_hGameObject)};
 		if (it == m_rpScene->m_GameObjectComponents.end())
 			return nullptr;
 
@@ -95,10 +96,11 @@ namespace roingine {
 	}
 
 	ComponentMap &GameObject::GetOrCreateComponentList() {
-		auto it{m_rpScene->m_GameObjectComponents.find(m_hGameObject)};
+		auto const it{m_rpScene->m_GameObjectComponents.find(m_hGameObject)};
 		if (it == m_rpScene->m_GameObjectComponents.end()) {
-			auto newIt{m_rpScene->m_GameObjectComponents.emplace(m_hGameObject, ComponentMap{})};
-			return newIt.first->second;
+			auto const [gameObjectToCompMap, _]{m_rpScene->m_GameObjectComponents.emplace(m_hGameObject, ComponentMap{})
+			};
+			return gameObjectToCompMap->second;
 		}
 
 		return it->second;

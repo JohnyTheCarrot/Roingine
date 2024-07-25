@@ -75,7 +75,9 @@ namespace roingine {
 	}
 
 	void Scene::SetGameObjectScenes() {
-		for (auto &gameObjectData: m_GameObjects | std::views::values) { gameObjectData.gameObject.SetScene(this); }
+		for (auto &[uniqueID, label, gameObject, isEnabled]: m_GameObjects | std::views::values) {
+			gameObject.SetScene(this);
+		}
 		for (auto &componentList: m_GameObjectComponents | std::views::values) {
 			for (auto const &pComponent: componentList | std::views::values) {
 				pComponent->GetGameObject().SetScene(this);
@@ -99,10 +101,7 @@ namespace roingine {
 	}
 
 	void Scene::CleanupMarkedGameObjects() {
-		for (GameObjectHandle const gameObject: m_GameObjectsToDestroy) {//
-
-			RemoveGameObject(gameObject);
-		}
+		for (GameObjectHandle const gameObject: m_GameObjectsToDestroy) { RemoveGameObject(gameObject); }
 		m_GameObjectsToDestroy.clear();
 	}
 

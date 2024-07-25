@@ -17,6 +17,8 @@ add_executable(${PROJECT_NAME}
         src/game.cpp
         src/level_loader.cpp
         src/level_loader.h
+        src/components/level_flyweight.h
+        src/components/level_flyweight.cpp
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE Roingine)
 

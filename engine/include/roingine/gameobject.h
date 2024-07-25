@@ -57,12 +57,12 @@ namespace roingine {
 			return *rpComponent;
 		}
 
-		void SetLabel(std::string &&label);
+		void SetLabel(std::string &&label) const;
 
 		[[nodiscard]]
 		std::optional<std::string_view> GetLabel() const;
 
-		void SetUniqueID(std::string &&uniqueID);
+		void SetUniqueID(std::string &&uniqueID) const;
 
 		[[nodiscard]]
 		std::optional<std::string_view> GetUniqueID() const;

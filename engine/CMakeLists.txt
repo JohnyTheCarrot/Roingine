@@ -48,6 +48,7 @@ set(INCLUDE_HEADERS
         include/roingine/gl_texture.h
         include/roingine/controller.h
         include/roingine/image_scaling.h
+        include/roingine/reusable_texture.h
 )
 
 set(SRC_FILES
@@ -75,6 +76,7 @@ set(SRC_FILES
         src/commands/registered_controller_command.cpp
         src/sdl_context.cpp
         src/image_scaling.cpp
+        src/reusable_texture.cpp
 )
 
 set(INTERNAL_HEADERS

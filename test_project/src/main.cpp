@@ -32,8 +32,8 @@ using GameEventQueue = EventQueue<EventType, PlaySoundRequestData>;
 using Audio               = AudioSystem<Sounds>;
 using AudioServiceLocator = ServiceLocator<AudioService<Sounds>>;
 
-constexpr int WINDOW_WIDTH  = 640;
-constexpr int WINDOW_HEIGHT = 580;
+constexpr int WINDOW_WIDTH  = 960;
+constexpr int WINDOW_HEIGHT = 870;
 
 int main() {
 	Engine roingine{"Test", WINDOW_WIDTH, WINDOW_HEIGHT};
