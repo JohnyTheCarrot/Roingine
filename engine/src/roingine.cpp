@@ -42,6 +42,10 @@ namespace roingine {
 			} catch (...) { std::cerr << "Unknown error" << std::endl; }
 		}
 
+		static void SetClearColor(float r, float g, float b) {
+			glClearColor(r, g, b, 1.0f);
+		}
+
 	private:
 		SDLContext                               m_Context;
 		std::vector<std::unique_ptr<Controller>> m_Controllers;
@@ -130,7 +134,11 @@ namespace roingine {
 
 	Engine &Engine::operator=(Engine &&) noexcept = default;
 
-	void Engine::Run(std::function<void()> const &fn) {
+	void Engine::Run(std::function<void()> const &fn) const {
 		m_pImpl->Run(fn);
+	}
+
+	void Engine::SetClearColor(float r, float g, float b) const {
+		m_pImpl->SetClearColor(r, g, b);
 	}
 }// namespace roingine

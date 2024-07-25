@@ -21,7 +21,9 @@ namespace roingine {
 
 		Engine &operator=(Engine &&) noexcept;
 
-		void Run(std::function<void()> const &fn);
+		void Run(std::function<void()> const &fn) const;
+
+		void SetClearColor(float r, float g, float b) const;
 
 	private:
 		class Impl;
