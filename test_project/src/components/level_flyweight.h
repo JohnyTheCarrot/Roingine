@@ -5,8 +5,9 @@
 #include <roingine/reusable_texture.h>
 
 namespace roingine {
+	class RectCollider;
 	class Transform;
-}
+}// namespace roingine
 
 namespace bomberman {
 	class LevelFlyweight final : public roingine::Component {
@@ -19,6 +20,9 @@ namespace bomberman {
 		roingine::ReusableTexture m_SolidWallTexture;
 		roingine::ReusableTexture m_BrickWallTexture;
 
+		[[nodiscard]]
+		bool IsPointInWall(glm::vec2 const &point) const;
+
 	public:
 		static constexpr int   c_LevelWidth{31};
 		static constexpr int   c_LevelHeight{13};
@@ -27,6 +31,12 @@ namespace bomberman {
 		explicit LevelFlyweight(roingine::GameObject &gameObject);
 
 		void Render() const override;
+
+		[[nodiscard]]
+		bool IsCollidingWith(roingine::RectCollider const &collider) const;
+
+		[[nodiscard]]
+		std::optional<glm::vec2> GetCollisionPoint(glm::vec2 origin, float width, float height) const;
 	};
 }// namespace bomberman
 

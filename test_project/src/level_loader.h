@@ -1,6 +1,10 @@
 #ifndef LEVEL_LOADER_H
 #define LEVEL_LOADER_H
 
+namespace bomberman {
+	class LevelFlyweight;
+}
+
 namespace roingine {
 	class Scene;
 }
@@ -14,7 +18,10 @@ namespace bomberman {
 	class Level final {
 		roingine::Scene *m_rpScene;
 
-		void SpawnPlayer(bool hasKeyboardSupport, int viewX, int viewY, int viewWidth, int viewHeight) const;
+		void SpawnPlayer(
+		        bool hasKeyboardSupport, int viewX, int viewY, int viewWidth, int viewHeight,
+		        LevelFlyweight const &levelFlyweight
+		) const;
 
 	public:
 		explicit Level(roingine::Scene &scene);

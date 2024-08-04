@@ -3,10 +3,9 @@
 
 #include <glm/glm.hpp>
 #include <roingine/components/component.h>
+#include <roingine/components/transform.h>
 
 namespace roingine {
-	class Transform;
-
 	class RectCollider final : public Component {
 	public:
 		enum class HitDirection {
@@ -15,6 +14,8 @@ namespace roingine {
 			Left   = 2,
 			Right  = 3,
 		};
+
+		using Callback = std::function<void(GameObject, glm::vec2, HitDirection)>;
 
 		RectCollider(GameObject &gameObject, float width, float height);
 
@@ -26,17 +27,30 @@ namespace roingine {
 
 		void Render() const override;
 
-		[[nodiscard]]
-		bool GetHasListener() const noexcept;
+		void SetCallback(Callback const &callback);
 
-		void SetHasListener(bool hasListener) noexcept;
+		template<class T>
+		[[nodiscard]]
+		bool IsCollidingWith(T const &collider) const {
+			return collider.IsCollidingWith(*this);
+		}
+
+		[[nodiscard]]
+		bool IsCollidingWith(RectCollider const &collider) const;
+
+		[[nodiscard]]
+		Transform const &GetTransform() const;
+
+		[[nodiscard]]
+		float GetWidth() const noexcept;
+
+		[[nodiscard]]
+		float GetHeight() const noexcept;
 
 	private:
-		void CallJSCallback(GameObject otherGameObject, glm::vec2 hitPoint, HitDirection hitDirection);
-
-		Transform &m_Transform;
-		float      m_Width, m_Height;
-		bool       m_HasListener{false};
+		Transform              &m_Transform;
+		float                   m_Width, m_Height;
+		std::optional<Callback> m_Callback;
 	};
 }// namespace roingine
 

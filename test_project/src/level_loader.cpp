@@ -5,6 +5,7 @@
 #include "components/player.h"
 
 #include <roingine/components/camera.h>
+#include <roingine/components/rect_collider.h>
 #include <roingine/components/rect_renderer.h>
 #include <roingine/components/transform.h>
 #include <roingine/gameobject.h>
@@ -14,7 +15,10 @@ namespace bomberman {
 	constexpr int c_PlayerStartX{1};
 	constexpr int c_PlayerStartY{LevelFlyweight::c_LevelHeight - 2};
 
-	void Level::SpawnPlayer(bool hasKeyboardSupport, int viewX, int viewY, int viewWidth, int viewHeight) const {
+	void Level::SpawnPlayer(
+	        bool hasKeyboardSupport, int viewX, int viewY, int viewWidth, int viewHeight,
+	        LevelFlyweight const &levelFlyweight
+	) const {
 		auto  cameraObject{m_rpScene->AddGameObject()};
 		auto &cameraTransform{cameraObject.AddComponent<roingine::Transform>(glm::vec2{0.f, 0.f}, 0.f)};
 
@@ -25,7 +29,8 @@ namespace bomberman {
 		        glm::vec2{c_PlayerStartX * LevelFlyweight::c_TileSize, c_PlayerStartY * LevelFlyweight::c_TileSize}, 0.f
 		);
 		player.AddComponent<roingine::RectRenderer>(50.f, 50.f);
-		auto *rpMovingEntity{&player.AddComponent<MovingEntity>(200.f)};
+		player.AddComponent<roingine::RectCollider>(50.f, 50.f);
+		auto *rpMovingEntity{&player.AddComponent<MovingEntity>(levelFlyweight, 200.f)};
 		player.AddComponent<Player>(cameraTransform, rpMovingEntity, hasKeyboardSupport);
 	}
 
@@ -34,10 +39,10 @@ namespace bomberman {
 	}
 
 	void Level::Load(LevelLoadInfo const &loadInfo) const {
-		SpawnPlayer(true, 0, 0, loadInfo.windowWidth, loadInfo.windowHeight);
-
 		auto level{m_rpScene->AddGameObject()};
 		level.AddComponent<roingine::Transform>(glm::vec2{0.f, 0.f}, 0.f);
-		level.AddComponent<LevelFlyweight>();
+		auto const &levelFlyweight{level.AddComponent<LevelFlyweight>()};
+
+		SpawnPlayer(true, 0, 0, loadInfo.windowWidth, loadInfo.windowHeight, levelFlyweight);
 	}
 }// namespace bomberman

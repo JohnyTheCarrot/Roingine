@@ -2,11 +2,24 @@
 
 #include <algorithm>
 #include <random>
+#include <roingine/components/rect_collider.h>
 #include <roingine/components/transform.h>
 
 namespace bomberman {
 	constexpr int c_PlayerBreathingRoomTiles{3};
 	constexpr int c_DotWallSpacing{2};
+
+	bool LevelFlyweight::IsPointInWall(glm::vec2 const &point) const {
+		auto const ownWorldPos{m_rpTransform->GetWorldPosition()};
+		auto const relativePos{point - ownWorldPos};
+		auto const xIndex{static_cast<int>(relativePos.x / c_TileSize)};
+		auto const yIndex{static_cast<int>(relativePos.y / c_TileSize)};
+
+		if (auto const inGrid{xIndex >= 0 && xIndex < c_LevelWidth && yIndex >= 0 && yIndex < c_LevelHeight}; !inGrid)
+			return false;
+
+		return m_TileGrid.at(xIndex + yIndex * c_LevelWidth) != TileType::Nothing;
+	}
 
 	LevelFlyweight::LevelFlyweight(roingine::GameObject &gameObject)
 	    : Component{gameObject}
@@ -63,5 +76,66 @@ namespace bomberman {
 				}
 			}
 		}
+	}
+
+	bool LevelFlyweight::IsCollidingWith(roingine::RectCollider const &collider) const {
+		auto const      worldPos{collider.GetTransform().GetWorldPosition()};
+		glm::vec2 const topLeft{worldPos.x, worldPos.y};
+		glm::vec2 const topRight{worldPos.x + collider.GetWidth(), worldPos.y};
+		glm::vec2 const bottomLeft{worldPos.x, worldPos.y + collider.GetHeight()};
+		glm::vec2 const bottomRight{worldPos.x + collider.GetWidth(), worldPos.y + collider.GetHeight()};
+
+		return IsPointInWall(topLeft) || IsPointInWall(topRight) || IsPointInWall(bottomLeft) ||
+		       IsPointInWall(bottomRight);
+	}
+
+	std::optional<glm::vec2> LevelFlyweight::GetCollisionPoint(glm::vec2 origin, float width, float height) const {
+		glm::vec2 const topLeft{origin.x, origin.y};
+		glm::vec2 const topRight{origin.x + width, origin.y};
+		glm::vec2 const bottomLeft{origin.x, origin.y + height};
+		glm::vec2 const bottomRight{origin.x + width, origin.y + height};
+
+		if (!IsPointInWall(topLeft) && !IsPointInWall(topRight) && !IsPointInWall(bottomLeft) &&
+		    !IsPointInWall(bottomRight))
+			return std::nullopt;
+
+		auto const ownWorldPos{m_rpTransform->GetWorldPosition()};
+
+		// get side of the player that collided with the wall
+		auto const top{origin.y};
+		auto const bottom{origin.y + height};
+		auto const left{origin.x};
+		auto const right{origin.x + width};
+
+		auto const rightOfTile{std::ceil(left / c_TileSize) * c_TileSize};
+		auto const leftOfTile{std::floor(right / c_TileSize) * c_TileSize};
+		auto const bottomOfTile{std::ceil(top / c_TileSize) * c_TileSize};
+		auto const topOfTile = std::floor(bottom / c_TileSize) * c_TileSize;
+
+		glm::vec2  collisionPoint{origin.x, origin.y};
+		auto const distanceTop{std::abs(top - (ownWorldPos.y + bottomOfTile))};
+		auto const distanceBottom{std::abs(bottom - (ownWorldPos.y + topOfTile))};
+		auto const distanceLeft{std::abs(left - (ownWorldPos.x + rightOfTile))};
+		auto const distanceRight{std::abs(right - (ownWorldPos.x + leftOfTile))};
+
+		constexpr float c_CollisionOffset{1.0f};
+
+		if (std::min(distanceTop, distanceBottom) < std::min(distanceLeft, distanceRight)) {
+			if (distanceTop < distanceBottom) {
+				collisionPoint.y = ownWorldPos.y + bottomOfTile + c_CollisionOffset;
+				return collisionPoint;
+			}
+
+			collisionPoint.y = ownWorldPos.y + topOfTile - height - c_CollisionOffset;
+			return collisionPoint;
+		}
+
+		if (distanceLeft < distanceRight) {
+			collisionPoint.x = ownWorldPos.x + rightOfTile + c_CollisionOffset;
+			return collisionPoint;
+		}
+
+		collisionPoint.x = ownWorldPos.x + leftOfTile - width - c_CollisionOffset;
+		return collisionPoint;
 	}
 }// namespace bomberman

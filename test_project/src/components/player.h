@@ -6,6 +6,14 @@
 #include <roingine/components/component.h>
 
 namespace roingine {
+	class RectCollider;
+}
+
+namespace bomberman {
+	class LevelFlyweight;
+}
+
+namespace roingine {
 	class Transform;
 }
 
@@ -38,6 +46,7 @@ namespace bomberman {
 		roingine::Transform                  *m_rpTransform;
 		roingine::Transform                  *m_rpCameraTransform;
 		MovingEntity                         *m_rpMovingEntityComponent;
+		roingine::RectCollider const         *m_rpRectCollider;
 
 	public:
 		Player(roingine::GameObject &gameObject, roingine::Transform &cameraTransform,

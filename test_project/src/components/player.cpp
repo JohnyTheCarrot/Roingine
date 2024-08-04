@@ -1,6 +1,9 @@
 #include "player.h"
 
 #include "../move_command.h"
+#include "level_flyweight.h"
+
+#include <roingine/components/rect_collider.h>
 #include <roingine/components/transform.h>
 
 namespace bomberman {
@@ -31,11 +34,12 @@ namespace bomberman {
 	        roingine::GameObject &gameObject, roingine::Transform &cameraTransform,
 	        MovingEntity *rpMovingEntityComponent, bool isPlayer1
 	)
-	    : roingine::Component{gameObject}
+	    : Component{gameObject}
 	    , m_KeyboardCommands{isPlayer1 ? std::make_optional(rpMovingEntityComponent) : std::nullopt}
 	    , m_rpTransform{&gameObject.GetComponent<roingine::Transform>()}
 	    , m_rpCameraTransform{&cameraTransform}
-	    , m_rpMovingEntityComponent{rpMovingEntityComponent} {
+	    , m_rpMovingEntityComponent{rpMovingEntityComponent}
+	    , m_rpRectCollider{&gameObject.GetComponent<roingine::RectCollider>()} {
 	}
 
 	void Player::TieToController(roingine::Controller *rpController) {

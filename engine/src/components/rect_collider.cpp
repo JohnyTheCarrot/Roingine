@@ -14,8 +14,44 @@ namespace roingine {
 	void RectCollider::Update() {
 	}
 
+	[[nodiscard]]
+	bool RectCollider::IsCollidingWith(RectCollider const &collider) const {
+		auto const worldPos{m_Transform.GetWorldPosition()};
+		auto const otherWorldPos{collider.m_Transform.GetWorldPosition()};
+
+		auto const left{worldPos.x};
+		auto const right{worldPos.x + m_Width};
+		auto const top{worldPos.y + m_Height};
+		auto const bottom{worldPos.y};
+
+		auto const otherLeft{otherWorldPos.x};
+		auto const otherRight{otherWorldPos.x + collider.m_Width};
+		auto const otherTop{otherWorldPos.y + collider.m_Height};
+		auto const otherBottom{otherWorldPos.y};
+
+		if (right <= otherLeft || left >= otherRight)
+			return false;
+
+		if (bottom >= otherTop || top <= otherBottom)
+			return false;
+
+		return true;
+	}
+
+	Transform const &RectCollider::GetTransform() const {
+		return m_Transform;
+	}
+
+	float RectCollider::GetWidth() const noexcept {
+		return m_Width;
+	}
+
+	float RectCollider::GetHeight() const noexcept {
+		return m_Height;
+	}
+
 	void RectCollider::PostUpdate() {
-		if (!m_HasListener)
+		if (!m_Callback.has_value())
 			return;
 
 		auto const worldPos{m_Transform.GetWorldPosition()};
@@ -69,7 +105,7 @@ namespace roingine {
 				hitDir     = HitDirection::Right;
 			}
 
-			CallJSCallback(other.GetGameObject(), hitPoint, hitDir);
+			m_Callback.value()(other.GetGameObject(), hitPoint, hitDir);
 		});
 	}
 
@@ -79,11 +115,7 @@ namespace roingine {
 	void RectCollider::Render() const {
 	}
 
-	bool RectCollider::GetHasListener() const noexcept {
-		return m_HasListener;
-	}
-
-	void RectCollider::SetHasListener(bool hasListener) noexcept {
-		m_HasListener = hasListener;
+	void RectCollider::SetCallback(Callback const &callback) {
+		m_Callback = callback;
 	}
 }// namespace roingine
