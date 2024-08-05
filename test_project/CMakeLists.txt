@@ -19,6 +19,11 @@ add_executable(${PROJECT_NAME}
         src/level_loader.h
         src/components/level_flyweight.h
         src/components/level_flyweight.cpp
+        src/event_queue.h
+        src/components/bomb.h
+        src/components/bomb.cpp
+        src/place_bomb_command.h
+        src/place_bomb_command.cpp
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE Roingine)
 

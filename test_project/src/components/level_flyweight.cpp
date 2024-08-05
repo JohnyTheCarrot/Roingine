@@ -1,6 +1,7 @@
 #include "level_flyweight.h"
 
 #include <algorithm>
+#include <iostream>
 #include <random>
 #include <roingine/components/rect_collider.h>
 #include <roingine/components/transform.h>
@@ -21,11 +22,61 @@ namespace bomberman {
 		return m_TileGrid.at(xIndex + yIndex * c_LevelWidth) != TileType::Nothing;
 	}
 
+	void LevelFlyweight::BombDetonatedHandler(event_queue::BombDetonatedData const &data) {
+		// get bomb position in the level grid
+		auto const    ownWorldPos{m_rpTransform->GetWorldPosition()};
+		auto const    relativePos{data.position - ownWorldPos};
+		auto const    xIndex{static_cast<int>(relativePos.x / c_TileSize)};
+		auto const    yIndex{static_cast<int>(std::floor(relativePos.y / c_TileSize))};
+		constexpr int c_BombRange{1};
+
+		// returns false if the tile is a solid wall, which means the explosion stops there
+		auto const destroyTile{[this](int x, int y) -> bool {
+			if (auto const inGrid{x >= 0 && x < c_LevelWidth && y >= 0 && y < c_LevelHeight}; !inGrid)
+				return false;
+
+			auto &tile{m_TileGrid.at(x + y * c_LevelWidth)};
+			if (tile == TileType::SolidWall)
+				return false;
+
+			tile = TileType::Nothing;
+			return true;
+		}};
+
+		// destroy tiles to the left
+		for (int x{xIndex - 1}; x >= std::max(0, xIndex - c_BombRange); --x) {
+			if (!destroyTile(x, yIndex))
+				break;
+		}
+
+		// destroy tiles to the right
+		for (int x{xIndex + 1}; x <= std::min(c_LevelWidth - 1, xIndex + c_BombRange); ++x) {
+			if (!destroyTile(x, yIndex))
+				break;
+		}
+
+		// destroy tiles above
+		for (int y{yIndex - 1}; y >= std::max(0, yIndex - c_BombRange); --y) {
+			if (!destroyTile(xIndex, y))
+				break;
+		}
+
+		// destroy tiles below
+		for (int y{yIndex + 1}; y <= std::min(c_LevelHeight - 1, yIndex + c_BombRange); ++y) {
+			if (!destroyTile(xIndex, y))
+				break;
+		}
+	}
+
 	LevelFlyweight::LevelFlyweight(roingine::GameObject &gameObject)
 	    : Component{gameObject}
-	    , m_rpTransform{&gameObject.GetComponent<roingine::Transform>()}
+	    , m_hBombDetonatedHandler{event_queue::EventQueue::GetInstance()
+	                                      .AttachEventHandler<event_queue::EventType::BombDetonated>(
+	                                              [this](auto const &data) { BombDetonatedHandler(data); }
+	                                      )}
 	    , m_SolidWallTexture{"res/img/wall.png", roingine::ScalingMethod::NearestNeighbor}
-	    , m_BrickWallTexture{"res/img/brick_wall.png", roingine::ScalingMethod::NearestNeighbor} {
+	    , m_BrickWallTexture{"res/img/brick_wall.png", roingine::ScalingMethod::NearestNeighbor}
+	    , m_rpTransform{&gameObject.GetComponent<roingine::Transform>()} {
 		m_TileGrid.resize(c_LevelWidth * c_LevelHeight);
 
 		// Generate random brick walls

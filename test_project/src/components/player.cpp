@@ -1,7 +1,9 @@
 #include "player.h"
 
 #include "../move_command.h"
+#include "../place_bomb_command.h"
 #include "level_flyweight.h"
+#include "moving_entity.h"
 
 #include <roingine/components/rect_collider.h>
 #include <roingine/components/transform.h>
@@ -16,9 +18,12 @@ namespace bomberman {
 	    : m_KeyboardUpCommand{roingine::InputKeys::W, roingine::KeyEventType::Held, std::make_unique<MoveCommand>(rpMovingEntityComponent, UP)}
 	    , m_KeyboardDownCommand{roingine::InputKeys::S, roingine::KeyEventType::Held, std::make_unique<MoveCommand>(rpMovingEntityComponent, DOWN)}
 	    , m_KeyboardLeftCommand{roingine::InputKeys::A, roingine::KeyEventType::Held, std::make_unique<MoveCommand>(rpMovingEntityComponent, LEFT)}
-	    , m_KeyboardRightCommand{
-	              roingine::InputKeys::D, roingine::KeyEventType::Held,
-	              std::make_unique<MoveCommand>(rpMovingEntityComponent, RIGHT)
+	    , m_KeyboardRightCommand{roingine::InputKeys::D, roingine::KeyEventType::Held, std::make_unique<MoveCommand>(rpMovingEntityComponent, RIGHT)}
+	    , m_PlaceBombCommand{
+	              roingine::InputKeys::E, roingine::KeyEventType::Down,
+	              std::make_unique<PlaceBombCommand>(
+	                      rpMovingEntityComponent->GetGameObject().GetComponent<roingine::Transform>()
+	              )
 	      } {
 	}
 

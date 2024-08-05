@@ -1,6 +1,9 @@
 #ifndef LEVEL_FLYWEIGHT_H
 #define LEVEL_FLYWEIGHT_H
 
+#include "../event_queue.h"
+
+#include <roingine/event_queue.h>
 #include <roingine/components/component.h>
 #include <roingine/reusable_texture.h>
 
@@ -13,15 +16,19 @@ namespace bomberman {
 	class LevelFlyweight final : public roingine::Component {
 		enum class TileType { Nothing, SolidWall, BrickWall };
 
-		roingine::Transform  *m_rpTransform;
-		std::vector<TileType> m_TileGrid;
+		roingine::EventHandlerHandle<event_queue::EventQueue> m_hBombDetonatedHandler;
 
+		std::vector<TileType> m_TileGrid;
 		// TODO: perhaps we should make a resource manager to handle textures because they're the same for all levels
 		roingine::ReusableTexture m_SolidWallTexture;
 		roingine::ReusableTexture m_BrickWallTexture;
 
+		roingine::Transform *m_rpTransform;
+
 		[[nodiscard]]
 		bool IsPointInWall(glm::vec2 const &point) const;
+
+		void BombDetonatedHandler(event_queue::BombDetonatedData const &data);
 
 	public:
 		static constexpr int   c_LevelWidth{31};

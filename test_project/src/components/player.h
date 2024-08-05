@@ -25,6 +25,7 @@ namespace bomberman {
 		roingine::RegisteredKeyboardCommand m_KeyboardDownCommand;
 		roingine::RegisteredKeyboardCommand m_KeyboardLeftCommand;
 		roingine::RegisteredKeyboardCommand m_KeyboardRightCommand;
+		roingine::RegisteredKeyboardCommand m_PlaceBombCommand;
 
 	public:
 		explicit PlayerKeyboardCommands(MovingEntity *rpMovingEntityComponent);
