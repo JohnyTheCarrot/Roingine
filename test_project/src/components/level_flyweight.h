@@ -54,6 +54,9 @@ namespace bomberman {
 		std::optional<glm::vec2> GetCollisionPoint(glm::vec2 origin, float width, float height) const;
 
 		[[nodiscard]]
+		glm::vec2 GridToPosition(int x, int y) const;
+
+		[[nodiscard]]
 		glm::vec2 SnapToGrid(glm::vec2 position) const;
 	};
 }// namespace bomberman

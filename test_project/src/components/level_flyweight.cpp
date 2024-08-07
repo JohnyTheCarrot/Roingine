@@ -88,15 +88,30 @@ namespace bomberman {
 	) {
 		auto *const activeScene{roingine::SceneManager::GetInstance().GetActive()};
 
-		auto const destroyTile{[this](int x, int y) -> bool {
-			if (auto const inGrid{x >= 0 && x < c_LevelWidth && y >= 0 && y < c_LevelHeight}; !inGrid)
+		auto const destroyTile{[this, activeScene](int xIdx, int yIdx) -> bool {
+			constexpr int   c_DestroyAnimFrames{5};
+			constexpr float c_DestroyAnimTime{0.1f};
+			constexpr float c_DestroyAnimTtl{c_DestroyAnimFrames * c_DestroyAnimTime};
+
+			if (auto const inGrid{xIdx >= 0 && xIdx < c_LevelWidth && yIdx >= 0 && yIdx < c_LevelHeight}; !inGrid)
 				return false;
 
-			auto &tile{m_TileGrid.at(x + y * c_LevelWidth)};
+			auto &tile{m_TileGrid.at(xIdx + yIdx * c_LevelWidth)};
 			if (tile == TileType::SolidWall)
 				return false;
 
+			if (tile == TileType::Nothing)
+				return true;
+
 			tile = TileType::Nothing;
+
+			auto goBrokenBricks{activeScene->AddGameObject()};
+			goBrokenBricks.AddComponent<roingine::Transform>(GridToPosition(xIdx, yIdx), 0.f);
+			goBrokenBricks.AddComponent<roingine::AnimationRenderer>(
+			        "res/img/brick_wall_destroyed.png", c_DestroyAnimFrames, c_DestroyAnimTime, c_TileSize, c_TileSize,
+			        roingine::ScalingMethod::NearestNeighbor
+			);
+			goBrokenBricks.AddComponent<TemporaryObject>(c_DestroyAnimTtl);
 			return true;
 		}};
 
@@ -273,6 +288,11 @@ namespace bomberman {
 
 		collisionPoint.x = ownWorldPos.x + leftOfTile - width - c_CollisionOffset;
 		return collisionPoint;
+	}
+
+	glm::vec2 LevelFlyweight::GridToPosition(int x, int y) const {
+		return m_rpTransform->GetWorldPosition() +
+		       glm::vec2{static_cast<float>(x) * c_TileSize, static_cast<float>(y) * c_TileSize};
 	}
 
 	glm::vec2 LevelFlyweight::SnapToGrid(glm::vec2 position) const {
