@@ -22,10 +22,8 @@ namespace roingine {
 		m_TextureID = UniqueGLTexture{textureId};
 		glBindTexture(GL_TEXTURE_2D, m_TextureID.Get());
 
-		if (!width.has_value())
-			m_Width = static_cast<float>(sdlSurface->w);
-		if (!height.has_value())
-			m_Height = static_cast<float>(sdlSurface->h);
+		m_Width  = width.value_or(static_cast<float>(sdlSurface->w));
+		m_Height = height.value_or(static_cast<float>(sdlSurface->h));
 
 		UniqueSDLPixelFormat const target{SDL_AllocFormat(SDL_PIXELFORMAT_RGBA32)};
 		UniqueSDLSurface const     actualSurface{SDL_ConvertSurface(sdlSurface.get(), target.get(), 0)};

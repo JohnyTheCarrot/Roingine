@@ -3,8 +3,8 @@
 
 #include "../event_queue.h"
 
-#include <roingine/event_queue.h>
 #include <roingine/components/component.h>
+#include <roingine/event_queue.h>
 #include <roingine/reusable_texture.h>
 
 namespace roingine {
@@ -16,6 +16,7 @@ namespace bomberman {
 	class LevelFlyweight final : public roingine::Component {
 		enum class TileType { Nothing, SolidWall, BrickWall };
 
+		roingine::EventHandlerHandle<event_queue::EventQueue> m_hBombPlaceRequestHandler;
 		roingine::EventHandlerHandle<event_queue::EventQueue> m_hBombDetonatedHandler;
 
 		std::vector<TileType> m_TileGrid;
@@ -29,6 +30,13 @@ namespace bomberman {
 		bool IsPointInWall(glm::vec2 const &point) const;
 
 		void BombDetonatedHandler(event_queue::BombDetonatedData const &data);
+
+		void BombPlaceRequestHandler(event_queue::BombPlaceRequestData const &data) const;
+
+		void ExplodeTiles(
+		        glm::vec2 startPos, bool isX, int range, std::function<bool(int, int)> const &comp, int xIndex,
+		        int yIndex
+		);
 
 	public:
 		static constexpr int   c_LevelWidth{31};
@@ -44,6 +52,9 @@ namespace bomberman {
 
 		[[nodiscard]]
 		std::optional<glm::vec2> GetCollisionPoint(glm::vec2 origin, float width, float height) const;
+
+		[[nodiscard]]
+		glm::vec2 SnapToGrid(glm::vec2 position) const;
 	};
 }// namespace bomberman
 

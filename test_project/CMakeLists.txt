@@ -20,8 +20,8 @@ add_executable(${PROJECT_NAME}
         src/components/level_flyweight.h
         src/components/level_flyweight.cpp
         src/event_queue.h
-        src/components/bomb.h
-        src/components/bomb.cpp
+        src/components/temporary_object.h
+        src/components/temporary_object.cpp
         src/place_bomb_command.h
         src/place_bomb_command.cpp
 )

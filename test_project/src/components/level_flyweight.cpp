@@ -1,14 +1,21 @@
 #include "level_flyweight.h"
 
+#include "temporary_object.h"
+
 #include <algorithm>
-#include <iostream>
 #include <random>
+#include <roingine/components/animation_renderer.h>
 #include <roingine/components/rect_collider.h>
 #include <roingine/components/transform.h>
+#include <roingine/scene.h>
+#include <roingine/scene_manager.h>
 
 namespace bomberman {
-	constexpr int c_PlayerBreathingRoomTiles{3};
-	constexpr int c_DotWallSpacing{2};
+	constexpr int  c_PlayerBreathingRoomTiles{3};
+	constexpr int  c_DotWallSpacing{2};
+	constexpr auto c_ExplosionAnimationFrames{7};
+	constexpr auto c_ExplosionAnimationTime{0.05f};
+	constexpr auto c_ExplosionTtl{c_ExplosionAnimationFrames * c_ExplosionAnimationTime};
 
 	bool LevelFlyweight::IsPointInWall(glm::vec2 const &point) const {
 		auto const ownWorldPos{m_rpTransform->GetWorldPosition()};
@@ -28,9 +35,59 @@ namespace bomberman {
 		auto const    relativePos{data.position - ownWorldPos};
 		auto const    xIndex{static_cast<int>(relativePos.x / c_TileSize)};
 		auto const    yIndex{static_cast<int>(std::floor(relativePos.y / c_TileSize))};
-		constexpr int c_BombRange{1};
+		constexpr int c_BombRange{2};
 
-		// returns false if the tile is a solid wall, which means the explosion stops there
+		{
+			auto *const activeScene{roingine::SceneManager::GetInstance().GetActive()};
+			auto        centerExplosion{activeScene->AddGameObject()};
+			centerExplosion.AddComponent<roingine::Transform>(SnapToGrid(relativePos), 0.f);
+			centerExplosion.AddComponent<roingine::AnimationRenderer>(
+			        "res/img/explosion_center.png", c_ExplosionAnimationFrames, c_ExplosionAnimationTime, c_TileSize,
+			        c_TileSize, roingine::ScalingMethod::NearestNeighbor
+			);
+			centerExplosion.AddComponent<TemporaryObject>(c_ExplosionTtl);
+		}
+
+		// destroy tiles to the left
+		ExplodeTiles(relativePos, true, -c_BombRange, std::greater_equal<int>{}, xIndex, yIndex);
+
+		// destroy tiles to the right
+		ExplodeTiles(relativePos, true, c_BombRange, std::less_equal<int>{}, xIndex, yIndex);
+
+		// destroy tiles above
+		ExplodeTiles(relativePos, false, -c_BombRange, std::greater_equal<int>{}, xIndex, yIndex);
+
+		// destroy tiles below
+		ExplodeTiles(relativePos, false, c_BombRange, std::less_equal<int>{}, xIndex, yIndex);
+	}
+
+	void LevelFlyweight::BombPlaceRequestHandler(event_queue::BombPlaceRequestData const &data) const {
+		constexpr int   c_BombAnimationFrames{3};
+		constexpr float c_SecondsPerFrame{0.5f};
+		constexpr float c_DetonationTime{2.0f};
+
+		auto const activeScene{roingine::SceneManager::GetInstance().GetActive()};
+
+		auto const pos{SnapToGrid(data.position)};
+		auto       bomb{activeScene->AddGameObject()};
+		bomb.AddComponent<roingine::Transform>(pos, 0.f);
+		bomb.AddComponent<roingine::AnimationRenderer>(
+		        "res/img/bomb.png", c_BombAnimationFrames, c_SecondsPerFrame, c_TileSize, c_TileSize,
+		        roingine::ScalingMethod::NearestNeighbor
+		);
+		bomb.AddComponent<TemporaryObject>(c_DetonationTime, [](roingine::GameObject gameObject) {
+			auto const &transform{gameObject.GetComponent<roingine::Transform>()};
+			event_queue::EventQueue::GetInstance().FireEvent<event_queue::EventType::BombDetonated>(
+			        transform.GetWorldPosition()
+			);
+		});
+	}
+
+	void LevelFlyweight::ExplodeTiles(
+	        glm::vec2 startPos, bool isX, int range, std::function<bool(int, int)> const &comp, int xIndex, int yIndex
+	) {
+		auto *const activeScene{roingine::SceneManager::GetInstance().GetActive()};
+
 		auto const destroyTile{[this](int x, int y) -> bool {
 			if (auto const inGrid{x >= 0 && x < c_LevelWidth && y >= 0 && y < c_LevelHeight}; !inGrid)
 				return false;
@@ -43,33 +100,53 @@ namespace bomberman {
 			return true;
 		}};
 
-		// destroy tiles to the left
-		for (int x{xIndex - 1}; x >= std::max(0, xIndex - c_BombRange); --x) {
-			if (!destroyTile(x, yIndex))
+		auto const spawnMiddleExplosion{[&](int offsetFactor = 1) {
+			auto middleExplosion{activeScene->AddGameObject()};
+			middleExplosion.AddComponent<roingine::Transform>(
+			        SnapToGrid(startPos) +
+			                glm::vec2{
+			                        c_TileSize * static_cast<float>(offsetFactor * isX),
+			                        c_TileSize * static_cast<float>(offsetFactor * !isX)
+			                },
+			        0.f
+			);
+			middleExplosion.AddComponent<roingine::AnimationRenderer>(
+			        isX ? "res/img/explosion_middle.png" : "res/img/explosion_middle_vert.png",
+			        c_ExplosionAnimationFrames, c_ExplosionAnimationTime, c_TileSize, c_TileSize,
+			        roingine::ScalingMethod::NearestNeighbor
+			);
+			middleExplosion.AddComponent<TemporaryObject>(c_ExplosionTtl);
+		}};
+
+		auto const idxIncrement{range > 0 ? 1 : -1};
+		auto const startIdx{isX ? xIndex : yIndex};
+
+		for (int idx{startIdx + idxIncrement}; comp(idx, startIdx + range); idx += idxIncrement) {
+			auto const indexIfX{yIndex * c_LevelWidth + idx};
+			auto const indexIfY{idx * c_LevelWidth + xIndex};
+			auto const tileIndex{isX ? indexIfX : indexIfY};
+
+			if (auto const tile{m_TileGrid.at(tileIndex)}; tile != TileType::Nothing)
 				break;
+
+			spawnMiddleExplosion(idx - startIdx);
 		}
 
-		// destroy tiles to the right
-		for (int x{xIndex + 1}; x <= std::min(c_LevelWidth - 1, xIndex + c_BombRange); ++x) {
-			if (!destroyTile(x, yIndex))
-				break;
-		}
+		for (int idx{startIdx}; comp(idx, startIdx + range); idx += idxIncrement) {
+			auto const tileXIndex{isX ? idx : xIndex};
+			auto const tileYIndex{isX ? yIndex : idx};
 
-		// destroy tiles above
-		for (int y{yIndex - 1}; y >= std::max(0, yIndex - c_BombRange); --y) {
-			if (!destroyTile(xIndex, y))
-				break;
-		}
-
-		// destroy tiles below
-		for (int y{yIndex + 1}; y <= std::min(c_LevelHeight - 1, yIndex + c_BombRange); ++y) {
-			if (!destroyTile(xIndex, y))
+			if (!destroyTile(tileXIndex, tileYIndex))
 				break;
 		}
 	}
 
 	LevelFlyweight::LevelFlyweight(roingine::GameObject &gameObject)
 	    : Component{gameObject}
+	    , m_hBombPlaceRequestHandler{event_queue::EventQueue::GetInstance()
+	                                         .AttachEventHandler<event_queue::EventType::BombPlaceRequest>(
+	                                                 [this](auto const &data) { BombPlaceRequestHandler(data); }
+	                                         )}
 	    , m_hBombDetonatedHandler{event_queue::EventQueue::GetInstance()
 	                                      .AttachEventHandler<event_queue::EventType::BombDetonated>(
 	                                              [this](auto const &data) { BombDetonatedHandler(data); }
@@ -188,5 +265,13 @@ namespace bomberman {
 
 		collisionPoint.x = ownWorldPos.x + leftOfTile - width - c_CollisionOffset;
 		return collisionPoint;
+	}
+
+	glm::vec2 LevelFlyweight::SnapToGrid(glm::vec2 position) const {
+		auto const relativePos{position - m_rpTransform->GetWorldPosition()};
+		auto const x{std::floor(relativePos.x / c_TileSize) * c_TileSize};
+		auto const y{std::floor(relativePos.y / c_TileSize) * c_TileSize};
+
+		return {x, y};
 	}
 }// namespace bomberman
