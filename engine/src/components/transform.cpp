@@ -7,10 +7,10 @@
 #include <roingine/game_time.h>
 
 namespace roingine {
-	Transform::Transform(GameObject gameObject, glm::vec2 position, float rotation)
+	Transform::Transform(GameObject gameObject, glm::vec2 position, float rotationDegrees)
 	    : Component{gameObject}
 	    , m_Position{position}
-	    , m_Rotation{rotation} {
+	    , m_Rotation{rotationDegrees * (std::numbers::pi_v<float> / 180.f)} {
 	}
 
 	void Transform::Update() {
@@ -79,8 +79,8 @@ namespace roingine {
 	}
 
 	glm::mat4 Transform::GetTransformationMatrix() const noexcept {
-		glm::mat4        transMat{1.f};
-		Transform const *pCurrentTransform{this};
+		glm::mat4   transMat{1.f};
+		auto const *pCurrentTransform{this};
 
 		do {
 			glm::mat4        currentTransMat;

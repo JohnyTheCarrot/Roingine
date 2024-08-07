@@ -7,7 +7,7 @@
 namespace roingine {
 	class Transform final : public Component {
 	public:
-		Transform(GameObject gameObject, glm::vec2 position, float rotation);
+		Transform(GameObject gameObject, glm::vec2 position, float rotationDegrees);
 
 		void Update() override;
 

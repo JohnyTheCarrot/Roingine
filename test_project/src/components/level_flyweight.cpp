@@ -35,7 +35,7 @@ namespace bomberman {
 		auto const    relativePos{data.position - ownWorldPos};
 		auto const    xIndex{static_cast<int>(relativePos.x / c_TileSize)};
 		auto const    yIndex{static_cast<int>(std::floor(relativePos.y / c_TileSize))};
-		constexpr int c_BombRange{2};
+		constexpr int c_BombRange{1};
 
 		{
 			auto *const activeScene{roingine::SceneManager::GetInstance().GetActive()};
@@ -100,28 +100,36 @@ namespace bomberman {
 			return true;
 		}};
 
-		auto const spawnMiddleExplosion{[&](int offsetFactor = 1) {
-			auto middleExplosion{activeScene->AddGameObject()};
-			middleExplosion.AddComponent<roingine::Transform>(
+		auto const spawnExplosion{[&](bool isEnd, int offsetFactor) {
+			auto       middleExplosion{activeScene->AddGameObject()};
+			auto const angle{[isX, startPos, range]() {
+				if (isX)
+					return range < 0 ? 0.f : 180.f;
+
+				return range < 0 ? 90.f : 270.f;
+			}()};
+
+			auto &transform{middleExplosion.AddComponent<roingine::Transform>(
 			        SnapToGrid(startPos) +
 			                glm::vec2{
 			                        c_TileSize * static_cast<float>(offsetFactor * isX),
 			                        c_TileSize * static_cast<float>(offsetFactor * !isX)
 			                },
-			        0.f
-			);
+			        angle
+			)};
+			transform.SetPivot(c_TileSize / 2.f, c_TileSize / 2.f);
 			middleExplosion.AddComponent<roingine::AnimationRenderer>(
-			        isX ? "res/img/explosion_middle.png" : "res/img/explosion_middle_vert.png",
-			        c_ExplosionAnimationFrames, c_ExplosionAnimationTime, c_TileSize, c_TileSize,
-			        roingine::ScalingMethod::NearestNeighbor
+			        isEnd ? "res/img/explosion_end.png" : "res/img/explosion_middle.png", c_ExplosionAnimationFrames,
+			        c_ExplosionAnimationTime, c_TileSize, c_TileSize, roingine::ScalingMethod::NearestNeighbor
 			);
 			middleExplosion.AddComponent<TemporaryObject>(c_ExplosionTtl);
 		}};
 
 		auto const idxIncrement{range > 0 ? 1 : -1};
 		auto const startIdx{isX ? xIndex : yIndex};
+		auto const endIdx{startIdx + range};
 
-		for (int idx{startIdx + idxIncrement}; comp(idx, startIdx + range); idx += idxIncrement) {
+		for (int idx{startIdx + idxIncrement}; comp(idx, endIdx); idx += idxIncrement) {
 			auto const indexIfX{yIndex * c_LevelWidth + idx};
 			auto const indexIfY{idx * c_LevelWidth + xIndex};
 			auto const tileIndex{isX ? indexIfX : indexIfY};
@@ -129,7 +137,7 @@ namespace bomberman {
 			if (auto const tile{m_TileGrid.at(tileIndex)}; tile != TileType::Nothing)
 				break;
 
-			spawnMiddleExplosion(idx - startIdx);
+			spawnExplosion(idx == endIdx, idx - startIdx);
 		}
 
 		for (int idx{startIdx}; comp(idx, startIdx + range); idx += idxIncrement) {
