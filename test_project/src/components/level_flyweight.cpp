@@ -1,5 +1,6 @@
 #include "level_flyweight.h"
 
+#include "../audio.h"
 #include "temporary_object.h"
 
 #include <algorithm>
@@ -38,6 +39,8 @@ namespace bomberman {
 		auto const    xIndex{static_cast<int>(relativePos.x / c_TileSize)};
 		auto const    yIndex{static_cast<int>(std::floor(relativePos.y / c_TileSize))};
 		constexpr int c_BombRange{1};
+
+		audio::AudioServiceLocator::GetService().Play(audio::Sound::BombExplode);
 
 		{
 			auto *const activeScene{roingine::SceneManager::GetInstance().GetActive()};
@@ -83,6 +86,8 @@ namespace bomberman {
 			        transform.GetWorldPosition()
 			);
 		});
+
+		audio::AudioServiceLocator::GetService().Play(audio::Sound::BombPlace);
 	}
 
 	void LevelFlyweight::ExplodeTiles(

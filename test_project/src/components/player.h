@@ -1,6 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include <glm/vec2.hpp>
 #include <roingine/commands/registered_controller_command.h>
 #include <roingine/commands/registered_keyboard_command.h>
 #include <roingine/components/component.h>
@@ -49,6 +50,9 @@ namespace bomberman {
 		roingine::Transform                  *m_rpCameraTransform;
 		MovingEntity                         *m_rpMovingEntityComponent;
 		roingine::RectCollider const         *m_rpRectCollider;
+		glm::vec2                             m_PreviousWalkSoundPosition{0.f, 0.f};
+
+		static float const WALK_SOUND_DISTANCE;
 
 	public:
 		Player(roingine::GameObject &gameObject, roingine::Transform &cameraTransform,

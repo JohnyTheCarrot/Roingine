@@ -1,6 +1,7 @@
 #ifndef GL_TEXTURE_H
 #define GL_TEXTURE_H
 
+#include <cstdint>
 #include <optional>
 
 namespace roingine {

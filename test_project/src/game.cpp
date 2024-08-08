@@ -1,8 +1,12 @@
 #include "game.h"
 
+#include "audio.h"
 #include "components/player.h"
 #include "level.h"
 #include "player_info.h"
+
+#include <roingine/audio_service.h>
+#include <roingine/service_locator.h>
 
 namespace bomberman {
 	void Game::OnControllerConnected(roingine::event_queue::ControllerConnectedData const &data) {
@@ -40,5 +44,16 @@ namespace bomberman {
 	                              [this](auto const &data) { OnControllerDisconnected(data); }
 	                      )
 	      } {
+		using FileType = roingine::SoundClip::FileType;
+
+		std::unordered_map<audio::Sound, roingine::SoundClip> soundMap{};
+		soundMap.emplace(audio::Sound::BombExplode, roingine::SoundClip{FileType::WAV, "res/sound/explosion.wav"});
+		soundMap.emplace(audio::Sound::BombPlace, roingine::SoundClip{FileType::WAV, "res/sound/bomb_place.wav"});
+		soundMap.emplace(audio::Sound::WalkVertical, roingine::SoundClip{FileType::WAV, "res/sound/walk_vertical.wav"});
+		soundMap.emplace(
+		        audio::Sound::WalkHorizontal, roingine::SoundClip{FileType::WAV, "res/sound/walk_horizontal.wav"}
+		);
+
+		audio::AudioServiceLocator::Provide(std::make_unique<roingine::AudioSystem<audio::Sound>>(std::move(soundMap)));
 	}
 }// namespace bomberman

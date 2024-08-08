@@ -28,6 +28,7 @@ add_executable(${PROJECT_NAME}
         src/place_bomb_command.cpp
         src/unassigned_controller.h
         src/unassigned_controller.cpp
+        src/audio.h
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE Roingine)
 
@@ -120,10 +121,6 @@ else ()
     set(SDL2_TTF_LIBRARIES ${sdl2_ttf_SOURCE_DIR}/lib/x86/SDL2_ttf.lib)
     set(SDL2_TTF_LIBRARY_DLL "${sdl2_ttf_SOURCE_DIR}/lib/x86/SDL2_ttf.dll")
 endif ()
-
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_CURRENT_SOURCE_DIR}/sound.wav" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-)
 
 # add post build commands
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

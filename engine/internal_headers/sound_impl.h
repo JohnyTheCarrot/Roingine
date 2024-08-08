@@ -8,14 +8,14 @@
 namespace roingine {
 	class MixChunkDestroyer final {
 	public:
-		void operator()(Mix_Chunk *ptr);
+		void operator()(Mix_Chunk *ptr) const;
 	};
 
 	class SoundClip::Impl final {
 	public:
-		Impl(SoundClip::FileType fileType, std::string_view path);
+		Impl(FileType fileType, std::string_view path);
 
-		void Play();
+		void Play() const;
 
 	private:
 		std::unique_ptr<Mix_Chunk, MixChunkDestroyer> m_Sound;

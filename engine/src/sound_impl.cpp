@@ -1,8 +1,10 @@
 #include "sound_impl.h"
 
+#include <iostream>
+
 namespace roingine {
 	SoundClip::SoundClip(FileType fileType, std::string_view path)
-	    : m_pImpl{std::make_unique<Impl>(fileType, std::move(path))} {};
+	    : m_pImpl{std::make_unique<Impl>(fileType, path)} {};
 
 	SoundClip::Impl::Impl(FileType fileType, std::string_view path)
 	    : m_Sound{nullptr} {
@@ -21,7 +23,7 @@ namespace roingine {
 		}
 	}
 
-	void SoundClip::Impl::Play() {
+	void SoundClip::Impl::Play() const {
 		Mix_PlayChannel(-1, m_Sound.get(), 0);
 	}
 
@@ -35,7 +37,7 @@ namespace roingine {
 
 	SoundClip &SoundClip::operator=(SoundClip &&) noexcept = default;
 
-	void MixChunkDestroyer::operator()(Mix_Chunk *ptr) {
+	void MixChunkDestroyer::operator()(Mix_Chunk *ptr) const {
 		Mix_FreeChunk(ptr);
 	}
 

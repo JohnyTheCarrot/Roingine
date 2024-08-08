@@ -1,5 +1,6 @@
 #include "player.h"
 
+#include "../audio.h"
 #include "../move_command.h"
 #include "../place_bomb_command.h"
 #include "level_flyweight.h"
@@ -41,6 +42,8 @@ namespace bomberman {
 		, m_rpController{rpController} {
 	}
 
+	float const Player::WALK_SOUND_DISTANCE{50.f};
+
 	Player::Player(
 	        roingine::GameObject &gameObject, roingine::Transform &cameraTransform,
 	        MovingEntity *rpMovingEntityComponent, bool isPlayer1
@@ -76,5 +79,17 @@ namespace bomberman {
 
 	void Player::Update() {
 		m_rpCameraTransform->SetLocalPosition(m_rpTransform->GetWorldPosition());
+
+		if (auto const position{m_rpTransform->GetWorldPosition()};
+		    distance(m_PreviousWalkSoundPosition, position) > WALK_SOUND_DISTANCE) {
+
+			auto const xDistance{std::abs(m_PreviousWalkSoundPosition.x - position.x)};
+			auto const yDistance{std::abs(m_PreviousWalkSoundPosition.y - position.y)};
+			m_PreviousWalkSoundPosition = position;
+
+			auto const sound{xDistance > yDistance ? audio::Sound::WalkHorizontal : audio::Sound::WalkVertical};
+
+			audio::AudioServiceLocator::GetService().Play(sound);
+		}
 	}
 }// namespace bomberman
