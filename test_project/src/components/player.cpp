@@ -32,7 +32,13 @@ namespace bomberman {
 	    , m_ControllerDownCommand{rpController, roingine::ControllerButton::DPadDown, roingine::ButtonState::Held, std::make_unique<MoveCommand>(rpMovingEntityComponent, DOWN)}
 	    , m_ControllerLeftCommand{rpController, roingine::ControllerButton::DPadLeft, roingine::ButtonState::Held, std::make_unique<MoveCommand>(rpMovingEntityComponent, LEFT)}
 	    , m_ControllerRightCommand{rpController, roingine::ControllerButton::DPadRight, roingine::ButtonState::Held, std::make_unique<MoveCommand>(rpMovingEntityComponent, RIGHT)}
-	    , m_rpController{rpController} {
+	    , m_PlaceBombCommand{
+	              rpController, roingine::ControllerButton::X, roingine::ButtonState::Pressed,
+	              std::make_unique<PlaceBombCommand>(
+	                      rpMovingEntityComponent->GetGameObject().GetComponent<roingine::Transform>()
+	              )
+	      }
+		, m_rpController{rpController} {
 	}
 
 	Player::Player(
@@ -48,6 +54,11 @@ namespace bomberman {
 	}
 
 	void Player::TieToController(roingine::Controller *rpController) {
+		if (rpController == nullptr) {
+			m_ControllerCommands.reset();
+			return;
+		}
+
 		m_ControllerCommands.emplace(rpController, m_rpMovingEntityComponent);
 	}
 

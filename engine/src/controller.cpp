@@ -4,7 +4,6 @@
 #include <iostream>
 #include <roingine/commands/command.h>
 #include <stdexcept>
-#include <string>
 
 using namespace std::literals::string_literals;
 
@@ -136,6 +135,14 @@ namespace roingine {
 		return SDL_JoystickInstanceID(joystick);
 	}
 
+	std::string Controller::Impl::GetSerial() const {
+		auto const joystick{SDL_GameControllerGetJoystick(m_pController.get())};
+
+		auto const *serial{SDL_JoystickGetSerial(joystick)};
+
+		return serial;
+	}
+
 	void Controller::Impl::MarkForDeletion() {
 		m_MarkedForDeletion = true;
 	}
@@ -192,6 +199,10 @@ namespace roingine {
 
 	int Controller::GetInstanceID() const {
 		return m_pImpl->GetInstanceID();
+	}
+
+	std::string Controller::GetSerial() const {
+		return m_pImpl->GetSerial();
 	}
 
 	void Controller::MarkForDeletion() const {

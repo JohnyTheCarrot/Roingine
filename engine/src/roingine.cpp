@@ -6,13 +6,13 @@
 #include <SDL_opengl.h>
 #include <GL/GLU.h>
 // clang-format on
-#include "roingine/controller.h"
 #include "sdl_context.h"
 
 
 #include <SDL.h>
 #include <SDL_mixer.h>
 #include <iostream>
+#include <roingine/controller.h>
 #include <roingine/engine_event_queue.h>
 #include <roingine/event_queue.h>
 #include <roingine/game_info.h>

@@ -1,6 +1,7 @@
 #ifndef REGISTERED_CONTROLLER_COMMAND_H
 #define REGISTERED_CONTROLLER_COMMAND_H
-#include "roingine/controller.h"
+
+#include <roingine/controller.h>
 
 namespace roingine {
 	class Controller;

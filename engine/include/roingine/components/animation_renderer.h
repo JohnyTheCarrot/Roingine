@@ -1,11 +1,9 @@
 #ifndef ANIMATION_RENDERER_H
 #define ANIMATION_RENDERER_H
 
-#include "roingine/image_scaling.h"
-
-
 #include <roingine/components/component.h>
 #include <roingine/gl_texture.h>
+#include <roingine/image_scaling.h>
 
 struct SDL_Texture;
 

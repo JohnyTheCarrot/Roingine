@@ -15,15 +15,19 @@ add_executable(${PROJECT_NAME}
         src/components/moving_entity.cpp
         src/game.h
         src/game.cpp
-        src/level_loader.cpp
-        src/level_loader.h
+        src/level.cpp
+        src/level.h
         src/components/level_flyweight.h
         src/components/level_flyweight.cpp
+        src/player_info.h
+        src/player_info.cpp
         src/event_queue.h
         src/components/temporary_object.h
         src/components/temporary_object.cpp
         src/place_bomb_command.h
         src/place_bomb_command.cpp
+        src/unassigned_controller.h
+        src/unassigned_controller.cpp
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE Roingine)
 

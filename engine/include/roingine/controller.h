@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <roingine/commands/command.h>
+#include <string>
 
 namespace roingine {
 	enum class ControllerButton {
@@ -50,6 +51,9 @@ namespace roingine {
 
 		[[nodiscard]]
 		int GetInstanceID() const;
+
+		[[nodiscard]]
+		std::string GetSerial() const;
 
 		void MarkForDeletion() const;
 

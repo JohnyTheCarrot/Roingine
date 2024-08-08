@@ -5,6 +5,7 @@
 #include <array>
 #include <optional>
 #include <roingine/controller.h>
+#include <string>
 #include <vector>
 
 namespace roingine {
@@ -51,6 +52,9 @@ namespace roingine {
 
 		[[nodiscard]]
 		int GetInstanceID() const;
+
+		[[nodiscard]]
+		std::string GetSerial() const;
 
 		void MarkForDeletion();
 

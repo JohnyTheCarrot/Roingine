@@ -35,6 +35,10 @@ namespace roingine {
 	}
 
 	Scene *SceneManager::Impl::GetActive() {
+		if (std::holds_alternative<Scene>(m_NewScene)) {
+			return &std::get<Scene>(m_NewScene);
+		}
+
 		if (!m_Scene.has_value())
 			return nullptr;
 

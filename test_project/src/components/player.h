@@ -36,6 +36,7 @@ namespace bomberman {
 		roingine::RegisteredControllerCommand m_ControllerDownCommand;
 		roingine::RegisteredControllerCommand m_ControllerLeftCommand;
 		roingine::RegisteredControllerCommand m_ControllerRightCommand;
+		roingine::RegisteredControllerCommand m_PlaceBombCommand;
 		roingine::Controller                 *m_rpController;
 
 		explicit ControllerCommands(roingine::Controller *rpController, MovingEntity *rpMovingEntityComponent);

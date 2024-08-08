@@ -1,13 +1,9 @@
 #ifndef TEXTURE_RENDERER_H
 #define TEXTURE_RENDERER_H
 
-#include "roingine/image_scaling.h"
-
-
+#include <roingine/image_scaling.h>
 #include <roingine/components/component.h>
 #include <roingine/gl_texture.h>
-
-struct SDL_Texture;
 
 namespace roingine {
 	class Transform;

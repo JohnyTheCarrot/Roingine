@@ -10,6 +10,8 @@
 #include <roingine/scene.h>
 #include <roingine/scene_manager.h>
 
+// TODO: this file has a lot going on, there's probably a missing abstraction here. Maybe a class for the tiles?
+
 namespace bomberman {
 	constexpr int  c_PlayerBreathingRoomTiles{3};
 	constexpr int  c_DotWallSpacing{2};
