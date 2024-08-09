@@ -1,7 +1,5 @@
 #include "sound_impl.h"
 
-#include <iostream>
-
 namespace roingine {
 	SoundClip::SoundClip(FileType fileType, std::string_view path)
 	    : m_pImpl{std::make_unique<Impl>(fileType, path)} {};
@@ -13,7 +11,6 @@ namespace roingine {
 		switch (fileType) {
 			case FileType::WAV:
 				auto const pathPtr{path.data()};
-				std::cout << pathPtr << std::endl;
 				ptr = Mix_LoadWAV(pathPtr);
 				if (ptr == nullptr) {
 					throw SoundFileLoadFailed{Mix_GetError()};
@@ -40,6 +37,4 @@ namespace roingine {
 	void MixChunkDestroyer::operator()(Mix_Chunk *ptr) const {
 		Mix_FreeChunk(ptr);
 	}
-
-
 }// namespace roingine

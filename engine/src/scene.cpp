@@ -8,7 +8,7 @@ namespace roingine {
 	void Scene::PreUpdate() {
 		for (auto &components: m_GameObjectComponents | std::views::values) {
 			for (auto const &component: components | std::views::values) {
-				if (component->GetGameObject().GetEnabled())
+				if (component->GetGameObject().GetEnabled() && component->GetIsEnabled())
 					component->PreUpdate();
 			}
 		}
@@ -17,7 +17,7 @@ namespace roingine {
 	void Scene::Update() {
 		for (auto &components: m_GameObjectComponents | std::views::values) {
 			for (auto const &component: components | std::views::values) {
-				if (component->GetGameObject().GetEnabled())
+				if (component->GetGameObject().GetEnabled() && component->GetIsEnabled())
 					component->Update();
 			}
 		}
@@ -26,7 +26,7 @@ namespace roingine {
 	void Scene::PostUpdate() {
 		for (auto &components: m_GameObjectComponents | std::views::values) {
 			for (auto const &component: components | std::views::values) {
-				if (component->GetGameObject().GetEnabled())
+				if (component->GetGameObject().GetEnabled() && component->GetIsEnabled())
 					component->PostUpdate();
 			}
 		}
@@ -36,7 +36,7 @@ namespace roingine {
 	void Scene::FixedUpdate() {
 		for (auto &components: m_GameObjectComponents | std::views::values) {
 			for (auto const &component: components | std::views::values) {
-				if (component->GetGameObject().GetEnabled())
+				if (component->GetGameObject().GetEnabled() && component->GetIsEnabled())
 					component->FixedUpdate();
 			}
 		}
@@ -45,7 +45,7 @@ namespace roingine {
 	void Scene::Render() const {
 		for (auto const &components: m_GameObjectComponents | std::views::values) {
 			for (auto const &component: components | std::views::values) {
-				if (component->GetGameObject().GetEnabled())
+				if (component->GetGameObject().GetEnabled() && component->GetIsEnabled())
 					component->Render();
 			}
 		}
@@ -58,6 +58,8 @@ namespace roingine {
 					continue;
 
 				auto &camera{*dynamic_cast<Camera *>(pComponent.get())};
+				if (!camera.GetIsEnabled())
+					return;
 
 				// render everything from the camera
 				camera.RenderScene();

@@ -22,7 +22,7 @@ namespace bomberman {
 		    , m_IsPlayer1{isPlayer1} {
 		}
 
-		void Execute() override {
+		void Execute() const override {
 			if (m_IsPlayer1) {
 				if (m_rpLevel->DoesPlayer1HaveController())
 					return;

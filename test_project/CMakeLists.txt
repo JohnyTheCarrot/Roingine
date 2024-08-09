@@ -29,6 +29,7 @@ add_executable(${PROJECT_NAME}
         src/unassigned_controller.h
         src/unassigned_controller.cpp
         src/audio.h
+        src/finite_state_machine.h
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE Roingine)
 

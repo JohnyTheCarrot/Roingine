@@ -17,6 +17,9 @@ namespace roingine {
 
 		void RemoveCommand(InputKeys input, KeyEventType eventType, Command *command);
 
+		[[nodiscard]]
+		KeyEventType GetKeyState(InputKeys input) const;
+
 	private:
 		enum class SDLKey : int {
 			A     = SDL_SCANCODE_A,

@@ -77,6 +77,7 @@ set(SRC_FILES
         src/sdl_context.cpp
         src/image_scaling.cpp
         src/reusable_texture.cpp
+        src/components/component.cpp
 )
 
 set(INTERNAL_HEADERS

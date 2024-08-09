@@ -29,16 +29,26 @@ namespace roingine {
 
 		void SetFlipped(bool flipped);
 
+		void SetFrameRange(int startFrame, int endFrame);
+
+		[[nodiscard]]
+		bool IsPaused() const noexcept;
+
+		void SetPaused(bool isPaused) noexcept;
+
 	private:
 		Transform      &m_Transform;
 		UniqueGLTexture m_TextureID{};
 		int             m_ScalingMethod;
+		int             m_StartFrame{0};
+		int             m_EndFrame;
 		int             m_NumFrames;
 		int             m_CurrentFrame{0};
 		float           m_Width, m_Height;
 		float           m_SecondsPerFrame;
 		float           m_SecondsSinceFrame{0.f};
 		bool            m_Flipped{false};
+		bool            m_IsPaused{false};
 	};
 }// namespace roingine
 

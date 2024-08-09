@@ -14,7 +14,7 @@ namespace bomberman {
 	public:
 		MoveCommand(MovingEntity *rpMovingEntityComponent, glm::vec2 direction);
 
-		void Execute() override;
+		void Execute() const override;
 	};
 }// namespace bomberman
 

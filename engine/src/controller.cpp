@@ -187,6 +187,12 @@ namespace roingine {
 		m_Commands.erase(it);
 	}
 
+	ButtonState Controller::Impl::GetButtonState(ControllerButton button) const {
+		auto const sdlIndex{static_cast<size_t>(ToSDLControllerButton(button))};
+
+		return m_ButtonStates[sdlIndex];
+	}
+
 	Controller::Controller(int controllerIndex)
 	    : m_pImpl{std::make_unique<Impl>(controllerIndex)} {
 	}
@@ -225,5 +231,9 @@ namespace roingine {
 
 	void Controller::RemoveCommand(ControllerButton button, ButtonState buttonState, Command *pCommand) const {
 		m_pImpl->RemoveCommand(button, buttonState, pCommand);
+	}
+
+	ButtonState Controller::GetButtonState(ControllerButton button) const {
+		return m_pImpl->GetButtonState(button);
 	}
 }// namespace roingine

@@ -13,6 +13,7 @@ namespace roingine {
 	    : Component{gameObject}
 	    , m_Transform{gameObject.GetComponent<Transform>()}
 	    , m_ScalingMethod{scaling_method::ToOpenGLScalingMethod(scalingMethod)}
+	    , m_EndFrame{numFrames}
 	    , m_NumFrames{numFrames}
 	    , m_SecondsPerFrame{secondsPerFrame} {
 		UniqueSDLSurface const sdlSurface{IMG_Load(fileName.c_str())};
@@ -42,9 +43,10 @@ namespace roingine {
 		auto const dt{GameTime::GetInstance().GetDeltaTime()};
 		m_SecondsSinceFrame += dt;
 
-		if (m_SecondsSinceFrame >= m_SecondsPerFrame) {
+		if (m_SecondsSinceFrame >= m_SecondsPerFrame && !m_IsPaused) {
 			++m_CurrentFrame;
-			m_CurrentFrame %= m_NumFrames;
+			if (m_CurrentFrame >= m_EndFrame)
+				m_CurrentFrame = m_StartFrame;
 			m_SecondsSinceFrame = 0.f;
 		}
 	}
@@ -91,5 +93,21 @@ namespace roingine {
 
 	void AnimationRenderer::SetFlipped(bool flipped) {
 		m_Flipped = flipped;
+	}
+
+	void AnimationRenderer::SetFrameRange(int startFrame, int endFrame) {
+		if (m_StartFrame != startFrame)
+			m_CurrentFrame = startFrame;
+
+		m_StartFrame = startFrame;
+		m_EndFrame   = endFrame;
+	}
+
+	bool AnimationRenderer::IsPaused() const noexcept {
+		return m_IsPaused;
+	}
+
+	void AnimationRenderer::SetPaused(bool isPaused) noexcept {
+		m_IsPaused = isPaused;
 	}
 }// namespace roingine

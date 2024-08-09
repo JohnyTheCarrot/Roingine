@@ -7,7 +7,7 @@ namespace bomberman {
 	    : m_rpTransform{&rpTransform} {
 	}
 
-	void PlaceBombCommand::Execute() {
+	void PlaceBombCommand::Execute() const {
 		event_queue::EventQueue::GetInstance().FireEvent<event_queue::EventType::BombPlaceRequest>(
 		        m_rpTransform->GetWorldPosition()
 		);

@@ -78,6 +78,23 @@ namespace roingine {
 		m_Commands.erase(toEraseIt);
 	}
 
+	KeyEventType SDLKeyboardInputService::Impl::GetKeyState(InputKeys input) const {
+		SDLKey const sdlKey{GetSDLKeyFromInputKey(input)};
+
+		if (auto const state{m_KeyStates[static_cast<int>(sdlKey)]}; !state)
+			return KeyEventType::Up;
+
+		auto const keyHeldFor{m_KeyHeldTimes[static_cast<int>(sdlKey)]};
+
+		if (keyHeldFor >= GameInfo::GetInstance().GetKeyHeldThresholdMs())
+			return KeyEventType::LongPress;
+
+		if (keyHeldFor > 0.f)
+			return KeyEventType::Held;
+
+		return KeyEventType::Down;
+	}
+
 	constexpr SDLKeyboardInputService::Impl::SDLKey
 	SDLKeyboardInputService::Impl::GetSDLKeyFromInputKey(InputKeys inputKey) {
 		switch (inputKey) {
@@ -187,6 +204,10 @@ namespace roingine {
 		m_pImpl->RemoveCommand(input, eventType, command);
 	}
 
+	KeyEventType SDLKeyboardInputService::GetKeyState(InputKeys input) const {
+		return m_pImpl->GetKeyState(input);
+	}
+
 	KeyboardInputService::~KeyboardInputService() = default;
 
 	NullKeyboardInputService::~NullKeyboardInputService() = default;
@@ -198,6 +219,10 @@ namespace roingine {
 	}
 
 	void NullKeyboardInputService::RemoveCommand(InputKeys, KeyEventType, Command *) {
+	}
+
+	KeyEventType NullKeyboardInputService::GetKeyState(InputKeys) const {
+		return KeyEventType::Up;
 	}
 
 }// namespace roingine

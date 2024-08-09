@@ -1,62 +1,53 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include "../move_command.h"
+#include "../place_bomb_command.h"
 #include <glm/vec2.hpp>
 #include <roingine/commands/registered_controller_command.h>
 #include <roingine/commands/registered_keyboard_command.h>
 #include <roingine/components/component.h>
 
-namespace roingine {
-	class RectCollider;
-}
-
 namespace bomberman {
 	class LevelFlyweight;
-}
+}// namespace bomberman
 
 namespace roingine {
+	class RectCollider;
+	class AnimationRenderer;
 	class Transform;
-}
+}// namespace roingine
 
 namespace bomberman {
 	class MovingEntity;
 
-	class PlayerKeyboardCommands final {
-		roingine::RegisteredKeyboardCommand m_KeyboardUpCommand;
-		roingine::RegisteredKeyboardCommand m_KeyboardDownCommand;
-		roingine::RegisteredKeyboardCommand m_KeyboardLeftCommand;
-		roingine::RegisteredKeyboardCommand m_KeyboardRightCommand;
-		roingine::RegisteredKeyboardCommand m_PlaceBombCommand;
-
-	public:
-		explicit PlayerKeyboardCommands(MovingEntity *rpMovingEntityComponent);
-	};
-
-	struct ControllerCommands final {
-		roingine::RegisteredControllerCommand m_ControllerUpCommand;
-		roingine::RegisteredControllerCommand m_ControllerDownCommand;
-		roingine::RegisteredControllerCommand m_ControllerLeftCommand;
-		roingine::RegisteredControllerCommand m_ControllerRightCommand;
-		roingine::RegisteredControllerCommand m_PlaceBombCommand;
-		roingine::Controller                 *m_rpController;
-
-		explicit ControllerCommands(roingine::Controller *rpController, MovingEntity *rpMovingEntityComponent);
-	};
-
 	class Player final : public roingine::Component {
-		std::optional<PlayerKeyboardCommands> m_KeyboardCommands;
-		std::optional<ControllerCommands>     m_ControllerCommands;
-		roingine::Transform                  *m_rpTransform;
-		roingine::Transform                  *m_rpCameraTransform;
-		MovingEntity                         *m_rpMovingEntityComponent;
-		roingine::RectCollider const         *m_rpRectCollider;
-		glm::vec2                             m_PreviousWalkSoundPosition{0.f, 0.f};
+		roingine::Controller             *m_rpController{};
+		roingine::RectCollider const     *m_rpRectCollider;
+		MovingEntity                     *m_rpMovingEntityComponent;
+		std::unique_ptr<MoveCommand>      m_rpMoveUpCommand;
+		std::unique_ptr<MoveCommand>      m_rpMoveDownCommand;
+		std::unique_ptr<MoveCommand>      m_rpMoveLeftCommand;
+		std::unique_ptr<MoveCommand>      m_rpMoveRightCommand;
+		std::unique_ptr<PlaceBombCommand> m_pPlaceBombCommand;
+		roingine::Transform              *m_rpTransform;
+		roingine::Transform              *m_rpCameraTransform;
+		roingine::AnimationRenderer      *m_rpAnimRenderer;
+		glm::vec2                         m_PreviousWalkSoundPosition{0.f, 0.f};
+		bool                              m_HasKeyboardSupport;
 
 		static float const WALK_SOUND_DISTANCE;
+		static float const SIZE;
+
+		[[nodiscard]]
+		bool
+		IsKbOrControllerInputDown(roingine::InputKeys key, roingine::ControllerButton button, bool checkIfHeld) const;
+
+		void HandleInput() const;
 
 	public:
 		Player(roingine::GameObject &gameObject, roingine::Transform &cameraTransform,
-		       MovingEntity *rpMovingEntityComponent, bool isPlayer1);
+		       LevelFlyweight const &levelFlyweight, bool keyboardSupported);
 
 		void TieToController(roingine::Controller *rpController);
 

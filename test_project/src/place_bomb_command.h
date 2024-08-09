@@ -17,7 +17,7 @@ namespace bomberman {
 	public:
 		explicit PlaceBombCommand(roingine::Transform const &rpTransform);
 
-		void Execute() override;
+		void Execute() const override;
 	};
 }// namespace bomberman
 

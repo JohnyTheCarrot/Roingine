@@ -7,7 +7,7 @@ namespace bomberman {
 	    , m_rpMovingEntityComponent{rpMovingEntityComponent} {
 	}
 
-	void MoveCommand::Execute() {
+	void MoveCommand::Execute() const {
 		m_rpMovingEntityComponent->Move(m_Direction);
 	}
 }// namespace bomberman

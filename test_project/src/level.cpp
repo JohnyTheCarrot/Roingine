@@ -29,17 +29,14 @@ namespace bomberman {
 		player.AddComponent<roingine::Transform>(
 		        glm::vec2{c_PlayerStartX * LevelFlyweight::c_TileSize, c_PlayerStartY * LevelFlyweight::c_TileSize}, 0.f
 		);
-		player.AddComponent<roingine::RectRenderer>(50.f, 50.f);
-		player.AddComponent<roingine::RectCollider>(50.f, 50.f);
-		auto *rpMovingEntity{&player.AddComponent<MovingEntity>(levelFlyweight, 200.f)};
-		auto *rpLayer{&player.AddComponent<Player>(cameraTransform, rpMovingEntity, hasKeyboardSupport)};
+		auto *rpLayer{&player.AddComponent<Player>(cameraTransform, levelFlyweight, hasKeyboardSupport)};
 
 		return PlayerAndCam{rpLayer, rpCam};
 	}
 
 	Level::Level(roingine::Scene &scene, LevelLoadInfo const &loadInfo)
 	    : m_LoadInfo{loadInfo}
-	    , m_rpLevelFlyweight{[this, &scene]() {
+	    , m_rpLevelFlyweight{[this, &scene] {
 		    auto level{scene.AddGameObject()};
 		    level.AddComponent<roingine::Transform>(glm::vec2{0.f, 0.f}, 0.f);
 		    return &level.AddComponent<LevelFlyweight>();

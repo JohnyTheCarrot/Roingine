@@ -65,6 +65,9 @@ namespace roingine {
 		void RegisterCommand(ControllerButton button, ButtonState buttonState, std::unique_ptr<Command> pCommand) const;
 
 		void RemoveCommand(ControllerButton button, ButtonState buttonState, Command *pCommand) const;
+
+		[[nodiscard]]
+		ButtonState GetButtonState(ControllerButton button) const;
 	};
 }// namespace roingine
 

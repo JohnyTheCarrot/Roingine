@@ -62,6 +62,9 @@ namespace roingine {
 		virtual void AddCommand(InputKeys input, KeyEventType eventType, std::unique_ptr<Command> command) = 0;
 
 		virtual void RemoveCommand(InputKeys input, KeyEventType eventType, Command *command) = 0;
+
+		[[nodiscard]]
+		virtual KeyEventType GetKeyState(InputKeys input) const = 0;
 	};
 
 	class NullKeyboardInputService final : public KeyboardInputService {
@@ -73,6 +76,9 @@ namespace roingine {
 		void AddCommand(InputKeys, KeyEventType, std::unique_ptr<Command>) override;
 
 		void RemoveCommand(InputKeys input, KeyEventType eventType, Command *command) override;
+
+		[[nodiscard]]
+		KeyEventType GetKeyState(InputKeys input) const override;
 	};
 
 	class SDLKeyboardInputService final : public KeyboardInputService {
@@ -86,6 +92,9 @@ namespace roingine {
 		void AddCommand(InputKeys input, KeyEventType eventType, std::unique_ptr<Command> command) override;
 
 		void RemoveCommand(InputKeys input, KeyEventType eventType, Command *command) override;
+
+		[[nodiscard]]
+		KeyEventType GetKeyState(InputKeys input) const override;
 
 	private:
 		class Impl;
