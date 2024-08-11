@@ -23,7 +23,10 @@ namespace bomberman {
 	public:
 		MovingEntity(roingine::GameObject &gameObject, LevelFlyweight const &levelFlyweight, float speed);
 
-		void Move(glm::vec2 direction) const;
+		bool Move(glm::vec2 direction) const;
+
+		[[nodiscard]]
+		LevelFlyweight const &GetLevelFlyweight() const;
 	};
 }// namespace bomberman
 

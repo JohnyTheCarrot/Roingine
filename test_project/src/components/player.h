@@ -36,8 +36,9 @@ namespace bomberman {
 		glm::vec2                         m_PreviousWalkSoundPosition{0.f, 0.f};
 		bool                              m_HasKeyboardSupport;
 
-		static float const WALK_SOUND_DISTANCE;
-		static float const SIZE;
+		static float const c_WalkSoundDistance;
+		static float const c_Size;
+		static float const c_WalkSpeed;
 
 		[[nodiscard]]
 		bool

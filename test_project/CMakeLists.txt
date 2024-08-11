@@ -30,6 +30,10 @@ add_executable(${PROJECT_NAME}
         src/unassigned_controller.cpp
         src/audio.h
         src/finite_state_machine.h
+        src/components/enemy.h
+        src/components/enemy.cpp
+        src/components/enemy_ai.h
+        src/components/enemy_ai.cpp
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE Roingine)
 

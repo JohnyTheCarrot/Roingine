@@ -93,7 +93,7 @@ namespace roingine {
 			if (auto const *sceneComponents{GetComponents()}; sceneComponents != nullptr) {
 				auto it{sceneComponents->find(hComponent)};
 				if (it != sceneComponents->cend())
-					return *dynamic_cast<TComponent *>(it);
+					return *dynamic_cast<TComponent *>(it->second.get());
 			}
 
 			throw ComponentNotFoundException{};

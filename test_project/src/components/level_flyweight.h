@@ -14,8 +14,39 @@ namespace roingine {
 
 namespace bomberman {
 	class LevelFlyweight final : public roingine::Component {
+	public:
 		enum class TileType { Nothing, SolidWall, BrickWall };
 
+		static constexpr int   c_LevelWidth{31};
+		static constexpr int   c_LevelHeight{13};
+		static constexpr float c_TileSize{90.f};
+
+		explicit LevelFlyweight(roingine::GameObject &gameObject);
+
+		void Render() const override;
+
+		[[nodiscard]]
+		bool IsCollidingWith(roingine::RectCollider const &collider) const;
+
+		[[nodiscard]]
+		std::optional<glm::vec2> GetCollisionPoint(glm::vec2 origin, float width, float height) const;
+
+		[[nodiscard]]
+		TileType GetTileType(int gridX, int gridY) const;
+
+		[[nodiscard]]
+		glm::vec2 GridToPosition(int x, int y) const;
+
+		[[nodiscard]]
+		glm::vec2 SnapToGrid(glm::vec2 position) const;
+
+		[[nodiscard]]
+		std::pair<int, int> PositionToGrid(glm::vec2 position) const;
+
+		[[nodiscard]]
+		glm::vec2 GetRandomEmptyTilePos() const;
+
+	private:
 		roingine::EventHandlerHandle<event_queue::EventQueue> m_hBombPlaceRequestHandler;
 		roingine::EventHandlerHandle<event_queue::EventQueue> m_hBombDetonatedHandler;
 
@@ -37,27 +68,6 @@ namespace bomberman {
 		        glm::vec2 startPos, bool isX, int range, std::function<bool(int, int)> const &comp, int xIndex,
 		        int yIndex
 		);
-
-	public:
-		static constexpr int   c_LevelWidth{31};
-		static constexpr int   c_LevelHeight{13};
-		static constexpr float c_TileSize{90.f};
-
-		explicit LevelFlyweight(roingine::GameObject &gameObject);
-
-		void Render() const override;
-
-		[[nodiscard]]
-		bool IsCollidingWith(roingine::RectCollider const &collider) const;
-
-		[[nodiscard]]
-		std::optional<glm::vec2> GetCollisionPoint(glm::vec2 origin, float width, float height) const;
-
-		[[nodiscard]]
-		glm::vec2 GridToPosition(int x, int y) const;
-
-		[[nodiscard]]
-		glm::vec2 SnapToGrid(glm::vec2 position) const;
 	};
 }// namespace bomberman
 

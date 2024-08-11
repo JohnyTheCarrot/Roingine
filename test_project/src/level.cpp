@@ -1,12 +1,11 @@
 #include "level.h"
 
+#include "components/enemy.h"
 #include "components/level_flyweight.h"
-#include "components/moving_entity.h"
 #include "components/player.h"
 
 #include <roingine/components/camera.h>
 #include <roingine/components/rect_collider.h>
-#include <roingine/components/rect_renderer.h>
 #include <roingine/components/transform.h>
 #include <roingine/gameobject.h>
 #include <roingine/scene.h>
@@ -43,6 +42,10 @@ namespace bomberman {
 	    }()}
 	    , m_rpPlayer1{SpawnPlayer(scene, true, 0, 0, loadInfo.windowWidth, loadInfo.windowHeight, *m_rpLevelFlyweight)
 	      } {
+		for (int i{}; i < loadInfo.numBallooms; ++i)
+			Enemy::SpawnEnemy(
+			        scene, *m_rpLevelFlyweight, enemy_type::c_EnemyBalloom, m_rpLevelFlyweight->GetRandomEmptyTilePos()
+			);
 		roingine::SceneManager::GetInstance().SetActive(std::move(scene));
 	}
 

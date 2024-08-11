@@ -7,16 +7,16 @@
 
 namespace roingine {
 	AnimationRenderer::AnimationRenderer(
-	        GameObject &gameObject, std::string const &fileName, int numFrames, float secondsPerFrame,
-	        std::optional<float> width, std::optional<float> height, ScalingMethod scalingMethod
+	        GameObject &gameObject, AnimationInfo const &animationInfo, std::optional<float> width,
+	        std::optional<float> height, ScalingMethod scalingMethod
 	)
 	    : Component{gameObject}
 	    , m_Transform{gameObject.GetComponent<Transform>()}
 	    , m_ScalingMethod{scaling_method::ToOpenGLScalingMethod(scalingMethod)}
-	    , m_EndFrame{numFrames}
-	    , m_NumFrames{numFrames}
-	    , m_SecondsPerFrame{secondsPerFrame} {
-		UniqueSDLSurface const sdlSurface{IMG_Load(fileName.c_str())};
+	    , m_EndFrame{animationInfo.numFrames}
+	    , m_NumFrames{animationInfo.numFrames}
+	    , m_SecondsPerFrame{animationInfo.secondsPerFrame} {
+		UniqueSDLSurface const sdlSurface{IMG_Load(animationInfo.fileName.c_str())};
 
 		GLuint textureId;
 		glGenTextures(1, &textureId);

@@ -21,6 +21,7 @@ namespace bomberman {
 	struct LevelLoadInfo final {
 		int windowWidth{};
 		int windowHeight{};
+		int numBallooms{0};
 	};
 
 	class Level final {

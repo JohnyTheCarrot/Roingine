@@ -12,10 +12,15 @@ namespace roingine {
 
 	class AnimationRenderer final : public Component {
 	public:
+		struct AnimationInfo final {
+			std::string fileName;
+			int         numFrames;
+			float       secondsPerFrame;
+		};
+
 		AnimationRenderer(
-		        GameObject &gameObject, std::string const &fileName, int numFrames, float secondsPerFrame,
-		        std::optional<float> width = std::nullopt, std::optional<float> height = std::nullopt,
-		        ScalingMethod scalingMethod = ScalingMethod::Linear
+		        GameObject &gameObject, AnimationInfo const &animationInfo, std::optional<float> width = std::nullopt,
+		        std::optional<float> height = std::nullopt, ScalingMethod scalingMethod = ScalingMethod::Linear
 		);
 
 		void Update() override;

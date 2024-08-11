@@ -6,14 +6,12 @@
 namespace bomberman {
 	class FiniteStateMachine {
 	public:
-		[[nodiscard]]
-		virtual std::unique_ptr<FiniteStateMachine> GetTransitionTarget() = 0;
-
 		virtual void OnEnter() = 0;
 
 		virtual void OnExit() = 0;
 
-		virtual void Update() = 0;
+		[[nodiscard]]
+		virtual std::unique_ptr<FiniteStateMachine> Update() = 0;
 
 		FiniteStateMachine() = default;
 

@@ -126,7 +126,7 @@ namespace roingine {
 			throw std::runtime_error{"Failed to open controller: "s + SDL_GetError()};
 		}
 		std::ranges::fill(m_ButtonStates, ButtonState::NotPressed);
-		std::cout << "Controller opened with name: " << SDL_GameControllerName(m_pController.get()) << '\n';
+		std::cout << "Controller opened with name: " << SDL_GameControllerName(m_pController.get()) << std::endl;
 	}
 
 	int Controller::Impl::GetInstanceID() const {

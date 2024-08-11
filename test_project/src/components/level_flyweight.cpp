@@ -47,8 +47,12 @@ namespace bomberman {
 			auto        centerExplosion{activeScene->AddGameObject()};
 			centerExplosion.AddComponent<roingine::Transform>(SnapToGrid(relativePos), 0.f);
 			centerExplosion.AddComponent<roingine::AnimationRenderer>(
-			        "res/img/explosion_center.png", c_ExplosionAnimationFrames, c_ExplosionAnimationTime, c_TileSize,
-			        c_TileSize, roingine::ScalingMethod::NearestNeighbor
+			        roingine::AnimationRenderer::AnimationInfo{
+			                .fileName        = "res/img/explosion_center.png",
+			                .numFrames       = c_ExplosionAnimationFrames,
+			                .secondsPerFrame = c_ExplosionAnimationTime
+			        },
+			        c_TileSize, c_TileSize, roingine::ScalingMethod::NearestNeighbor
 			);
 			centerExplosion.AddComponent<TemporaryObject>(c_ExplosionTtl);
 		}
@@ -77,8 +81,12 @@ namespace bomberman {
 		auto       bomb{activeScene->AddGameObject()};
 		bomb.AddComponent<roingine::Transform>(pos, 0.f);
 		bomb.AddComponent<roingine::AnimationRenderer>(
-		        "res/img/bomb.png", c_BombAnimationFrames, c_SecondsPerFrame, c_TileSize, c_TileSize,
-		        roingine::ScalingMethod::NearestNeighbor
+		        roingine::AnimationRenderer::AnimationInfo{
+		                .fileName        = "res/img/bomb.png",
+		                .numFrames       = c_BombAnimationFrames,
+		                .secondsPerFrame = c_SecondsPerFrame
+		        },
+		        c_TileSize, c_TileSize, roingine::ScalingMethod::NearestNeighbor
 		);
 		bomb.AddComponent<TemporaryObject>(c_DetonationTime, [](roingine::GameObject gameObject) {
 			auto const &transform{gameObject.GetComponent<roingine::Transform>()};
@@ -115,8 +123,12 @@ namespace bomberman {
 			auto goBrokenBricks{activeScene->AddGameObject()};
 			goBrokenBricks.AddComponent<roingine::Transform>(GridToPosition(xIdx, yIdx), 0.f);
 			goBrokenBricks.AddComponent<roingine::AnimationRenderer>(
-			        "res/img/brick_wall_destroyed.png", c_DestroyAnimFrames, c_DestroyAnimTime, c_TileSize, c_TileSize,
-			        roingine::ScalingMethod::NearestNeighbor
+			        roingine::AnimationRenderer::AnimationInfo{
+			                .fileName        = "res/img/brick_wall_destroyed.png",
+			                .numFrames       = c_DestroyAnimFrames,
+			                .secondsPerFrame = c_DestroyAnimTime
+			        },
+			        c_TileSize, c_TileSize, roingine::ScalingMethod::NearestNeighbor
 			);
 			goBrokenBricks.AddComponent<TemporaryObject>(c_DestroyAnimTtl);
 			return true;
@@ -141,8 +153,12 @@ namespace bomberman {
 			)};
 			transform.SetPivot(c_TileSize / 2.f, c_TileSize / 2.f);
 			middleExplosion.AddComponent<roingine::AnimationRenderer>(
-			        isEnd ? "res/img/explosion_end.png" : "res/img/explosion_middle.png", c_ExplosionAnimationFrames,
-			        c_ExplosionAnimationTime, c_TileSize, c_TileSize, roingine::ScalingMethod::NearestNeighbor
+			        roingine::AnimationRenderer::AnimationInfo{
+			                .fileName        = isEnd ? "res/img/explosion_end.png" : "res/img/explosion_middle.png",
+			                .numFrames       = c_ExplosionAnimationFrames,
+			                .secondsPerFrame = c_ExplosionAnimationTime
+			        },
+			        c_TileSize, c_TileSize, roingine::ScalingMethod::NearestNeighbor
 			);
 			middleExplosion.AddComponent<TemporaryObject>(c_ExplosionTtl);
 		}};
@@ -297,6 +313,10 @@ namespace bomberman {
 		return collisionPoint;
 	}
 
+	LevelFlyweight::TileType LevelFlyweight::GetTileType(int gridX, int gridY) const {
+		return m_TileGrid.at(gridX + gridY * c_LevelWidth);
+	}
+
 	glm::vec2 LevelFlyweight::GridToPosition(int x, int y) const {
 		return m_rpTransform->GetWorldPosition() +
 		       glm::vec2{static_cast<float>(x) * c_TileSize, static_cast<float>(y) * c_TileSize};
@@ -308,5 +328,32 @@ namespace bomberman {
 		auto const y{std::floor(relativePos.y / c_TileSize) * c_TileSize};
 
 		return {x, y};
+	}
+
+	std::pair<int, int> LevelFlyweight::PositionToGrid(glm::vec2 position) const {
+		auto const relativePos{position - m_rpTransform->GetWorldPosition()};
+		auto const x{static_cast<int>(std::floor(relativePos.x / c_TileSize))};
+		auto const y{static_cast<int>(std::floor(relativePos.y / c_TileSize))};
+
+		return {x, y};
+	}
+
+	glm::vec2 LevelFlyweight::GetRandomEmptyTilePos() const {
+		static std::random_device            rd;
+		static std::mt19937                  gen(rd());
+		static std::uniform_int_distribution xDist{0, c_LevelWidth - 1};
+		static std::uniform_int_distribution yDist{0, c_LevelHeight - 1};
+
+		auto const isNotEmpty{[this](int x, int y) { return GetTileType(x, y) != TileType::Nothing; }};
+
+		auto x{xDist(gen)};
+		auto y{yDist(gen)};
+
+		while (isNotEmpty(x, y)) {
+			x = xDist(gen);
+			y = yDist(gen);
+		}
+
+		return GridToPosition(x, y);
 	}
 }// namespace bomberman

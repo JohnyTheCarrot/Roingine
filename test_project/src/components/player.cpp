@@ -39,8 +39,9 @@ namespace bomberman {
 	constexpr AnimationFrameRange c_AnimWalkRight{6, 9};
 	constexpr AnimationFrameRange c_AnimWalkUp{9, 11};
 
-	float const Player::WALK_SOUND_DISTANCE{50.f};
-	float const Player::SIZE{LevelFlyweight::c_TileSize - 20};
+	float const Player::c_WalkSoundDistance{50.f};
+	float const Player::c_Size{LevelFlyweight::c_TileSize - 20};
+	float const Player::c_WalkSpeed{200.f};
 
 	bool Player::IsKbOrControllerInputDown(roingine::InputKeys key, roingine::ControllerButton button, bool checkIfHeld)
 	        const {
@@ -88,6 +89,8 @@ namespace bomberman {
 			didMove = true;
 		}
 
+		// TODO: death
+
 		m_rpAnimRenderer->SetPaused(!didMove);
 
 		if (IsKbOrControllerInputDown(c_BombKbButton, c_BombControllerButton, false)) {
@@ -100,8 +103,8 @@ namespace bomberman {
 	        LevelFlyweight const &levelFlyweight, bool keyboardSupported
 	)
 	    : Component{gameObject}
-	    , m_rpRectCollider{&gameObject.AddComponent<roingine::RectCollider>(SIZE, SIZE)}
-	    , m_rpMovingEntityComponent{&gameObject.AddComponent<MovingEntity>(levelFlyweight, 200.f)}
+	    , m_rpRectCollider{&gameObject.AddComponent<roingine::RectCollider>(c_Size, c_Size)}
+	    , m_rpMovingEntityComponent{&gameObject.AddComponent<MovingEntity>(levelFlyweight, c_WalkSpeed)}
 	    , m_rpMoveUpCommand{std::make_unique<MoveCommand>(m_rpMovingEntityComponent, c_UpVec)}
 	    , m_rpMoveDownCommand{std::make_unique<MoveCommand>(m_rpMovingEntityComponent, c_DownVec)}
 	    , m_rpMoveLeftCommand{std::make_unique<MoveCommand>(m_rpMovingEntityComponent, c_LeftVec)}
@@ -110,7 +113,12 @@ namespace bomberman {
 	    , m_rpTransform{&gameObject.GetComponent<roingine::Transform>()}
 	    , m_rpCameraTransform{&cameraTransform}
 	    , m_rpAnimRenderer{&gameObject.AddComponent<roingine::AnimationRenderer>(
-	              "res/img/player.png", 19, 0.1f, SIZE, SIZE, roingine::ScalingMethod::NearestNeighbor
+	              roingine::AnimationRenderer::AnimationInfo{
+	                      .fileName        = "res/img/player.png",
+	                      .numFrames       = 19,
+	                      .secondsPerFrame = 0.1f
+	              },
+	              c_Size, c_Size, roingine::ScalingMethod::NearestNeighbor
 	      )}
 	    , m_HasKeyboardSupport{keyboardSupported} {
 	}
@@ -137,7 +145,7 @@ namespace bomberman {
 		HandleInput();
 
 		if (auto const position{m_rpTransform->GetWorldPosition()};
-		    distance(m_PreviousWalkSoundPosition, position) > WALK_SOUND_DISTANCE) {
+		    distance(m_PreviousWalkSoundPosition, position) > c_WalkSoundDistance) {
 
 			auto const xDistance{std::abs(m_PreviousWalkSoundPosition.x - position.x)};
 			auto const yDistance{std::abs(m_PreviousWalkSoundPosition.y - position.y)};
