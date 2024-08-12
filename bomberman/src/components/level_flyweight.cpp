@@ -57,17 +57,37 @@ namespace bomberman {
 			centerExplosion.AddComponent<TemporaryObject>(c_ExplosionTtl);
 		}
 
+		auto const relativePosGrid{GridToPosition(xIndex, yIndex)};
+		auto       explosionLeft{relativePosGrid.x};
+		auto       explosionRight{relativePosGrid.x + c_TileSize};
+		auto       explosionTop{relativePosGrid.y};
+		auto       explosionBottom{relativePosGrid.y + c_TileSize};
+
 		// destroy tiles to the left
-		ExplodeTiles(relativePos, true, -c_BombRange, std::greater_equal<int>{}, xIndex, yIndex);
+		auto const nExplodedLeft{
+		        ExplodeTiles(relativePos, true, -c_BombRange, std::greater_equal<int>{}, xIndex, yIndex)
+		};
+		explosionLeft -= static_cast<float>(nExplodedLeft) * c_TileSize;
 
 		// destroy tiles to the right
-		ExplodeTiles(relativePos, true, c_BombRange, std::less_equal<int>{}, xIndex, yIndex);
+		auto const nExplodedRight{ExplodeTiles(relativePos, true, c_BombRange, std::less_equal<int>{}, xIndex, yIndex)};
+		explosionRight += static_cast<float>(nExplodedRight) * c_TileSize;
 
 		// destroy tiles above
-		ExplodeTiles(relativePos, false, -c_BombRange, std::greater_equal<int>{}, xIndex, yIndex);
+		auto const nExplodedTop{
+		        ExplodeTiles(relativePos, false, -c_BombRange, std::greater_equal<int>{}, xIndex, yIndex)
+		};
+		explosionTop -= static_cast<float>(nExplodedTop) * c_TileSize;
 
 		// destroy tiles below
-		ExplodeTiles(relativePos, false, c_BombRange, std::less_equal<int>{}, xIndex, yIndex);
+		auto const nExplodedBottom{ExplodeTiles(relativePos, false, c_BombRange, std::less_equal<int>{}, xIndex, yIndex)
+		};
+		explosionBottom += static_cast<float>(nExplodedBottom) * c_TileSize;
+
+		event_queue::EventQueue::GetInstance().FireEvent<event_queue::EventType::Explosion>(
+		        glm::vec2{explosionLeft, relativePosGrid.y}, glm::vec2{explosionRight, relativePosGrid.y + c_TileSize},
+		        glm::vec2{relativePosGrid.x, explosionTop}, glm::vec2{relativePosGrid.x + c_TileSize, explosionBottom}
+		);
 	}
 
 	void LevelFlyweight::BombPlaceRequestHandler(event_queue::BombPlaceRequestData const &data) const {
@@ -98,7 +118,7 @@ namespace bomberman {
 		audio::AudioServiceLocator::GetService().Play(audio::Sound::BombPlace);
 	}
 
-	void LevelFlyweight::ExplodeTiles(
+	int LevelFlyweight::ExplodeTiles(
 	        glm::vec2 startPos, bool isX, int range, std::function<bool(int, int)> const &comp, int xIndex, int yIndex
 	) {
 		auto *const activeScene{roingine::SceneManager::GetInstance().GetActive()};
@@ -178,13 +198,18 @@ namespace bomberman {
 			spawnExplosion(idx == endIdx, idx - startIdx);
 		}
 
-		for (int idx{startIdx}; comp(idx, startIdx + range); idx += idxIncrement) {
+		int explodedTiles{0};
+		for (int idx{startIdx + idxIncrement}; comp(idx, startIdx + range); idx += idxIncrement) {
 			auto const tileXIndex{isX ? idx : xIndex};
 			auto const tileYIndex{isX ? yIndex : idx};
 
 			if (!destroyTile(tileXIndex, tileYIndex))
 				break;
+
+			++explodedTiles;
 		}
+
+		return explodedTiles;
 	}
 
 	LevelFlyweight::LevelFlyweight(roingine::GameObject &gameObject)
@@ -314,6 +339,9 @@ namespace bomberman {
 	}
 
 	LevelFlyweight::TileType LevelFlyweight::GetTileType(int gridX, int gridY) const {
+		if (gridX < 0 || gridX >= c_LevelWidth || gridY < 0 || gridY >= c_LevelHeight)
+			return TileType::SolidWall;
+
 		return m_TileGrid.at(gridX + gridY * c_LevelWidth);
 	}
 

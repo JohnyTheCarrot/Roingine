@@ -9,8 +9,8 @@ add_executable(${PROJECT_NAME}
         src/main.cpp
         src/components/player.h
         src/components/player.cpp
-        src/move_command.h
-        src/move_command.cpp
+        src/living_entity_command.h
+        src/living_entity_command.cpp
         src/components/moving_entity.h
         src/components/moving_entity.cpp
         src/game.h
@@ -34,6 +34,10 @@ add_executable(${PROJECT_NAME}
         src/components/enemy.cpp
         src/components/enemy_ai.h
         src/components/enemy_ai.cpp
+        src/components/bomberman.h
+        src/components/bomberman.cpp
+        src/components/living_entity.h
+        src/components/living_entity.cpp
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE Roingine)
 

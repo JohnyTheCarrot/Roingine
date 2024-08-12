@@ -27,7 +27,7 @@ namespace roingine {
 			Destroy();
 		}
 
-		EventHandlerHandle(EventHandlerHandle &&other)
+		EventHandlerHandle(EventHandlerHandle &&other) noexcept
 		    : m_EventQueue{std::move(other.m_EventQueue)}
 		    , m_EventType{other.m_EventType} {
 			Destroy();
@@ -35,7 +35,7 @@ namespace roingine {
 			other.m_hHandler = std::nullopt;
 		}
 
-		EventHandlerHandle &operator=(EventHandlerHandle &&other) {
+		EventHandlerHandle &operator=(EventHandlerHandle &&other) noexcept {
 			if (this == &other)
 				return *this;
 
@@ -122,8 +122,10 @@ namespace roingine {
 				return;
 
 			auto const &event{m_Events[m_Head]};
-			if (!m_EventHandlers.contains(event.type))
+			if (!m_EventHandlers.contains(event.type)) {
+				m_Head = (m_Head + 1) % MAX_EVENTS;
 				return;
+			}
 
 			auto const &handlers{m_EventHandlers.at(event.type)};
 

@@ -1,5 +1,6 @@
 #include "level.h"
 
+#include "components/bomberman.h"
 #include "components/enemy.h"
 #include "components/level_flyweight.h"
 #include "components/player.h"
@@ -28,6 +29,7 @@ namespace bomberman {
 		player.AddComponent<roingine::Transform>(
 		        glm::vec2{c_PlayerStartX * LevelFlyweight::c_TileSize, c_PlayerStartY * LevelFlyweight::c_TileSize}, 0.f
 		);
+		player.AddComponent<Bomberman>(levelFlyweight);
 		auto *rpLayer{&player.AddComponent<Player>(cameraTransform, levelFlyweight, hasKeyboardSupport)};
 
 		return PlayerAndCam{rpLayer, rpCam};

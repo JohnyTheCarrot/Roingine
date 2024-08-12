@@ -2,13 +2,17 @@
 #define GAME_EVENT_QUEUE_H
 
 #include <glm/vec2.hpp>
-#include <roingine/engine_event_queue.h>
 #include <roingine/event_queue.h>
+
+namespace roingine {
+	class Controller;
+}
 
 namespace bomberman::event_queue {
 	enum class EventType {
 		BombPlaceRequest,
 		BombDetonated,
+		Explosion,
 		PlayerControllerConnected,
 		PlayerControllerDisconnected,
 	};
@@ -29,6 +33,24 @@ struct roingine::EventTypeData<bomberman::event_queue::EventType, bomberman::eve
 	struct Data_t final {
 		glm::vec2 position;
 		// TODO: by who?
+	};
+};
+
+template<>
+struct roingine::EventTypeData<bomberman::event_queue::EventType, bomberman::event_queue::EventType::Explosion> final {
+	struct Data_t final {
+		glm::vec2 horizontalStart;
+		glm::vec2 horizontalEnd;
+		glm::vec2 verticalStart;
+		glm::vec2 verticalEnd;
+
+		[[nodiscard]]
+		bool IsInExplosion(glm::vec2 position) const {
+			return (position.x >= horizontalStart.x && position.y >= horizontalStart.y &&
+			        position.x <= horizontalEnd.x && position.y <= horizontalEnd.y) ||
+			       (position.x >= verticalStart.x && position.y >= verticalStart.y && position.x <= verticalEnd.x &&
+			        position.y <= verticalEnd.y);
+		}
 	};
 };
 
@@ -57,9 +79,11 @@ namespace bomberman::event_queue {
 	using ControllerConnectedData = roingine::EventTypeData<EventType, EventType::PlayerControllerConnected>::Data_t;
 	using ControllerDisconnectedData =
 	        roingine::EventTypeData<EventType, EventType::PlayerControllerDisconnected>::Data_t;
+	using ExplosionData = roingine::EventTypeData<EventType, EventType::Explosion>::Data_t;
 
 	using EventQueue = roingine::EventQueue<
-	        EventType, BombDetonatedData, BombPlaceRequestData, ControllerConnectedData, ControllerDisconnectedData>;
+	        EventType, BombDetonatedData, BombPlaceRequestData, ControllerConnectedData, ControllerDisconnectedData,
+	        ExplosionData>;
 }// namespace bomberman::event_queue
 
 #endif//GAME_EVENT_QUEUE_H

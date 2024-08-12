@@ -1,10 +1,12 @@
 #ifndef LEVEL_LOADER_H
 #define LEVEL_LOADER_H
-#include "event_queue.h"
+#include <roingine/controller.h>
 #include <roingine/gameobject.h>
 
 namespace roingine {
 	class Camera;
+
+	class Scene;
 }
 
 namespace bomberman {
@@ -12,10 +14,6 @@ namespace bomberman {
 
 	class Player;
 }// namespace bomberman
-
-namespace roingine {
-	class Scene;
-}
 
 namespace bomberman {
 	struct LevelLoadInfo final {

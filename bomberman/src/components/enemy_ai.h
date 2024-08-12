@@ -8,7 +8,9 @@
 #include <roingine/gameobject.h>
 
 namespace bomberman {
-	class EnemyWandering final : public FiniteStateMachine {
+	struct EnemyFSMInput final {};
+
+	class EnemyWandering final : public FiniteStateMachine<EnemyFSMInput> {
 	public:
 		enum class Axis { X, Y };
 		enum class Direction { Positive, Negative };
@@ -17,9 +19,10 @@ namespace bomberman {
 
 		void OnExit() override;
 
-		std::unique_ptr<FiniteStateMachine> Update() override;
-
 		EnemyWandering(Enemy &enemy, Axis axis, Direction direction);
+
+		[[nodiscard]]
+		std::unique_ptr<FiniteStateMachine> Update(EnemyFSMInput const &input) override;
 
 	private:
 		Enemy    *m_rpEnemy;
@@ -43,9 +46,9 @@ namespace bomberman {
 		void Update() override;
 
 	private:
-		Enemy                              *m_rpEnemy;
-		AIType                              m_AIType;
-		std::unique_ptr<FiniteStateMachine> m_pCurrentState;
+		Enemy                                             *m_rpEnemy;
+		AIType                                             m_AIType;
+		std::unique_ptr<FiniteStateMachine<EnemyFSMInput>> m_pCurrentState;
 	};
 }// namespace bomberman
 

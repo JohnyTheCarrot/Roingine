@@ -64,7 +64,7 @@ namespace bomberman {
 
 		void BombPlaceRequestHandler(event_queue::BombPlaceRequestData const &data) const;
 
-		void ExplodeTiles(
+		int ExplodeTiles(
 		        glm::vec2 startPos, bool isX, int range, std::function<bool(int, int)> const &comp, int xIndex,
 		        int yIndex
 		);

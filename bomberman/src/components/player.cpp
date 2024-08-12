@@ -1,15 +1,13 @@
 #include "player.h"
 
-#include "../audio.h"
-#include "../move_command.h"
-#include "../place_bomb_command.h"
+#include "../living_entity_command.h"
+#include "bomberman.h"
 #include "level_flyweight.h"
-#include "moving_entity.h"
-#include "roingine/roingine.h"
+#include "living_entity.h"
 
-#include <roingine/components/animation_renderer.h>
 #include <roingine/components/rect_collider.h>
 #include <roingine/components/transform.h>
+#include <roingine/roingine.h>
 
 namespace bomberman {
 	constexpr glm::vec2 c_UpVec{0, 1};
@@ -59,67 +57,61 @@ namespace bomberman {
 	}
 
 	void Player::HandleInput() const {
-		// I realise I *could* use an FSM here, but doing so would be overkill for this simple case, in my opinion.
-		// The FSM would be more useful if the player had more states, such as "placing bomb", etc.
-		// Instead every node in the FSM does practically the exact same, with the only difference the current node cannot be transitioned to.
-		// With this in mind, I decided to keep it simple.
-		bool didMove{false};
-
+		bool isMoving{false};
 		if (IsKbOrControllerInputDown(c_UpKbButton, c_UpControllerButton, true)) {
-			m_rpMovingEntityComponent->Move(c_UpVec);
-			m_rpAnimRenderer->SetFrameRange(c_AnimWalkUp.start, c_AnimWalkUp.end);
-			didMove = true;
+			m_pMoveUpCommand->Execute();
+			isMoving = true;
 		}
 
 		if (IsKbOrControllerInputDown(c_DownKbButton, c_DownControllerButton, true)) {
-			m_rpMovingEntityComponent->Move(c_DownVec);
-			m_rpAnimRenderer->SetFrameRange(c_AnimWalkDown.start, c_AnimWalkDown.end);
-			didMove = true;
+			m_pMoveDownCommand->Execute();
+			isMoving = true;
 		}
 
 		if (IsKbOrControllerInputDown(c_LeftKbButton, c_LeftControllerButton, true)) {
-			m_rpMovingEntityComponent->Move(c_LeftVec);
-			m_rpAnimRenderer->SetFrameRange(c_AnimWalkLeft.start, c_AnimWalkLeft.end);
-			didMove = true;
+			m_pMoveLeftCommand->Execute();
+			isMoving = true;
 		}
 
 		if (IsKbOrControllerInputDown(c_RightKbButton, c_RightControllerButton, true)) {
-			m_rpMovingEntityComponent->Move(c_RightVec);
-			m_rpAnimRenderer->SetFrameRange(c_AnimWalkRight.start, c_AnimWalkRight.end);
-			didMove = true;
+			m_pMoveRightCommand->Execute();
+			isMoving = true;
 		}
 
-		// TODO: death
-
-		m_rpAnimRenderer->SetPaused(!didMove);
+		if (!isMoving)
+			m_pIdleCommand->Execute();
 
 		if (IsKbOrControllerInputDown(c_BombKbButton, c_BombControllerButton, false)) {
-			m_pPlaceBombCommand->Execute();
+			m_pPrimaryActionCommand->Execute();
 		}
 	}
 
 	Player::Player(
-	        roingine::GameObject &gameObject, roingine::Transform &cameraTransform,
-	        LevelFlyweight const &levelFlyweight, bool keyboardSupported
+	        roingine::GameObject gameObject, roingine::Transform &cameraTransform, LevelFlyweight const &,
+	        bool keyboardSupported
 	)
-	    : Component{gameObject}
-	    , m_rpRectCollider{&gameObject.AddComponent<roingine::RectCollider>(c_Size, c_Size)}
-	    , m_rpMovingEntityComponent{&gameObject.AddComponent<MovingEntity>(levelFlyweight, c_WalkSpeed)}
-	    , m_rpMoveUpCommand{std::make_unique<MoveCommand>(m_rpMovingEntityComponent, c_UpVec)}
-	    , m_rpMoveDownCommand{std::make_unique<MoveCommand>(m_rpMovingEntityComponent, c_DownVec)}
-	    , m_rpMoveLeftCommand{std::make_unique<MoveCommand>(m_rpMovingEntityComponent, c_LeftVec)}
-	    , m_rpMoveRightCommand{std::make_unique<MoveCommand>(m_rpMovingEntityComponent, c_RightVec)}
-	    , m_pPlaceBombCommand{std::make_unique<PlaceBombCommand>(GetGameObject().GetComponent<roingine::Transform>())}
-	    , m_rpTransform{&gameObject.GetComponent<roingine::Transform>()}
+	    : Component{gameObject}// , m_hExplosionHandler{event_queue::EventQueue::GetInstance()
+	    //                               .AttachEventHandler<event_queue::EventType::Explosion>(
+	    //                                       [this](event_queue::ExplosionData const &data) {
+	    //                                        auto const &pos{
+	    //                                                m_rpTransform->GetWorldPosition() + glm::vec2{c_Size, c_Size}
+	    //                                        };
+	    //
+	    //                                        if (data.IsInExplosion(pos)) {
+	    //                                         std::cout << "dieded" << std::endl;
+	    //                                        }
+	    //                                       }
+	    //                               )}
+	    , m_rpLivingEntityComponent{&gameObject.GetComponent<LivingEntity>()}
+	    , m_pMoveUpCommand{std::make_unique<LivingEntityCommand>(*m_rpLivingEntityComponent, MoveInstruction::Up)}
+	    , m_pMoveDownCommand{std::make_unique<LivingEntityCommand>(*m_rpLivingEntityComponent, MoveInstruction::Down)}
+	    , m_pMoveLeftCommand{std::make_unique<LivingEntityCommand>(*m_rpLivingEntityComponent, MoveInstruction::Left)}
+	    , m_pMoveRightCommand{std::make_unique<LivingEntityCommand>(*m_rpLivingEntityComponent, MoveInstruction::Right)}
+	    , m_pIdleCommand{std::make_unique<LivingEntityCommand>(*m_rpLivingEntityComponent, MoveInstruction::Idle)}
+	    , m_pPrimaryActionCommand{std::make_unique<LivingEntityCommand>(*m_rpLivingEntityComponent, Action::Primary)}
+	    , m_pSeconaryActionCommand{std::make_unique<LivingEntityCommand>(*m_rpLivingEntityComponent, Action::Secondary)}
 	    , m_rpCameraTransform{&cameraTransform}
-	    , m_rpAnimRenderer{&gameObject.AddComponent<roingine::AnimationRenderer>(
-	              roingine::AnimationRenderer::AnimationInfo{
-	                      .fileName        = "res/img/player.png",
-	                      .numFrames       = 19,
-	                      .secondsPerFrame = 0.1f
-	              },
-	              c_Size, c_Size, roingine::ScalingMethod::NearestNeighbor
-	      )}
+	    , m_rpTransform{&gameObject.GetComponent<roingine::Transform>()}
 	    , m_HasKeyboardSupport{keyboardSupported} {
 	}
 
@@ -143,17 +135,5 @@ namespace bomberman {
 		m_rpCameraTransform->SetLocalPosition(m_rpTransform->GetWorldPosition());
 
 		HandleInput();
-
-		if (auto const position{m_rpTransform->GetWorldPosition()};
-		    distance(m_PreviousWalkSoundPosition, position) > c_WalkSoundDistance) {
-
-			auto const xDistance{std::abs(m_PreviousWalkSoundPosition.x - position.x)};
-			auto const yDistance{std::abs(m_PreviousWalkSoundPosition.y - position.y)};
-			m_PreviousWalkSoundPosition = position;
-
-			auto const sound{xDistance > yDistance ? audio::Sound::WalkHorizontal : audio::Sound::WalkVertical};
-
-			audio::AudioServiceLocator::GetService().Play(sound);
-		}
 	}
 }// namespace bomberman

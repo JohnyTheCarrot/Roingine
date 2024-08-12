@@ -4,14 +4,15 @@
 #include <memory>
 
 namespace bomberman {
+	template<typename Input>
 	class FiniteStateMachine {
 	public:
-		virtual void OnEnter() = 0;
+		virtual void OnEnter(){};
 
-		virtual void OnExit() = 0;
+		virtual void OnExit(){};
 
 		[[nodiscard]]
-		virtual std::unique_ptr<FiniteStateMachine> Update() = 0;
+		virtual std::unique_ptr<FiniteStateMachine> Update(Input const &input) = 0;
 
 		FiniteStateMachine() = default;
 
