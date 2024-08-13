@@ -8,6 +8,8 @@
 #include <roingine/gameobject.h>
 
 namespace bomberman {
+	class LivingEntity;
+
 	struct EnemyFSMInput final {};
 
 	class EnemyWandering final : public FiniteStateMachine<EnemyFSMInput> {
@@ -15,21 +17,18 @@ namespace bomberman {
 		enum class Axis { X, Y };
 		enum class Direction { Positive, Negative };
 
-		void OnEnter() override;
-
-		void OnExit() override;
-
-		EnemyWandering(Enemy &enemy, Axis axis, Direction direction);
+		EnemyWandering(Enemy &enemy, LivingEntity &livingEntity, Axis axis, Direction direction);
 
 		[[nodiscard]]
 		std::unique_ptr<FiniteStateMachine> Update(EnemyFSMInput const &input) override;
 
 	private:
-		Enemy    *m_rpEnemy;
-		Axis      m_Axis;
-		Direction m_Direction;
-		float     m_TimeSinceDirChangeCheck{0.f};
-		bool      m_PlansToChangeDir{false};
+		Enemy        *m_rpEnemy;
+		LivingEntity *m_rpLivingEntity;
+		Axis          m_Axis;
+		Direction     m_Direction;
+		float         m_TimeSinceDirChangeCheck{0.f};
+		bool          m_PlansToChangeDir{false};
 
 		static constexpr float c_TimeBetweenDirChangeChecks{0.5f};
 	};
@@ -47,6 +46,7 @@ namespace bomberman {
 
 	private:
 		Enemy                                             *m_rpEnemy;
+		LivingEntity                                      *m_rpLivingEntity;
 		AIType                                             m_AIType;
 		std::unique_ptr<FiniteStateMachine<EnemyFSMInput>> m_pCurrentState;
 	};

@@ -12,15 +12,9 @@ namespace bomberman {
 	constexpr glm::vec2 c_LeftVec{-1, 0};
 	constexpr glm::vec2 c_RightVec{1, 0};
 
-	void EnemyWandering::OnEnter() {
-		m_rpEnemy->FlipDirection();
-	}
-
-	void EnemyWandering::OnExit() {
-	}
-
-	EnemyWandering::EnemyWandering(Enemy &enemy, Axis axis, Direction direction)
+	EnemyWandering::EnemyWandering(Enemy &enemy, LivingEntity &livingEntity, Axis axis, Direction direction)
 	    : m_rpEnemy{&enemy}
+	    , m_rpLivingEntity{&livingEntity}
 	    , m_Axis{axis}
 	    , m_Direction{direction} {
 	}
@@ -39,47 +33,69 @@ namespace bomberman {
 		}
 
 		if (m_PlansToChangeDir && m_rpEnemy->IsInOneTile()) {
-			auto const [up, down, left, right]{m_rpEnemy->GetFreeDirection()};
+			auto const [up, down, left, right]{m_rpEnemy->GetFreeDirections()};
 
 			if (m_Axis == Axis::Y) {
-				if (left)
-					return std::make_unique<EnemyWandering>(*m_rpEnemy, Axis::X, Direction::Negative);
+				if (left) {
+					m_Axis      = Axis::X;
+					m_Direction = Direction::Negative;
+				}
 
-				if (right)
-					return std::make_unique<EnemyWandering>(*m_rpEnemy, Axis::X, Direction::Positive);
+				if (right) {
+					m_Axis      = Axis::X;
+					m_Direction = Direction::Positive;
+				}
 			} else {
-				if (up)
-					return std::make_unique<EnemyWandering>(*m_rpEnemy, Axis::Y, Direction::Positive);
+				if (up) {
+					m_Axis      = Axis::Y;
+					m_Direction = Direction::Positive;
+				}
 
-				if (down)
-					return std::make_unique<EnemyWandering>(*m_rpEnemy, Axis::Y, Direction::Negative);
+				if (down) {
+					m_Axis      = Axis::Y;
+					m_Direction = Direction::Negative;
+				}
 			}
 			m_PlansToChangeDir = false;
 		}
 
-		auto const vec{[this] {
+		auto const instruction{[this] {
 			switch (m_Axis) {
 				case Axis::X:
-					return m_Direction == Direction::Positive ? c_RightVec : c_LeftVec;
+					return m_Direction == Direction::Positive ? MoveInstruction::Right : MoveInstruction::Left;
 				default:
-					return m_Direction == Direction::Positive ? c_UpVec : c_DownVec;
+					return m_Direction == Direction::Positive ? MoveInstruction::Up : MoveInstruction::Down;
 			}
 		}()};
 
-		if (m_rpEnemy->Move(vec))
+		m_rpLivingEntity->Instruct(instruction);
+		if (!m_rpEnemy->IsInOneTile())
 			return nullptr;
 
-		return std::make_unique<EnemyWandering>(
-		        *m_rpEnemy, m_Axis, m_Direction == Direction::Positive ? Direction::Negative : Direction::Positive
-		);
+		auto const freeDirections{m_rpEnemy->GetFreeDirections()};
+
+		if (m_Axis == Axis::X) {
+			if (m_Direction == Direction::Negative && !freeDirections.left)
+				m_Direction = Direction::Positive;
+			else if (m_Direction == Direction::Positive && !freeDirections.right)
+				m_Direction = Direction::Negative;
+		} else {
+			if (m_Direction == Direction::Negative && !freeDirections.down)
+				m_Direction = Direction::Positive;
+			else if (m_Direction == Direction::Positive && !freeDirections.up)
+				m_Direction = Direction::Negative;
+		}
+
+		return nullptr;
 	}
 
 	EnemyAi::EnemyAi(roingine::GameObject gameObject, AIType aiType)
 	    : Component{gameObject}
 	    , m_rpEnemy{&gameObject.GetComponent<Enemy>()}
+	    , m_rpLivingEntity{&gameObject.GetComponent<LivingEntity>()}
 	    , m_AIType{aiType}
 	    , m_pCurrentState{std::make_unique<EnemyWandering>(
-	              *m_rpEnemy, EnemyWandering::Axis::X, EnemyWandering::Direction::Positive
+	              *m_rpEnemy, *m_rpLivingEntity, EnemyWandering::Axis::X, EnemyWandering::Direction::Positive
 	      )} {
 	}
 

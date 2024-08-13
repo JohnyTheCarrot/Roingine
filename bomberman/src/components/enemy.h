@@ -1,6 +1,9 @@
 #ifndef ENEMY_H
 #define ENEMY_H
 
+#include "../finite_state_machine.h"
+#include "living_entity.h"
+
 #include <glm/vec2.hpp>
 #include <roingine/components/animation_renderer.h>
 #include <roingine/components/component.h>
@@ -10,14 +13,50 @@
 namespace roingine {
 	class AnimationRenderer;
 	class Scene;
+	class RectCollider;
 }// namespace roingine
 
 namespace bomberman {
+	class Enemy;
 	class MovingEntity;
+	class LivingEntity;
 	class LevelFlyweight;
 }// namespace bomberman
 
 namespace bomberman {
+	// TODO (extra): Curiously recurring template pattern candidate?
+	class EnemyFSMNode : public FiniteStateMachine<LivingEntityInstruction> {
+		Enemy *m_rpEnemy;
+
+	protected:
+		[[nodiscard]]
+		Enemy &GetEnemy() const;
+
+	public:
+		explicit EnemyFSMNode(Enemy &enemy);
+	};
+
+	class EnemyIdle final : public EnemyFSMNode {
+	public:
+		using EnemyFSMNode::EnemyFSMNode;
+
+		void OnEnter() override;
+
+		void OnExit() override;
+
+		[[nodiscard]]
+		std::unique_ptr<FiniteStateMachine> Update(std::variant<MoveInstruction, DieInstruction, Action> const &input
+		) override;
+	};
+
+	class EnemyWalking final : public EnemyFSMNode {
+	public:
+		using EnemyFSMNode::EnemyFSMNode;
+
+		std::unique_ptr<FiniteStateMachine> Update(std::variant<MoveInstruction, DieInstruction, Action> const &input
+		) override;
+	};
+
 	// not responsible for rendering, only for logic
 	class Enemy final : public roingine::Component {
 	public:
@@ -52,6 +91,11 @@ namespace bomberman {
 
 		void FlipDirection() const;
 
+		[[nodiscard]]
+		bool IsAnimationPaused() const;
+
+		void SetAnimationPaused(bool paused) const;
+
 		static void SpawnEnemy(
 		        roingine::Scene &scene, LevelFlyweight const &levelFlyweight, EnemyInfo const &info, glm::vec2 position
 		);
@@ -64,7 +108,7 @@ namespace bomberman {
 		};
 
 		[[nodiscard]]
-		FreeDirections GetFreeDirection() const;
+		FreeDirections GetFreeDirections() const;
 
 		[[nodiscard]]
 		bool IsInOneTile() const;
@@ -72,8 +116,10 @@ namespace bomberman {
 	private:
 		static float const c_Size;
 
+		roingine::RectCollider                    *m_rpRectCollider;
 		MovingEntity                              *m_rpMovingEntity;
 		roingine::AnimationRenderer               *m_rpAnimRenderer;
+		LivingEntity                              *m_rpLivingEntity;
 		roingine::AnimationRenderer::AnimationInfo deathAnimInfo;
 		int                                        m_ScoreOnKill{};
 	};

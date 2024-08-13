@@ -11,6 +11,78 @@
 #include <roingine/scene.h>
 
 namespace bomberman {
+	constexpr glm::vec2 c_UpVec{0, 1};
+	constexpr glm::vec2 c_DownVec{0, -1};
+	constexpr glm::vec2 c_LeftVec{-1, 0};
+	constexpr glm::vec2 c_RightVec{1, 0};
+
+	Enemy &EnemyFSMNode::GetEnemy() const {
+		return *m_rpEnemy;
+	}
+
+	EnemyFSMNode::EnemyFSMNode(Enemy &enemy)
+	    : m_rpEnemy{&enemy} {
+	}
+
+	void EnemyIdle::OnEnter() {
+		GetEnemy().SetAnimationPaused(true);
+	}
+
+	void EnemyIdle::OnExit() {
+		GetEnemy().SetAnimationPaused(false);
+	}
+
+	std::unique_ptr<FiniteStateMachine<LivingEntityInstruction>>
+	EnemyIdle::Update(std::variant<MoveInstruction, DieInstruction, Action> const &input) {
+		if (std::holds_alternative<Action>(input))
+			return nullptr;
+
+		if (std::holds_alternative<DieInstruction>(input))
+			return nullptr;// TODO: death
+
+		switch (std::get<MoveInstruction>(input)) {
+			case MoveInstruction::Up:
+			case MoveInstruction::Down:
+			case MoveInstruction::Left:
+			case MoveInstruction::Right:
+				return std::make_unique<EnemyWalking>(GetEnemy());
+			case MoveInstruction::Idle:
+				return nullptr;
+		}
+
+		// should never reach here
+		assert(false);
+		return nullptr;
+	}
+
+	std::unique_ptr<FiniteStateMachine<std::variant<MoveInstruction, DieInstruction, Action>>>
+	EnemyWalking::Update(std::variant<MoveInstruction, DieInstruction, Action> const &input) {
+		if (std::holds_alternative<Action>(input))
+			return nullptr;
+
+		if (std::holds_alternative<DieInstruction>(input))
+			return nullptr;// TODO: death
+
+		switch (std::get<MoveInstruction>(input)) {
+			case MoveInstruction::Up:
+				GetEnemy().Move(c_UpVec);
+				break;
+			case MoveInstruction::Down:
+				GetEnemy().Move(c_DownVec);
+				break;
+			case MoveInstruction::Left:
+				GetEnemy().Move(c_LeftVec);
+				break;
+			case MoveInstruction::Right:
+				GetEnemy().Move(c_RightVec);
+				break;
+			case MoveInstruction::Idle:
+				return std::make_unique<EnemyIdle>(GetEnemy());
+		}
+
+		return nullptr;
+	}
+
 	glm::vec2 Enemy::DirectionToVec(Direction direction) {
 		switch (direction) {
 			case Direction::Up:
@@ -26,6 +98,7 @@ namespace bomberman {
 
 	Enemy::Enemy(roingine::GameObject gameObject, LevelFlyweight const &levelFlyweight, EnemyInfo const &info)
 	    : Component{gameObject}
+	    , m_rpRectCollider{&gameObject.AddComponent<roingine::RectCollider>(c_Size, c_Size)}
 	    , m_rpMovingEntity{&gameObject.AddComponent<MovingEntity>(
 	              levelFlyweight,
 	              [&info] {
@@ -42,6 +115,7 @@ namespace bomberman {
 	    , m_rpAnimRenderer{&gameObject.AddComponent<roingine::AnimationRenderer>(
 	              info.walkAnimInfo, c_Size, c_Size, roingine::ScalingMethod::NearestNeighbor
 	      )}
+	    , m_rpLivingEntity{&gameObject.AddComponent<LivingEntity>(std::make_unique<EnemyIdle>(*this))}
 	    , deathAnimInfo{info.deathAnimInfo}
 	    , m_ScoreOnKill{info.scoreOnKill} {
 	}
@@ -56,6 +130,14 @@ namespace bomberman {
 		m_rpAnimRenderer->SetFlipped(!m_rpAnimRenderer->GetFlipped());
 	}
 
+	bool Enemy::IsAnimationPaused() const {
+		return m_rpAnimRenderer->IsPaused();
+	}
+
+	void Enemy::SetAnimationPaused(bool paused) const {
+		m_rpAnimRenderer->SetPaused(paused);
+	}
+
 	void Enemy::SpawnEnemy(
 	        roingine::Scene &scene, LevelFlyweight const &levelFlyweight, EnemyInfo const &info, glm::vec2 position
 	) {
@@ -66,15 +148,15 @@ namespace bomberman {
 		enemyObject.AddComponent<EnemyAi>(EnemyAi::AIType::Simple);
 	}
 
-	Enemy::FreeDirections Enemy::GetFreeDirection() const {
+	Enemy::FreeDirections Enemy::GetFreeDirections() const {
 		auto const &levelFlyweight{m_rpMovingEntity->GetLevelFlyweight()};
 		auto const &transform{GetGameObject().GetComponent<roingine::Transform>()};
-		auto const [posX, posY]{levelFlyweight.PositionToGrid(transform.GetWorldPosition())};
+		auto const  center{transform.GetWorldPosition() + glm::vec2{c_Size / 2, c_Size / 2}};
+		auto const [posX, posY]{levelFlyweight.PositionToGrid(center)};
 
 		auto const isFree{[&](int offsetX, int offsetY) {
-			return levelFlyweight.GetTileType(
-			               static_cast<int>(posX) + offsetX, static_cast<int>(posY) + offsetY
-			       ) == LevelFlyweight::TileType::Nothing;
+			return levelFlyweight.GetTileType(static_cast<int>(posX) + offsetX, static_cast<int>(posY) + offsetY) ==
+			       LevelFlyweight::TileType::Nothing;
 		}};
 
 		return {.up = isFree(0, 1), .down = isFree(0, -1), .left = isFree(-1, 0), .right = isFree(1, 0)};

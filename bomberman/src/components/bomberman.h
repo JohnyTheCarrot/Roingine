@@ -23,6 +23,7 @@ namespace bomberman {
 
 	class Bomberman;
 
+	// TODO (extra): Curiously recurring template pattern candidate?
 	class BombermanFSMNode : public FiniteStateMachine<LivingEntityInstruction> {
 		Bomberman const *m_rpBomberman;
 
