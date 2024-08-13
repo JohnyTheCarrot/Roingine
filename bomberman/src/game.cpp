@@ -33,7 +33,7 @@ namespace bomberman {
 	}
 
 	Game::Game(roingine::Scene &&scene, int windowWidth, int windowHeight)
-	    : m_Level{scene, LevelLoadInfo{windowWidth, windowHeight, 6}}
+	    : m_Level{scene, LevelLoadInfo{UpgradeType::Flames, windowWidth, windowHeight, 6}}
 	    , m_hControllerConnected{roingine::event_queue::EventQueue::GetInstance()
 	                                     .AttachEventHandler<roingine::event_queue::EventType::ControllerConnected>(
 	                                             [this](auto const &data) { OnControllerConnected(data); }

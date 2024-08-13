@@ -1,8 +1,10 @@
 #include "level_flyweight.h"
 
 #include "../audio.h"
+#include "../player_info.h"
 #include "bomb.h"
 #include "temporary_object.h"
+#include "upgrade.h"
 
 #include <algorithm>
 #include <random>
@@ -21,6 +23,46 @@ namespace bomberman {
 	constexpr auto c_ExplosionAnimationTime{0.05f};
 	constexpr auto c_ExplosionTtl{c_ExplosionAnimationFrames * c_ExplosionAnimationTime};
 
+	bool LevelFlyweight::DestroyTile(roingine::Scene &scene, int xIdx, int yIdx) {
+		constexpr int   c_DestroyAnimFrames{5};
+		constexpr float c_DestroyAnimTime{0.1f};
+		constexpr float c_DestroyAnimTtl{c_DestroyAnimFrames * c_DestroyAnimTime};
+
+		if (auto const inGrid{xIdx >= 0 && xIdx < c_LevelWidth && yIdx >= 0 && yIdx < c_LevelHeight}; !inGrid)
+			return false;
+
+		auto const arrIdx{xIdx + yIdx * c_LevelWidth};
+		auto      &tile{m_TileGrid.at(arrIdx)};
+		if (tile == TileType::SolidWall)
+			return false;
+
+		if (tile == TileType::Nothing)
+			return true;
+
+		tile = TileType::Nothing;
+
+		auto const gridPos{GridToPosition(xIdx, yIdx)};
+		auto       goBrokenBricks{scene.AddGameObject()};
+		goBrokenBricks.AddComponent<roingine::Transform>(gridPos, 0.f);
+		goBrokenBricks.AddComponent<roingine::AnimationRenderer>(
+		        roingine::AnimationRenderer::AnimationInfo{
+		                .fileName        = "res/img/brick_wall_destroyed.png",
+		                .numFrames       = c_DestroyAnimFrames,
+		                .secondsPerFrame = c_DestroyAnimTime
+		        },
+		        c_TileSize, c_TileSize, roingine::ScalingMethod::NearestNeighbor
+		);
+		goBrokenBricks.AddComponent<TemporaryObject>(c_DestroyAnimTtl);
+
+		if (m_Upgrade.first == arrIdx) {
+			auto upgradeObject{scene.AddGameObject()};
+			upgradeObject.AddComponent<roingine::Transform>(gridPos, 0.f);
+			upgradeObject.AddComponent<Upgrade>(m_Upgrade.second);
+		}
+
+		return true;
+	}
+
 	bool LevelFlyweight::IsPointInWall(glm::vec2 const &point) const {
 		auto const ownWorldPos{m_rpTransform->GetWorldPosition()};
 		auto const relativePos{point - ownWorldPos};
@@ -34,12 +76,11 @@ namespace bomberman {
 	}
 
 	void LevelFlyweight::BombDetonatedHandler(event_queue::BombDetonatedData const &data) {
-		// get bomb position in the level grid
-		auto const    ownWorldPos{m_rpTransform->GetWorldPosition()};
-		auto const    relativePos{data.position - ownWorldPos};
-		auto const    xIndex{static_cast<int>(relativePos.x / c_TileSize)};
-		auto const    yIndex{static_cast<int>(std::floor(relativePos.y / c_TileSize))};
-		constexpr int c_BombRange{1};
+		auto const ownWorldPos{m_rpTransform->GetWorldPosition()};
+		auto const relativePos{data.position - ownWorldPos};
+		auto const xIndex{static_cast<int>(relativePos.x / c_TileSize)};
+		auto const yIndex{static_cast<int>(std::floor(relativePos.y / c_TileSize))};
+		int const  bombRange{data.rpBomber->m_BombRange};
 
 		audio::AudioServiceLocator::GetService().Play(audio::Sound::BombExplode);
 
@@ -65,24 +106,21 @@ namespace bomberman {
 		auto       explosionBottom{relativePosGrid.y + c_TileSize};
 
 		// destroy tiles to the left
-		auto const nExplodedLeft{
-		        ExplodeTiles(relativePos, true, -c_BombRange, std::greater_equal<int>{}, xIndex, yIndex)
+		auto const nExplodedLeft{ExplodeTiles(relativePos, true, -bombRange, std::greater_equal<int>{}, xIndex, yIndex)
 		};
 		explosionLeft -= static_cast<float>(nExplodedLeft) * c_TileSize;
 
 		// destroy tiles to the right
-		auto const nExplodedRight{ExplodeTiles(relativePos, true, c_BombRange, std::less_equal<int>{}, xIndex, yIndex)};
+		auto const nExplodedRight{ExplodeTiles(relativePos, true, bombRange, std::less_equal<int>{}, xIndex, yIndex)};
 		explosionRight += static_cast<float>(nExplodedRight) * c_TileSize;
 
 		// destroy tiles above
-		auto const nExplodedTop{
-		        ExplodeTiles(relativePos, false, -c_BombRange, std::greater_equal<int>{}, xIndex, yIndex)
+		auto const nExplodedTop{ExplodeTiles(relativePos, false, -bombRange, std::greater_equal<int>{}, xIndex, yIndex)
 		};
 		explosionTop -= static_cast<float>(nExplodedTop) * c_TileSize;
 
 		// destroy tiles below
-		auto const nExplodedBottom{ExplodeTiles(relativePos, false, c_BombRange, std::less_equal<int>{}, xIndex, yIndex)
-		};
+		auto const nExplodedBottom{ExplodeTiles(relativePos, false, bombRange, std::less_equal<int>{}, xIndex, yIndex)};
 		explosionBottom += static_cast<float>(nExplodedBottom) * c_TileSize;
 
 		event_queue::EventQueue::GetInstance().FireEvent<event_queue::EventType::Explosion>(
@@ -103,37 +141,6 @@ namespace bomberman {
 	        glm::vec2 startPos, bool isX, int range, std::function<bool(int, int)> const &comp, int xIndex, int yIndex
 	) {
 		auto *const activeScene{roingine::SceneManager::GetInstance().GetActive()};
-
-		auto const destroyTile{[this, activeScene](int xIdx, int yIdx) -> bool {
-			constexpr int   c_DestroyAnimFrames{5};
-			constexpr float c_DestroyAnimTime{0.1f};
-			constexpr float c_DestroyAnimTtl{c_DestroyAnimFrames * c_DestroyAnimTime};
-
-			if (auto const inGrid{xIdx >= 0 && xIdx < c_LevelWidth && yIdx >= 0 && yIdx < c_LevelHeight}; !inGrid)
-				return false;
-
-			auto &tile{m_TileGrid.at(xIdx + yIdx * c_LevelWidth)};
-			if (tile == TileType::SolidWall)
-				return false;
-
-			if (tile == TileType::Nothing)
-				return true;
-
-			tile = TileType::Nothing;
-
-			auto goBrokenBricks{activeScene->AddGameObject()};
-			goBrokenBricks.AddComponent<roingine::Transform>(GridToPosition(xIdx, yIdx), 0.f);
-			goBrokenBricks.AddComponent<roingine::AnimationRenderer>(
-			        roingine::AnimationRenderer::AnimationInfo{
-			                .fileName        = "res/img/brick_wall_destroyed.png",
-			                .numFrames       = c_DestroyAnimFrames,
-			                .secondsPerFrame = c_DestroyAnimTime
-			        },
-			        c_TileSize, c_TileSize, roingine::ScalingMethod::NearestNeighbor
-			);
-			goBrokenBricks.AddComponent<TemporaryObject>(c_DestroyAnimTtl);
-			return true;
-		}};
 
 		auto const spawnExplosion{[&](bool isEnd, int offsetFactor) {
 			auto       middleExplosion{activeScene->AddGameObject()};
@@ -179,13 +186,20 @@ namespace bomberman {
 			spawnExplosion(idx == endIdx, idx - startIdx);
 		}
 
-		int explodedTiles{0};
+		bool hasSeenWall{false};
+		int  explodedTiles{0};
 		for (int idx{startIdx + idxIncrement}; comp(idx, startIdx + range); idx += idxIncrement) {
 			auto const tileXIndex{isX ? idx : xIndex};
 			auto const tileYIndex{isX ? yIndex : idx};
 
-			if (!destroyTile(tileXIndex, tileYIndex))
+			if (!DestroyTile(*activeScene, tileXIndex, tileYIndex))
 				break;
+
+			if (auto const tile{m_TileGrid.at(tileXIndex + tileYIndex * c_LevelWidth)};
+			    tile != TileType::Nothing || hasSeenWall) {
+				hasSeenWall = true;
+				continue;
+			}
 
 			++explodedTiles;
 		}
@@ -193,7 +207,7 @@ namespace bomberman {
 		return explodedTiles;
 	}
 
-	LevelFlyweight::LevelFlyweight(roingine::GameObject &gameObject)
+	LevelFlyweight::LevelFlyweight(roingine::GameObject gameObject, UpgradeType upgrade)
 	    : Component{gameObject}
 	    , m_hBombPlaceRequestHandler{event_queue::EventQueue::GetInstance()
 	                                         .AttachEventHandler<event_queue::EventType::BombPlaceRequest>(
@@ -234,6 +248,28 @@ namespace bomberman {
 				m_TileGrid.at(y * c_LevelWidth + x) = TileType::SolidWall;
 			}
 		}
+
+		static std::mt19937                        generator(std::random_device{}());
+		std::uniform_int_distribution<std::size_t> distribution(0, m_TileGrid.size() - 1);
+
+		while (true) {
+			auto const idx{distribution(generator)};
+			if (m_TileGrid.at(idx) != TileType::BrickWall)
+				continue;
+
+			m_Upgrade = {idx, upgrade};
+			break;
+		}
+
+		// for testing upgrade spawning:
+
+		// auto *scene{gameObject.GetScene()};
+		// for (int y{1}; y < c_LevelHeight - 1; ++y) {
+		// 	for (int x{1}; x < c_LevelWidth - 1; ++x) {
+		// 		if (m_TileGrid.at(y * c_LevelWidth + x) == TileType::BrickWall)
+		// 			DestroyTile(*scene, x, y);
+		// 	}
+		// }
 	}
 
 	void LevelFlyweight::Render() const {

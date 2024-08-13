@@ -40,6 +40,10 @@ add_executable(${PROJECT_NAME}
         src/components/living_entity.cpp
         src/components/bomb.h
         src/components/bomb.cpp
+        src/components/upgrade.h
+        src/components/upgrade.cpp
+        src/upgrade_type.h
+        src/upgrade_type.cpp
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE Roingine)
 

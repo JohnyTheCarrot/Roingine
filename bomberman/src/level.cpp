@@ -37,10 +37,10 @@ namespace bomberman {
 
 	Level::Level(roingine::Scene &scene, LevelLoadInfo const &loadInfo)
 	    : m_LoadInfo{loadInfo}
-	    , m_rpLevelFlyweight{[this, &scene] {
+	    , m_rpLevelFlyweight{[this, &scene, &loadInfo] {
 		    auto level{scene.AddGameObject()};
 		    level.AddComponent<roingine::Transform>(glm::vec2{0.f, 0.f}, 0.f);
-		    return &level.AddComponent<LevelFlyweight>();
+		    return &level.AddComponent<LevelFlyweight>(loadInfo.upgrade);
 	    }()}
 	    , m_rpPlayer1{SpawnPlayer(scene, true, 0, 0, loadInfo.windowWidth, loadInfo.windowHeight, *m_rpLevelFlyweight)
 	      } {

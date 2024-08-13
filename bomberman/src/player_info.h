@@ -1,6 +1,9 @@
 #ifndef PLAYER_INFO_H
 #define PLAYER_INFO_H
 
+#include "upgrade_type.h"
+
+
 #include <optional>
 #include <roingine/Singleton.h>
 
@@ -10,7 +13,10 @@ namespace bomberman {
 	struct PlayerInfo final {
 		int  m_Lives{4};
 		int  m_Score{0};
+		int  m_BombRange{1};
 		bool m_IsPlayer1{true};
+
+		void UnlockUpgrade(UpgradeType upgrade);
 	};
 
 	struct PlayerInfoContainer final : roingine::Singleton<PlayerInfoContainer> {

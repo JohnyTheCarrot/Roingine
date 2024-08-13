@@ -16,7 +16,6 @@ namespace bomberman {
 
 		auto &playerInfo{rpPlayer->GetPlayerInfo()};
 
-
 		event_queue::EventQueue::GetInstance().FireEvent<event_queue::EventType::BombPlaceRequest>(
 		        &playerInfo, transform.GetWorldPosition()
 		);

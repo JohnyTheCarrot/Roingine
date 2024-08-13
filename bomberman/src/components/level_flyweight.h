@@ -2,6 +2,7 @@
 #define LEVEL_FLYWEIGHT_H
 
 #include "../event_queue.h"
+#include "../upgrade_type.h"
 
 #include <roingine/components/component.h>
 #include <roingine/event_queue.h>
@@ -21,7 +22,7 @@ namespace bomberman {
 		static constexpr int   c_LevelHeight{13};
 		static constexpr float c_TileSize{90.f};
 
-		explicit LevelFlyweight(roingine::GameObject &gameObject);
+		LevelFlyweight(roingine::GameObject gameObject, UpgradeType upgrade);
 
 		void Render() const override;
 
@@ -50,12 +51,15 @@ namespace bomberman {
 		roingine::EventHandlerHandle<event_queue::EventQueue> m_hBombPlaceRequestHandler;
 		roingine::EventHandlerHandle<event_queue::EventQueue> m_hBombDetonatedHandler;
 
-		std::vector<TileType> m_TileGrid;
+		std::vector<TileType>               m_TileGrid;
+		std::pair<std::size_t, UpgradeType> m_Upgrade;
 		// TODO: perhaps we should make a resource manager to handle textures because they're the same for all levels
 		roingine::ReusableTexture m_SolidWallTexture;
 		roingine::ReusableTexture m_BrickWallTexture;
 
 		roingine::Transform *m_rpTransform;
+
+		bool DestroyTile(roingine::Scene &scene, int xIdx, int yIdx);
 
 		[[nodiscard]]
 		bool IsPointInWall(glm::vec2 const &point) const;

@@ -133,7 +133,7 @@ namespace bomberman {
 	}
 
 	void Player::Hurt() {
-		auto &[lives, score, isPlayer1]{[this]() -> PlayerInfo & {
+		auto &[lives, score, bombRange, isPlayer1]{[this]() -> PlayerInfo & {
 			if (IsPlayerOne())
 				return PlayerInfoContainer::GetInstance().m_Player1Info;
 

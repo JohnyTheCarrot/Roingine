@@ -1,6 +1,9 @@
 #ifndef LEVEL_LOADER_H
 #define LEVEL_LOADER_H
 
+#include "upgrade_type.h"
+
+
 #include <roingine/controller.h>
 #include <roingine/gameobject.h>
 #include <roingine/music.h>
@@ -19,9 +22,10 @@ namespace bomberman {
 
 namespace bomberman {
 	struct LevelLoadInfo final {
-		int windowWidth{};
-		int windowHeight{};
-		int numBallooms{0};
+		UpgradeType upgrade;
+		int         windowWidth{};
+		int         windowHeight{};
+		int         numBallooms{0};
 	};
 
 	class Level final {

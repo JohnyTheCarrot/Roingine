@@ -1,9 +1,11 @@
 #include "bomberman.h"
 
 #include "../audio.h"
+#include "../player_info.h"
 #include "enemy.h"
 #include "moving_entity.h"
 #include "player.h"
+#include "upgrade.h"
 
 #include <roingine/components/animation_renderer.h>
 #include <roingine/components/rect_collider.h>
@@ -140,6 +142,12 @@ namespace bomberman {
 			auto *rpPlayer{GetGameObject().GetOptionalComponent<Player>()};
 			if (rpPlayer == nullptr)
 				return;
+
+			if (const auto *rpUpgrade{other.GetOptionalComponent<Upgrade>()}; rpUpgrade != nullptr) {
+				rpPlayer->GetPlayerInfo().UnlockUpgrade(rpUpgrade->GetUpgrade());
+				other.Destroy();
+				return;
+			}
 
 			if (m_rpLivingEntityComponent->GetInvulnerable())
 				return;
