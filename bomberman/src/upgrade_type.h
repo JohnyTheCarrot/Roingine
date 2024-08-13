@@ -4,9 +4,9 @@
 
 namespace bomberman {
 	enum class UpgradeType {
-		ExtraBomb,
-		Flames,
-		Detonator,
+		ExtraBomb = 0,
+		Flames    = 1,
+		Detonator = 2,
 	};
 
 	namespace upgrade_type {

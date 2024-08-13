@@ -21,6 +21,7 @@ namespace bomberman::event_queue {
 		PlayerControllerDisconnected,
 		EnemyDied,
 		PlayerDied,
+		DoorUsed,
 	};
 }
 
@@ -93,6 +94,11 @@ struct roingine::EventTypeData<bomberman::event_queue::EventType, bomberman::eve
 	};
 };
 
+template<>
+struct roingine::EventTypeData<bomberman::event_queue::EventType, bomberman::event_queue::EventType::DoorUsed> final {
+	struct Data_t final {};
+};
+
 namespace bomberman::event_queue {
 	using BombPlaceRequestData    = roingine::EventTypeData<EventType, EventType::BombPlaceRequest>::Data_t;
 	using BombDetonatedData       = roingine::EventTypeData<EventType, EventType::BombDetonated>::Data_t;
@@ -102,10 +108,11 @@ namespace bomberman::event_queue {
 	using ExplosionData  = roingine::EventTypeData<EventType, EventType::Explosion>::Data_t;
 	using EnemyDiedData  = roingine::EventTypeData<EventType, EventType::EnemyDied>::Data_t;
 	using PlayerDiedData = roingine::EventTypeData<EventType, EventType::PlayerDied>::Data_t;
+	using DoorUsedData   = roingine::EventTypeData<EventType, EventType::DoorUsed>::Data_t;
 
 	using EventQueue = roingine::EventQueue<
 	        EventType, BombDetonatedData, BombPlaceRequestData, ControllerConnectedData, ControllerDisconnectedData,
-	        ExplosionData, EnemyDiedData, PlayerDiedData>;
+	        ExplosionData, EnemyDiedData, PlayerDiedData, DoorUsedData>;
 }// namespace bomberman::event_queue
 
 #endif//GAME_EVENT_QUEUE_H

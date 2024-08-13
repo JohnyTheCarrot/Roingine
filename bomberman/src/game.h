@@ -1,9 +1,9 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "event_queue.h"
 #include "level.h"
 #include "unassigned_controller.h"
-
 
 #include <roingine/engine_event_queue.h>
 #include <roingine/gameobject.h>
@@ -18,6 +18,7 @@ namespace bomberman {
 	class Game final {
 		roingine::EventHandlerHandle<roingine::event_queue::EventQueue> m_hControllerConnected;
 		roingine::EventHandlerHandle<roingine::event_queue::EventQueue> m_hControllerDisconnected;
+		roingine::EventHandlerHandle<event_queue::EventQueue>           m_hDoorUsed;
 
 		std::vector<LevelSetupData>         m_LevelSetupData{};
 		Level                               m_Level;
@@ -31,6 +32,8 @@ namespace bomberman {
 		void OnControllerConnected(roingine::event_queue::ControllerConnectedData const &data);
 
 		void OnControllerDisconnected(roingine::event_queue::ControllerDisconnectedData const &data);
+
+		static std::vector<LevelSetupData> LoadLevelSetupData();
 
 	public:
 		Game(int windowWidth, int windowHeight);

@@ -58,6 +58,23 @@ namespace roingine {
 			});
 		}
 
+		template<class TComponent>
+		[[nodiscard]]
+		int CountComponentsOfType() const {
+			int count{};
+			std::for_each(m_GameObjectComponents.begin(), m_GameObjectComponents.end(), [&count](auto &goCompPair) {
+				std::for_each(goCompPair.second.begin(), goCompPair.second.end(), [&count](auto &pair) {
+					auto &[componentHash, pComponent] = pair;
+					if (componentHash != typeid(TComponent).hash_code())
+						return;
+
+					++count;
+				});
+			});
+
+			return count;
+		}
+
 		[[nodiscard]]
 		GameObject *GetGameObjectPtr(std::size_t handle);
 

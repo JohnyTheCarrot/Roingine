@@ -3,10 +3,12 @@
 #include "../audio.h"
 #include "../player_info.h"
 #include "bomb.h"
+#include "player.h"
 #include "temporary_object.h"
 #include "upgrade.h"
 
 #include <algorithm>
+#include <roingine/components/texture_renderer.h>
 #include <random>
 #include <roingine/components/animation_renderer.h>
 #include <roingine/components/rect_collider.h>
@@ -58,6 +60,19 @@ namespace bomberman {
 			auto upgradeObject{scene.AddGameObject()};
 			upgradeObject.AddComponent<roingine::Transform>(gridPos, 0.f);
 			upgradeObject.AddComponent<Upgrade>(m_Upgrade.second);
+		} else if (m_DoorIndex == arrIdx) {
+			auto door{scene.AddGameObject()};
+			door.AddComponent<roingine::Transform>(gridPos, 0.f);
+			door.AddComponent<roingine::TextureRenderer>(
+			        "res/img/door.png", c_TileSize, c_TileSize, roingine::ScalingMethod::NearestNeighbor
+			);
+			auto &collider{door.AddComponent<roingine::RectCollider>(c_TileSize, c_TileSize)};
+			collider.SetCallback([](roingine::GameObject other, glm::vec2, roingine::RectCollider::HitDirection) {
+				if (other.GetOptionalComponent<Player>() == nullptr)
+					return;
+
+				event_queue::EventQueue::GetInstance().FireEvent<event_queue::EventType::DoorUsed>();
+			});
 		}
 
 		return true;
@@ -258,6 +273,15 @@ namespace bomberman {
 				continue;
 
 			m_Upgrade = {idx, upgrade};
+			break;
+		}
+
+		while (true) {
+			auto const idx{distribution(generator)};
+			if (m_TileGrid.at(idx) != TileType::BrickWall)
+				continue;
+
+			m_DoorIndex = idx;
 			break;
 		}
 

@@ -3,6 +3,7 @@
 #include <utility>
 
 #include "level.h"
+#include "player_info.h"
 
 namespace bomberman {
 	class AssignToPlayerCommand final : public roingine::Command {
@@ -33,6 +34,7 @@ namespace bomberman {
 					return;
 
 				m_rpLevel->SetPlayer2Controller(m_rpController);
+				PlayerInfoContainer::GetInstance().m_Player2Info = PlayerInfo{};
 			}
 
 			if (m_OnAssigned.has_value())

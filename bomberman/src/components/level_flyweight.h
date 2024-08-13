@@ -53,7 +53,8 @@ namespace bomberman {
 
 		std::vector<TileType>               m_TileGrid;
 		std::pair<std::size_t, UpgradeType> m_Upgrade;
-		// TODO: perhaps we should make a resource manager to handle textures because they're the same for all levels
+		std::size_t                         m_DoorIndex;
+
 		roingine::ReusableTexture m_SolidWallTexture;
 		roingine::ReusableTexture m_BrickWallTexture;
 
