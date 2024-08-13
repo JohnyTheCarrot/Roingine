@@ -19,7 +19,7 @@ int main() {
 	roingine.SetClearColor(56.f / 255.f, 135.f / 255.f, 0.f);
 
 	std::cout << "Hello, Tom/Alex. Please be sure to read the following:\n";
-	std::cout << "WASD to move, E to place bomb, F to detonate bomb (if unlocked), M to mute/unmute\n, F1 to skip "
+	std::cout << "WASD to move, E to place bomb, F to detonate bomb (if unlocked), M to mute/unmute F1 to skip "
 	             "level\n";
 	std::cout
 	        << "As for the controller, the D-Pad is used to move, X to place bomb, Y to detonate bomb (if unlocked)\n";
