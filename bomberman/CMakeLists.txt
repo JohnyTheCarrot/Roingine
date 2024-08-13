@@ -38,6 +38,8 @@ add_executable(${PROJECT_NAME}
         src/components/bomberman.cpp
         src/components/living_entity.h
         src/components/living_entity.cpp
+        src/components/bomb.h
+        src/components/bomb.cpp
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE Roingine)
 

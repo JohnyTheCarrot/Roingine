@@ -1,5 +1,5 @@
-#ifndef BOMB_H
-#define BOMB_H
+#ifndef TEMPORARY_OBJECT_H
+#define TEMPORARY_OBJECT_H
 
 #include <roingine/components/component.h>
 #include <roingine/gameobject.h>
@@ -19,4 +19,4 @@ namespace bomberman {
 	};
 }// namespace bomberman
 
-#endif//BOMB_H
+#endif//TEMPORARY_OBJECT_H

@@ -74,25 +74,11 @@ namespace roingine {
 
 		template<class TComponent>
 		[[nodiscard]]
-		TComponent &GetComponent() {
+		TComponent &GetComponent() const {
 			ComponentHandle const hComponent{GetComponentHandle<TComponent>()};
 
 			if (auto const sceneComponents{GetComponents()}; sceneComponents != nullptr) {
 				if (auto const it{sceneComponents->find(hComponent)}; it != sceneComponents->end())
-					return *dynamic_cast<TComponent *>(it->second.get());
-			}
-
-			throw ComponentNotFoundException{};
-		}
-
-		template<class TComponent>
-		[[nodiscard]]
-		TComponent const &GetComponent() const {
-			ComponentHandle const hComponent{GetComponentHandle<TComponent>()};
-
-			if (auto const *sceneComponents{GetComponents()}; sceneComponents != nullptr) {
-				auto it{sceneComponents->find(hComponent)};
-				if (it != sceneComponents->cend())
 					return *dynamic_cast<TComponent *>(it->second.get());
 			}
 
@@ -107,7 +93,7 @@ namespace roingine {
 
 		template<class TComponent>
 		[[nodiscard]]
-		TComponent *GetOptionalComponent() noexcept {
+		TComponent *GetOptionalComponent() const noexcept {
 			ComponentHandle const hComponent{GetComponentHandle<TComponent>()};
 
 			if (auto const sceneComponents{GetComponents()}; sceneComponents != nullptr) {

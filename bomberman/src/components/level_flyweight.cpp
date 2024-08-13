@@ -1,6 +1,7 @@
 #include "level_flyweight.h"
 
 #include "../audio.h"
+#include "bomb.h"
 #include "temporary_object.h"
 
 #include <algorithm>
@@ -91,31 +92,11 @@ namespace bomberman {
 	}
 
 	void LevelFlyweight::BombPlaceRequestHandler(event_queue::BombPlaceRequestData const &data) const {
-		constexpr int   c_BombAnimationFrames{3};
-		constexpr float c_SecondsPerFrame{0.5f};
-		constexpr float c_DetonationTime{2.0f};
-
 		auto const activeScene{roingine::SceneManager::GetInstance().GetActive()};
 
 		auto const pos{SnapToGrid(data.position)};
 		auto       bomb{activeScene->AddGameObject()};
-		bomb.AddComponent<roingine::Transform>(pos, 0.f);
-		bomb.AddComponent<roingine::AnimationRenderer>(
-		        roingine::AnimationRenderer::AnimationInfo{
-		                .fileName        = "res/img/bomb.png",
-		                .numFrames       = c_BombAnimationFrames,
-		                .secondsPerFrame = c_SecondsPerFrame
-		        },
-		        c_TileSize, c_TileSize, roingine::ScalingMethod::NearestNeighbor
-		);
-		bomb.AddComponent<TemporaryObject>(c_DetonationTime, [](roingine::GameObject gameObject) {
-			auto const &transform{gameObject.GetComponent<roingine::Transform>()};
-			event_queue::EventQueue::GetInstance().FireEvent<event_queue::EventType::BombDetonated>(
-			        transform.GetWorldPosition()
-			);
-		});
-
-		audio::AudioServiceLocator::GetService().Play(audio::Sound::BombPlace);
+		bomb.AddComponent<Bomb>(pos, *data.rpBomber);
 	}
 
 	int LevelFlyweight::ExplodeTiles(

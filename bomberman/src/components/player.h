@@ -82,6 +82,9 @@ namespace bomberman {
 		void Hurt();
 
 		void Update() override;
+
+		[[nodiscard]]
+		PlayerInfo &GetPlayerInfo() const;
 	};
 }// namespace bomberman
 

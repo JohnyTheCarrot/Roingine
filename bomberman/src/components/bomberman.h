@@ -93,7 +93,7 @@ namespace bomberman {
 
 		void PlaceBomb() const;
 
-		void Die();
+		void Die() const;
 
 		[[nodiscard]]
 		bool IsHurting() const;

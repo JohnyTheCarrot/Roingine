@@ -4,6 +4,10 @@
 #include <glm/vec2.hpp>
 #include <roingine/event_queue.h>
 
+namespace bomberman {
+	struct PlayerInfo;
+}
+
 namespace roingine {
 	class Controller;
 }
@@ -24,8 +28,8 @@ template<>
 struct roingine::EventTypeData<bomberman::event_queue::EventType, bomberman::event_queue::EventType::BombDetonated>
         final {
 	struct Data_t final {
-		glm::vec2 position;
-		// TODO: placed by whom, so we can determine the range of the explosion
+		bomberman::PlayerInfo *rpBomber;
+		glm::vec2              position;
 	};
 };// namespace roingine
 
@@ -33,8 +37,8 @@ template<>
 struct roingine::EventTypeData<bomberman::event_queue::EventType, bomberman::event_queue::EventType::BombPlaceRequest>
         final {
 	struct Data_t final {
-		glm::vec2 position;
-		// TODO: by who?
+		bomberman::PlayerInfo *rpBomber;
+		glm::vec2              position;
 	};
 };
 

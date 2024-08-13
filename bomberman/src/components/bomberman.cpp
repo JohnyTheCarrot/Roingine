@@ -2,6 +2,7 @@
 
 #include "../audio.h"
 #include "moving_entity.h"
+#include "player.h"
 
 #include <roingine/components/animation_renderer.h>
 #include <roingine/components/rect_collider.h>
@@ -133,7 +134,7 @@ namespace bomberman {
 	      )}
 	    , m_rpLivingEntityComponent{&gameObject.AddComponent<LivingEntity>(std::make_unique<BombermanIdle>(*this))}
 	    , m_rpTransform{&GetGameObject().GetComponent<roingine::Transform>()}
-	    , m_pPlaceBombCommand{std::make_unique<PlaceBombCommand>(*m_rpTransform)} {
+	    , m_pPlaceBombCommand{std::make_unique<PlaceBombCommand>(GetGameObject())} {
 	}
 
 	roingine::AnimationRenderer &Bomberman::GetAnimRenderer() const {
@@ -149,12 +150,16 @@ namespace bomberman {
 	}
 
 	void Bomberman::PlaceBomb() const {
+		auto *rpPlayer{GetGameObject().GetOptionalComponent<Player>()};
+		if (rpPlayer == nullptr)
+			return;
+
 		event_queue::EventQueue::GetInstance().FireEvent<event_queue::EventType::BombPlaceRequest>(
-		        GetTransform().GetWorldPosition()
+		        &rpPlayer->GetPlayerInfo(), GetTransform().GetWorldPosition()
 		);
 	}
 
-	void Bomberman::Die() {
+	void Bomberman::Die() const {
 		m_rpAnimRenderer->SetFrameRange(11, 18);
 	}
 

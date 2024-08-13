@@ -10,12 +10,13 @@ namespace roingine {
 
 namespace bomberman {
 	class MovingEntity;
+	struct PlayerInfo;
 
 	class PlaceBombCommand final : public roingine::Command {
-		roingine::Transform const *m_rpTransform;
+		roingine::GameObject m_Bomber;
 
 	public:
-		explicit PlaceBombCommand(roingine::Transform const &rpTransform);
+		explicit PlaceBombCommand(roingine::GameObject bomber);
 
 		void Execute() const override;
 	};

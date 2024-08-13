@@ -177,4 +177,11 @@ namespace bomberman {
 			m_HurtingTimeLeft.reset();
 		}
 	}
+
+	PlayerInfo &Player::GetPlayerInfo() const {
+		if (IsPlayerOne())
+			return PlayerInfoContainer::GetInstance().m_Player1Info;
+
+		return PlayerInfoContainer::GetInstance().m_Player2Info.value();
+	}
 }// namespace bomberman
