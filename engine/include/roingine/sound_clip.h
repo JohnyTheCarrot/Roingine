@@ -32,6 +32,10 @@ namespace roingine {
 
 		SoundClip &operator=(SoundClip &&) noexcept;
 
+		SoundClip(SoundClip const &) = delete;
+
+		SoundClip &operator=(SoundClip const &) = delete;
+
 		void Play() const;
 
 	private:

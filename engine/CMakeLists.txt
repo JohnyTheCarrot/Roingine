@@ -49,6 +49,7 @@ set(INCLUDE_HEADERS
         include/roingine/controller.h
         include/roingine/image_scaling.h
         include/roingine/reusable_texture.h
+        include/roingine/music.h
 )
 
 set(SRC_FILES
@@ -78,6 +79,7 @@ set(SRC_FILES
         src/image_scaling.cpp
         src/reusable_texture.cpp
         src/components/component.cpp
+        src/music.cpp
 )
 
 set(INTERNAL_HEADERS
@@ -89,6 +91,7 @@ set(INTERNAL_HEADERS
         internal_headers/controller_impl.h
         internal_headers/unique_sdl_game_controller.h
         internal_headers/sdl_context.h
+        internal_headers/music_impl.h
 )
 
 add_library(${PROJECT_NAME} STATIC

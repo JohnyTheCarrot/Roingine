@@ -1,13 +1,15 @@
 #ifndef LEVEL_LOADER_H
 #define LEVEL_LOADER_H
+
 #include <roingine/controller.h>
 #include <roingine/gameobject.h>
+#include <roingine/music.h>
 
 namespace roingine {
 	class Camera;
 
 	class Scene;
-}
+}// namespace roingine
 
 namespace bomberman {
 	class LevelFlyweight;
@@ -23,6 +25,7 @@ namespace bomberman {
 	};
 
 	class Level final {
+		roingine::Music     m_Music{"res/sound/bg_music.wav"};
 		LevelLoadInfo const m_LoadInfo;
 		LevelFlyweight     *m_rpLevelFlyweight;
 		using PlayerAndCam = std::pair<Player *, roingine::Camera *>;

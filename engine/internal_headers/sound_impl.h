@@ -1,7 +1,6 @@
 #ifndef SOUND_IMPL_H
 #define SOUND_IMPL_H
 
-#include <SDL.h>
 #include <SDL_mixer.h>
 #include <roingine/sound_clip.h>
 
