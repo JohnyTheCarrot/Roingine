@@ -5,6 +5,7 @@
 #include "level.h"
 #include "player_info.h"
 
+#include <fstream>
 #include <roingine/audio_service.h>
 #include <roingine/service_locator.h>
 
@@ -32,18 +33,42 @@ namespace bomberman {
 		}
 	}
 
-	Game::Game(roingine::Scene &&scene, int windowWidth, int windowHeight)
-	    : m_Level{scene, LevelLoadInfo{UpgradeType::Flames, windowWidth, windowHeight, 0, 0, 0, 0}}
-	    , m_hControllerConnected{roingine::event_queue::EventQueue::GetInstance()
+	Game::Game(int windowWidth, int windowHeight)
+	    : m_hControllerConnected{roingine::event_queue::EventQueue::GetInstance()
 	                                     .AttachEventHandler<roingine::event_queue::EventType::ControllerConnected>(
 	                                             [this](auto const &data) { OnControllerConnected(data); }
 	                                     )}
-	    , m_hControllerDisconnected{
-	              roingine::event_queue::EventQueue::GetInstance()
-	                      .AttachEventHandler<roingine::event_queue::EventType::ControllerDisconnected>(
-	                              [this](auto const &data) { OnControllerDisconnected(data); }
-	                      )
-	      } {
+	    , m_hControllerDisconnected{roingine::event_queue::EventQueue::GetInstance()
+	                                        .AttachEventHandler<
+	                                                roingine::event_queue::EventType::ControllerDisconnected>(
+	                                                [this](auto const &data) { OnControllerDisconnected(data); }
+	                                        )}
+	    , m_LevelSetupData{[this] {
+		    std::ifstream file{"res/level_setup_data.bin", std::ios::in | std::ios::binary};
+		    if (!file) {
+			    throw std::runtime_error{"Failed to open level setup data file"};
+		    }
+
+		    size_t numLevels{};
+		    file.seekg(0, std::ios::end);
+		    numLevels = file.tellg() / sizeof(LevelSetupData);
+		    file.seekg(0, std::ios::beg);
+
+		    std::vector<LevelSetupData> levelSetupData(numLevels);
+		    for (size_t i{}; i < numLevels; ++i) {
+			    file.read(reinterpret_cast<char *>(&levelSetupData[i]), sizeof(LevelSetupData));
+		    }
+
+		    std::cout << "Loaded " << numLevels << " levels" << std::endl;
+		    return levelSetupData;
+	    }()}
+	    , m_Level{LevelLoadInfo{
+	              .windowWidth  = windowWidth,
+	              .windowHeight = windowHeight,
+	              .setupData    = m_LevelSetupData.at(0)
+	      }}
+	    , m_WindowWidth{windowWidth}
+	    , m_WindowHeight{windowHeight} {
 		using FileType = roingine::SoundClip::FileType;
 
 		std::unordered_map<audio::Sound, roingine::SoundClip> soundMap{};
@@ -56,5 +81,19 @@ namespace bomberman {
 		soundMap.emplace(audio::Sound::PlayerDeath, roingine::SoundClip{FileType::WAV, "res/sound/player_death.wav"});
 
 		audio::AudioServiceLocator::Provide(std::make_unique<roingine::AudioSystem<audio::Sound>>(std::move(soundMap)));
+	}
+
+	void Game::LoadNextLevel() {
+		if (m_CurrentLevelIndex + 1 >= m_LevelSetupData.size()) {
+			return;
+		}
+
+		++m_CurrentLevelIndex;
+
+		m_Level = Level{LevelLoadInfo{
+		        .windowWidth  = m_WindowWidth,
+		        .windowHeight = m_WindowHeight,
+		        .setupData    = m_LevelSetupData.at(m_CurrentLevelIndex)
+		}};
 	}
 }// namespace bomberman

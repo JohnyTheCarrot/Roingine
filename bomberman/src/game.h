@@ -16,21 +16,26 @@ namespace roingine {
 
 namespace bomberman {
 	class Game final {
-		Level m_Level;
-
 		roingine::EventHandlerHandle<roingine::event_queue::EventQueue> m_hControllerConnected;
 		roingine::EventHandlerHandle<roingine::event_queue::EventQueue> m_hControllerDisconnected;
 
+		std::vector<LevelSetupData>         m_LevelSetupData{};
+		Level                               m_Level;
 		std::optional<UnassignedController> m_UnassignedController1;
 		std::optional<UnassignedController> m_UnassignedController2;
 		roingine::Scene                    *m_rpScene{};
+		int                                 m_WindowWidth;
+		int                                 m_WindowHeight;
+		std::size_t                         m_CurrentLevelIndex{0};
 
 		void OnControllerConnected(roingine::event_queue::ControllerConnectedData const &data);
 
 		void OnControllerDisconnected(roingine::event_queue::ControllerDisconnectedData const &data);
 
 	public:
-		Game(roingine::Scene &&scene, int windowWidth, int windowHeight);
+		Game(int windowWidth, int windowHeight);
+
+		void LoadNextLevel();
 	};
 }// namespace bomberman
 

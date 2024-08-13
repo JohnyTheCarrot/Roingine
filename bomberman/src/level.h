@@ -3,15 +3,13 @@
 
 #include "upgrade_type.h"
 
-
 #include <roingine/controller.h>
 #include <roingine/gameobject.h>
 #include <roingine/music.h>
+#include <roingine/scene.h>
 
 namespace roingine {
 	class Camera;
-
-	class Scene;
 }// namespace roingine
 
 namespace bomberman {
@@ -21,20 +19,25 @@ namespace bomberman {
 }// namespace bomberman
 
 namespace bomberman {
-	struct LevelLoadInfo final {
-		UpgradeType upgrade;
-		int         windowWidth{};
-		int         windowHeight{};
+	struct LevelSetupData {
+		UpgradeType upgrade{};
 		int         numBallooms{0};
 		int         numOneals{0};
 		int         numDahls{0};
 		int         numMinvos{0};
 	};
 
+	struct LevelLoadInfo final {
+		int            windowWidth{};
+		int            windowHeight{};
+		LevelSetupData setupData{};
+	};
+
 	class Level final {
-		roingine::Music     m_Music{"res/sound/bg_music.wav"};
-		LevelLoadInfo const m_LoadInfo;
-		LevelFlyweight     *m_rpLevelFlyweight;
+		std::unique_ptr<roingine::Scene> m_pScene{std::make_unique<roingine::Scene>()};
+		roingine::Music                  m_Music{"res/sound/bg_music.wav"};
+		LevelLoadInfo                    m_LoadInfo;
+		LevelFlyweight                  *m_rpLevelFlyweight;
 		using PlayerAndCam = std::pair<Player *, roingine::Camera *>;
 		PlayerAndCam                m_rpPlayer1;
 		std::optional<PlayerAndCam> m_rpPlayer2{};
@@ -46,7 +49,15 @@ namespace bomberman {
 		);
 
 	public:
-		Level(roingine::Scene &scene, LevelLoadInfo const &loadInfo);
+		explicit Level(LevelLoadInfo const &loadInfo);
+
+		~Level();
+
+		Level(Level &&) noexcept;
+
+		Level &operator=(Level &&) noexcept;
+
+		Level(Level const &) = delete;
 
 		void SetPlayer1Controller(roingine::Controller *rpController) const;
 

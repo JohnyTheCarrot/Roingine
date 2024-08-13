@@ -35,35 +35,46 @@ namespace bomberman {
 		return PlayerAndCam{rpLayer, rpCam};
 	}
 
-	Level::Level(roingine::Scene &scene, LevelLoadInfo const &loadInfo)
+	Level::Level(LevelLoadInfo const &loadInfo)
 	    : m_LoadInfo{loadInfo}
-	    , m_rpLevelFlyweight{[this, &scene, &loadInfo] {
-		    auto level{scene.AddGameObject()};
+	    , m_rpLevelFlyweight{[this, &loadInfo] {
+		    auto level{m_pScene->AddGameObject()};
 		    level.AddComponent<roingine::Transform>(glm::vec2{0.f, 0.f}, 0.f);
-		    return &level.AddComponent<LevelFlyweight>(loadInfo.upgrade);
+		    return &level.AddComponent<LevelFlyweight>(loadInfo.setupData.upgrade);
 	    }()}
-	    , m_rpPlayer1{SpawnPlayer(scene, true, 0, 0, loadInfo.windowWidth, loadInfo.windowHeight, *m_rpLevelFlyweight)
+	    , m_rpPlayer1{
+	              SpawnPlayer(*m_pScene, true, 0, 0, loadInfo.windowWidth, loadInfo.windowHeight, *m_rpLevelFlyweight)
 	      } {
-		for (int i{}; i < loadInfo.numBallooms; ++i)
+		for (int i{}; i < loadInfo.setupData.numBallooms; ++i)
 			Enemy::SpawnEnemy(
-			        scene, *m_rpLevelFlyweight, enemy_type::c_EnemyBalloom, m_rpLevelFlyweight->GetRandomEmptyTilePos()
+			        *m_pScene, *m_rpLevelFlyweight, enemy_type::c_EnemyBalloom,
+			        m_rpLevelFlyweight->GetRandomEmptyTilePos()
 			);
-		for (int i{}; i < loadInfo.numOneals; ++i)
+		for (int i{}; i < loadInfo.setupData.numOneals; ++i)
 			Enemy::SpawnEnemy(
-			        scene, *m_rpLevelFlyweight, enemy_type::c_EnemyOneal, m_rpLevelFlyweight->GetRandomEmptyTilePos()
+			        *m_pScene, *m_rpLevelFlyweight, enemy_type::c_EnemyOneal,
+			        m_rpLevelFlyweight->GetRandomEmptyTilePos()
 			);
-		for (int i{}; i < loadInfo.numDahls; ++i)
+		for (int i{}; i < loadInfo.setupData.numDahls; ++i)
 			Enemy::SpawnEnemy(
-			        scene, *m_rpLevelFlyweight, enemy_type::c_EnemyDahl, m_rpLevelFlyweight->GetRandomEmptyTilePos()
+			        *m_pScene, *m_rpLevelFlyweight, enemy_type::c_EnemyDahl, m_rpLevelFlyweight->GetRandomEmptyTilePos()
 			);
-		for (int i{}; i < loadInfo.numMinvos; ++i)
+		for (int i{}; i < loadInfo.setupData.numMinvos; ++i)
 			Enemy::SpawnEnemy(
-			        scene, *m_rpLevelFlyweight, enemy_type::c_EnemyMinvo, m_rpLevelFlyweight->GetRandomEmptyTilePos()
+			        *m_pScene, *m_rpLevelFlyweight, enemy_type::c_EnemyMinvo,
+			        m_rpLevelFlyweight->GetRandomEmptyTilePos()
 			);
 
 		m_Music.Play();
-		roingine::SceneManager::GetInstance().SetActive(std::move(scene));
+		roingine::SceneManager::GetInstance().SetActive(std::move(*m_pScene));
+		m_pScene = nullptr;
 	}
+
+	Level::~Level() = default;
+
+	Level::Level(Level &&) noexcept = default;
+
+	Level &Level::operator=(Level &&) noexcept = default;
 
 	void Level::SetPlayer1Controller(roingine::Controller *rpController) const {
 		m_rpPlayer1.first->TieToController(rpController);
