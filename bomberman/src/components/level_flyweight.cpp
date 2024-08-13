@@ -8,10 +8,10 @@
 #include "upgrade.h"
 
 #include <algorithm>
-#include <roingine/components/texture_renderer.h>
 #include <random>
 #include <roingine/components/animation_renderer.h>
 #include <roingine/components/rect_collider.h>
+#include <roingine/components/texture_renderer.h>
 #include <roingine/components/transform.h>
 #include <roingine/scene.h>
 #include <roingine/scene_manager.h>
@@ -19,13 +19,12 @@
 // TODO: this file has a lot going on, there's probably a missing abstraction here. Maybe a class for the tiles?
 
 namespace bomberman {
-	constexpr int  c_PlayerBreathingRoomTiles{3};
 	constexpr int  c_DotWallSpacing{2};
 	constexpr auto c_ExplosionAnimationFrames{7};
 	constexpr auto c_ExplosionAnimationTime{0.05f};
 	constexpr auto c_ExplosionTtl{c_ExplosionAnimationFrames * c_ExplosionAnimationTime};
 
-	bool LevelFlyweight::DestroyTile(roingine::Scene &scene, int xIdx, int yIdx) {
+	bool LevelFlyweight::DestroyTile(roingine::Scene &scene, int xIdx, int yIdx, bool isAnimated) {
 		constexpr int   c_DestroyAnimFrames{5};
 		constexpr float c_DestroyAnimTime{0.1f};
 		constexpr float c_DestroyAnimTtl{c_DestroyAnimFrames * c_DestroyAnimTime};
@@ -44,17 +43,20 @@ namespace bomberman {
 		tile = TileType::Nothing;
 
 		auto const gridPos{GridToPosition(xIdx, yIdx)};
-		auto       goBrokenBricks{scene.AddGameObject()};
-		goBrokenBricks.AddComponent<roingine::Transform>(gridPos, 0.f);
-		goBrokenBricks.AddComponent<roingine::AnimationRenderer>(
-		        roingine::AnimationRenderer::AnimationInfo{
-		                .fileName        = "res/img/brick_wall_destroyed.png",
-		                .numFrames       = c_DestroyAnimFrames,
-		                .secondsPerFrame = c_DestroyAnimTime
-		        },
-		        c_TileSize, c_TileSize, roingine::ScalingMethod::NearestNeighbor
-		);
-		goBrokenBricks.AddComponent<TemporaryObject>(c_DestroyAnimTtl);
+
+		if (isAnimated) {
+			auto goBrokenBricks{scene.AddGameObject()};
+			goBrokenBricks.AddComponent<roingine::Transform>(gridPos, 0.f);
+			goBrokenBricks.AddComponent<roingine::AnimationRenderer>(
+			        roingine::AnimationRenderer::AnimationInfo{
+			                .fileName        = "res/img/brick_wall_destroyed.png",
+			                .numFrames       = c_DestroyAnimFrames,
+			                .secondsPerFrame = c_DestroyAnimTime
+			        },
+			        c_TileSize, c_TileSize, roingine::ScalingMethod::NearestNeighbor
+			);
+			goBrokenBricks.AddComponent<TemporaryObject>(c_DestroyAnimTtl);
+		}
 
 		if (m_Upgrade.first == arrIdx) {
 			auto upgradeObject{scene.AddGameObject()};
@@ -253,9 +255,6 @@ namespace bomberman {
 			m_TileGrid.at(y * c_LevelWidth)                    = TileType::SolidWall;
 			m_TileGrid.at(y * c_LevelWidth + c_LevelWidth - 1) = TileType::SolidWall;
 		}
-
-		// Ensure the player isn't in a wall or too close to one
-		std::fill_n(m_TileGrid.end() - 2 * c_LevelWidth + 1, c_PlayerBreathingRoomTiles, TileType::Nothing);
 
 		// Dot walls around the level
 		for (int x{c_DotWallSpacing}; x < c_LevelWidth - 1; x += c_DotWallSpacing) {

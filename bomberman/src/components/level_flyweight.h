@@ -47,6 +47,8 @@ namespace bomberman {
 		[[nodiscard]]
 		glm::vec2 GetRandomEmptyTilePos() const;
 
+		bool DestroyTile(roingine::Scene &scene, int xIdx, int yIdx, bool isAnimated = true);
+
 	private:
 		roingine::EventHandlerHandle<event_queue::EventQueue> m_hBombPlaceRequestHandler;
 		roingine::EventHandlerHandle<event_queue::EventQueue> m_hBombDetonatedHandler;
@@ -59,8 +61,6 @@ namespace bomberman {
 		roingine::ReusableTexture m_BrickWallTexture;
 
 		roingine::Transform *m_rpTransform;
-
-		bool DestroyTile(roingine::Scene &scene, int xIdx, int yIdx);
 
 		[[nodiscard]]
 		bool IsPointInWall(glm::vec2 const &point) const;

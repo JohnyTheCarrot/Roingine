@@ -33,6 +33,8 @@ namespace bomberman {
 		LevelSetupData setupData{};
 	};
 
+	enum class PlayerType { Bomberman, Balloom };
+
 	class Level final {
 		std::unique_ptr<roingine::Scene> m_pScene{std::make_unique<roingine::Scene>()};
 		roingine::Music                  m_Music{"res/sound/bg_music.wav"};
@@ -44,8 +46,8 @@ namespace bomberman {
 
 		[[nodiscard]]
 		static PlayerAndCam SpawnPlayer(
-		        roingine::Scene &scene, bool hasKeyboardSupport, int viewX, int viewY, int viewWidth, int viewHeight,
-		        LevelFlyweight const &levelFlyweight
+		        roingine::Scene &scene, PlayerType playerType, bool isPlayer1, int viewX, int viewY, int viewWidth,
+		        int viewHeight, LevelFlyweight &levelFlyweight
 		);
 
 	public:
@@ -61,7 +63,18 @@ namespace bomberman {
 
 		void SetPlayer1Controller(roingine::Controller *rpController) const;
 
-		void SetPlayer2Controller(roingine::Controller *rpController);
+		void SetUpPlayer2(roingine::Controller &rpController, PlayerType playerType);
+
+		void DisconnectPlayer2() const;
+
+		[[nodiscard]]
+		roingine::Controller *GetPlayer1Controller() const;
+
+		[[nodiscard]]
+		roingine::Controller *GetPlayer2Controller() const;
+
+		[[nodiscard]]
+		std::optional<PlayerType> GetPlayer2Type() const;
 
 		[[nodiscard]]
 		bool DoesPlayer1OwnController(roingine::Controller const &controller) const;

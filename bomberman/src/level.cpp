@@ -13,24 +13,32 @@
 #include <roingine/scene_manager.h>
 
 namespace bomberman {
-	constexpr int c_PlayerStartX{1};
-	constexpr int c_PlayerStartY{LevelFlyweight::c_LevelHeight - 2};
+	constexpr int c_Player1StartX{1};
+	constexpr int c_Player1StartY{LevelFlyweight::c_LevelHeight - 2};
+	constexpr int c_Player2StartX{1};
+	constexpr int c_Player2StartY{1};
+	constexpr int c_BreathingRoomTileCount{5};
 
 	Level::PlayerAndCam Level::SpawnPlayer(
-	        roingine::Scene &scene, bool hasKeyboardSupport, int viewX, int viewY, int viewWidth, int viewHeight,
-	        LevelFlyweight const &levelFlyweight
+	        roingine::Scene &scene, PlayerType playerType, bool isPlayer1, int viewX, int viewY, int viewWidth,
+	        int viewHeight, LevelFlyweight &levelFlyweight
 	) {
 		auto  cameraObject{scene.AddGameObject()};
 		auto &cameraTransform{cameraObject.AddComponent<roingine::Transform>(glm::vec2{0.f, 0.f}, 0.f)};
 
 		auto *rpCam{&cameraObject.AddComponent<roingine::Camera>(viewX, viewY, viewWidth, viewHeight)};
 
+		auto const playerStartX{isPlayer1 ? c_Player1StartX : c_Player2StartX};
+		auto const playerStartY{isPlayer1 ? c_Player1StartY : c_Player2StartY};
+
 		auto player{scene.AddGameObject()};
-		player.AddComponent<roingine::Transform>(
-		        glm::vec2{c_PlayerStartX * LevelFlyweight::c_TileSize, c_PlayerStartY * LevelFlyweight::c_TileSize}, 0.f
-		);
-		player.AddComponent<Bomberman>(levelFlyweight);
-		auto *rpLayer{&player.AddComponent<Player>(cameraTransform, levelFlyweight, hasKeyboardSupport)};
+		player.AddComponent<roingine::Transform>(levelFlyweight.GridToPosition(playerStartX, playerStartY), 0.f);
+		if (playerType == PlayerType::Bomberman)
+			player.AddComponent<Bomberman>(levelFlyweight);
+		else
+			player.AddComponent<Enemy>(levelFlyweight, enemy_type::c_EnemyBalloom);
+
+		auto *rpLayer{&player.AddComponent<Player>(cameraTransform, levelFlyweight, isPlayer1)};
 
 		return PlayerAndCam{rpLayer, rpCam};
 	}
@@ -42,9 +50,15 @@ namespace bomberman {
 		    level.AddComponent<roingine::Transform>(glm::vec2{0.f, 0.f}, 0.f);
 		    return &level.AddComponent<LevelFlyweight>(loadInfo.setupData.upgrade);
 	    }()}
-	    , m_rpPlayer1{
-	              SpawnPlayer(*m_pScene, true, 0, 0, loadInfo.windowWidth, loadInfo.windowHeight, *m_rpLevelFlyweight)
-	      } {
+	    , m_rpPlayer1{SpawnPlayer(
+	              *m_pScene, PlayerType::Bomberman, true, 0, 0, loadInfo.windowWidth, loadInfo.windowHeight,
+	              *m_rpLevelFlyweight
+	      )} {
+		for (int x{c_Player1StartX}; x < c_Player1StartX + c_BreathingRoomTileCount; ++x)
+			m_rpLevelFlyweight->DestroyTile(*m_pScene, x, c_Player1StartY, false);
+		for (int x{c_Player2StartX}; x < c_Player2StartX + c_BreathingRoomTileCount; ++x)
+			m_rpLevelFlyweight->DestroyTile(*m_pScene, x, c_Player2StartY, false);
+
 		for (int i{}; i < loadInfo.setupData.numBallooms; ++i)
 			Enemy::SpawnEnemy(
 			        *m_pScene, *m_rpLevelFlyweight, enemy_type::c_EnemyBalloom,
@@ -80,18 +94,40 @@ namespace bomberman {
 		m_rpPlayer1.first->TieToController(rpController);
 	}
 
-	void Level::SetPlayer2Controller(roingine::Controller *rpController) {
+	void Level::SetUpPlayer2(roingine::Controller &rpController, PlayerType playerType) {
 		if (!m_rpPlayer2.has_value()) {
 			auto *scene{roingine::SceneManager::GetInstance().GetActive()};
 
 			m_rpPlayer2 = SpawnPlayer(
-			        *scene, false, m_LoadInfo.windowWidth / 2, 0, m_LoadInfo.windowWidth / 2, m_LoadInfo.windowHeight,
-			        *m_rpLevelFlyweight
+			        *scene, playerType, false, m_LoadInfo.windowWidth / 2, 0, m_LoadInfo.windowWidth / 2,
+			        m_LoadInfo.windowHeight, *m_rpLevelFlyweight
 			);
 			m_rpPlayer1.second->SetView(0, 0, m_LoadInfo.windowWidth / 2, m_LoadInfo.windowHeight);
 		}
 
-		m_rpPlayer2->first->TieToController(rpController);
+		m_rpPlayer2->first->TieToController(&rpController);
+	}
+
+	void Level::DisconnectPlayer2() const {
+		m_rpPlayer2->first->TieToController(nullptr);
+	}
+
+	roingine::Controller *Level::GetPlayer1Controller() const {
+		return m_rpPlayer1.first->GetController();
+	}
+
+	roingine::Controller *Level::GetPlayer2Controller() const {
+		return m_rpPlayer2.has_value() ? m_rpPlayer2->first->GetController() : nullptr;
+	}
+
+	std::optional<PlayerType> Level::GetPlayer2Type() const {
+		if (!m_rpPlayer2.has_value())
+			return std::nullopt;
+
+		if (auto const player{m_rpPlayer2->first->GetGameObject()}; player.GetOptionalComponent<Bomberman>())
+			return PlayerType::Bomberman;
+
+		return PlayerType::Balloom;
 	}
 
 	bool Level::DoesPlayer1OwnController(roingine::Controller const &controller) const {

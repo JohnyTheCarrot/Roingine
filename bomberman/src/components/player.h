@@ -85,6 +85,9 @@ namespace bomberman {
 
 		[[nodiscard]]
 		PlayerInfo &GetPlayerInfo() const;
+
+		[[nodiscard]]
+		roingine::Controller *GetController() const;
 	};
 }// namespace bomberman
 

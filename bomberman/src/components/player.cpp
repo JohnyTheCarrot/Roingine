@@ -184,4 +184,8 @@ namespace bomberman {
 
 		return PlayerInfoContainer::GetInstance().m_Player2Info.value();
 	}
+
+	roingine::Controller *Player::GetController() const {
+		return m_rpController;
+	}
 }// namespace bomberman

@@ -6,9 +6,9 @@
 #include "level.h"
 #include "player_info.h"
 
-#include <roingine/scene_manager.h>
 #include <fstream>
 #include <roingine/audio_service.h>
+#include <roingine/scene_manager.h>
 #include <roingine/service_locator.h>
 
 namespace bomberman {
@@ -24,14 +24,14 @@ namespace bomberman {
 		}
 	}
 
-	void Game::OnControllerDisconnected(roingine::event_queue::ControllerDisconnectedData const &data) {
+	void Game::OnControllerDisconnected(roingine::event_queue::ControllerDisconnectedData const &data) const {
 		if (m_Level.DoesPlayer1OwnController(*data.rpController)) {
 			m_Level.SetPlayer1Controller(nullptr);
 			return;
 		}
 
 		if (m_Level.DoesPlayer2OwnController(*data.rpController)) {
-			m_Level.SetPlayer2Controller(nullptr);
+			m_Level.DisconnectPlayer2();
 		}
 	}
 
@@ -101,10 +101,18 @@ namespace bomberman {
 
 		++m_CurrentLevelIndex;
 
+		auto               *player1Controller{m_Level.GetPlayer1Controller()};
+		auto               *player2Controller{m_Level.GetPlayer2Controller()};
+		std::optional const player2Type{m_Level.GetPlayer2Type()};
+
 		m_Level = Level{LevelLoadInfo{
 		        .windowWidth  = m_WindowWidth,
 		        .windowHeight = m_WindowHeight,
 		        .setupData    = m_LevelSetupData.at(m_CurrentLevelIndex)
 		}};
+		m_Level.SetPlayer1Controller(player1Controller);
+
+		if (player2Controller != nullptr)
+			m_Level.SetUpPlayer2(*player2Controller, player2Type.value());
 	}
 }// namespace bomberman

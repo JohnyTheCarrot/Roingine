@@ -31,7 +31,7 @@ namespace bomberman {
 
 		void OnControllerConnected(roingine::event_queue::ControllerConnectedData const &data);
 
-		void OnControllerDisconnected(roingine::event_queue::ControllerDisconnectedData const &data);
+		void OnControllerDisconnected(roingine::event_queue::ControllerDisconnectedData const &data) const;
 
 		static std::vector<LevelSetupData> LoadLevelSetupData();
 
