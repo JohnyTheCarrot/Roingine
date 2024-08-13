@@ -3,6 +3,7 @@
 
 #include <exception>
 #include <format>
+#include <memory>
 
 namespace roingine {
 	class MusicFileLoadFailed final : public std::exception {

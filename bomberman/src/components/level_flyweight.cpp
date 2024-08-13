@@ -31,7 +31,7 @@ namespace bomberman {
 		if (auto const inGrid{xIdx >= 0 && xIdx < c_LevelWidth && yIdx >= 0 && yIdx < c_LevelHeight}; !inGrid)
 			return false;
 
-		auto const arrIdx{xIdx + yIdx * c_LevelWidth};
+		auto const arrIdx{static_cast<std::size_t>(xIdx + yIdx * c_LevelWidth)};
 		auto      &tile{m_TileGrid.at(arrIdx)};
 		if (tile == TileType::SolidWall)
 			return false;
