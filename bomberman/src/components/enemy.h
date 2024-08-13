@@ -146,7 +146,49 @@ namespace bomberman {
 		        },
 		        Enemy::Speed::Slow, 100
 		};
-	}
+
+		Enemy::EnemyInfo const c_EnemyOneal{
+		        roingine::AnimationRenderer::AnimationInfo{
+		                .fileName        = "res/img/enemy_oneal_walk.png",
+		                .numFrames       = 3,
+		                .secondsPerFrame = 0.1f,
+		        },
+		        roingine::AnimationRenderer::AnimationInfo{
+		                .fileName        = "res/img/enemy_death_blue_color.png",
+		                .numFrames       = 4,
+		                .secondsPerFrame = 0.2f,
+		        },
+		        Enemy::Speed::Normal, 200
+		};
+
+		Enemy::EnemyInfo const c_EnemyDahl{
+		        roingine::AnimationRenderer::AnimationInfo{
+		                .fileName        = "res/img/enemy_dahl_walk.png",
+		                .numFrames       = 4,
+		                .secondsPerFrame = 0.1f,
+		        },
+		        roingine::AnimationRenderer::AnimationInfo{
+		                .fileName        = "res/img/enemy_death_purple_color.png",
+		                .numFrames       = 4,
+		                .secondsPerFrame = 0.2f,
+		        },
+		        Enemy::Speed::Normal, 400
+		};
+
+		Enemy::EnemyInfo const c_EnemyMinvo{
+		        roingine::AnimationRenderer::AnimationInfo{
+		                .fileName        = "res/img/enemy_minvo_walk.png",
+		                .numFrames       = 3,
+		                .secondsPerFrame = 0.1f,
+		        },
+		        roingine::AnimationRenderer::AnimationInfo{
+		                .fileName        = "res/img/enemy_death_salmon_color.png",
+		                .numFrames       = 4,
+		                .secondsPerFrame = 0.2f,
+		        },
+		        Enemy::Speed::Fast, 800
+		};
+	}// namespace enemy_type
 }// namespace bomberman
 
 #endif//ENEMY_H

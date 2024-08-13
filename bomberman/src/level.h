@@ -26,6 +26,9 @@ namespace bomberman {
 		int         windowWidth{};
 		int         windowHeight{};
 		int         numBallooms{0};
+		int         numOneals{0};
+		int         numDahls{0};
+		int         numMinvos{0};
 	};
 
 	class Level final {

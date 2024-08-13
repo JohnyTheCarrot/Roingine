@@ -48,6 +48,19 @@ namespace bomberman {
 			Enemy::SpawnEnemy(
 			        scene, *m_rpLevelFlyweight, enemy_type::c_EnemyBalloom, m_rpLevelFlyweight->GetRandomEmptyTilePos()
 			);
+		for (int i{}; i < loadInfo.numOneals; ++i)
+			Enemy::SpawnEnemy(
+			        scene, *m_rpLevelFlyweight, enemy_type::c_EnemyOneal, m_rpLevelFlyweight->GetRandomEmptyTilePos()
+			);
+		for (int i{}; i < loadInfo.numDahls; ++i)
+			Enemy::SpawnEnemy(
+			        scene, *m_rpLevelFlyweight, enemy_type::c_EnemyDahl, m_rpLevelFlyweight->GetRandomEmptyTilePos()
+			);
+		for (int i{}; i < loadInfo.numMinvos; ++i)
+			Enemy::SpawnEnemy(
+			        scene, *m_rpLevelFlyweight, enemy_type::c_EnemyMinvo, m_rpLevelFlyweight->GetRandomEmptyTilePos()
+			);
+
 		m_Music.Play();
 		roingine::SceneManager::GetInstance().SetActive(std::move(scene));
 	}

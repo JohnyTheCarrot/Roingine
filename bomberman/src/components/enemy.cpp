@@ -105,7 +105,7 @@ namespace bomberman {
 	              [&info] {
 		              switch (info.speed) {
 			              default:
-				              return 150.f;
+				              return 120.f;
 			              case Speed::Normal:
 				              return 200.f;
 			              case Speed::Fast:
