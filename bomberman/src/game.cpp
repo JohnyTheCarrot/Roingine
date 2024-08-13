@@ -53,6 +53,7 @@ namespace bomberman {
 		soundMap.emplace(
 		        audio::Sound::WalkHorizontal, roingine::SoundClip{FileType::WAV, "res/sound/walk_horizontal.wav"}
 		);
+		soundMap.emplace(audio::Sound::PlayerDeath, roingine::SoundClip{FileType::WAV, "res/sound/player_death.wav"});
 
 		audio::AudioServiceLocator::Provide(std::make_unique<roingine::AudioSystem<audio::Sound>>(std::move(soundMap)));
 	}

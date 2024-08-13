@@ -1,5 +1,6 @@
 #include "player.h"
 
+#include "../audio.h"
 #include "../living_entity_command.h"
 #include "../player_info.h"
 #include "bomberman.h"
@@ -7,6 +8,7 @@
 #include "living_entity.h"
 #include "roingine/components/animation_renderer.h"
 #include "roingine/game_time.h"
+#include "temporary_object.h"
 
 #include <roingine/components/rect_collider.h>
 #include <roingine/components/transform.h>
@@ -142,6 +144,8 @@ namespace bomberman {
 		--lives;
 		if (lives == 0) {
 			m_rpLivingEntityComponent->Instruct(DieInstruction{});
+			audio::AudioServiceLocator::GetService().Play(audio::Sound::PlayerDeath);
+			GetGameObject().AddComponent<TemporaryObject>(m_rpAnimRenderer->GetAnimationRangeDuration());
 			event_queue::EventQueue::GetInstance().FireEvent<event_queue::EventType::PlayerDied>(isPlayer1);
 			return;
 		}

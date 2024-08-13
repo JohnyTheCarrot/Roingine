@@ -10,6 +10,7 @@ namespace bomberman::audio {
 		BombPlace,
 		WalkVertical,
 		WalkHorizontal,
+		PlayerDeath,
 	};
 
 	using AudioServiceLocator = roingine::ServiceLocator<roingine::AudioService<Sound>>;
