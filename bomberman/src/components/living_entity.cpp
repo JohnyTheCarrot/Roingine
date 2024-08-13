@@ -7,7 +7,7 @@
 #include <roingine/components/transform.h>
 
 namespace bomberman {
-	LivingEntity::LivingEntity(roingine::GameObject gameObject, FSMNodePtr &&pInitialState)
+	LivingEntity::LivingEntity(roingine::GameObject gameObject, float size, FSMNodePtr &&pInitialState)
 	    : Component{gameObject}
 	    , m_hExplosionHandler{event_queue::EventQueue::GetInstance()
 	                                  .AttachEventHandler<event_queue::EventType::Explosion>(
@@ -15,7 +15,8 @@ namespace bomberman {
 		                                          OnCaughtInExplosion(data);
 	                                          }
 	                                  )}
-	    , m_pCurrentState{std::move(pInitialState)} {
+	    , m_pCurrentState{std::move(pInitialState)}
+	    , m_Size{size} {
 		m_pCurrentState->OnEnter();
 	}
 
@@ -41,7 +42,8 @@ namespace bomberman {
 
 		auto const &transform{GetGameObject().GetComponent<roingine::Transform>()};
 
-		if (auto const &pos{transform.GetWorldPosition()}; !data.IsInExplosion(pos))
+		if (auto const &pos{transform.GetWorldPosition() + glm::vec2{m_Size / 2.f, m_Size / 2.f}};
+		    !data.IsInExplosion(pos))
 			return;
 
 		if (auto *rpPlayer{GetGameObject().GetOptionalComponent<Player>()}; rpPlayer != nullptr) {

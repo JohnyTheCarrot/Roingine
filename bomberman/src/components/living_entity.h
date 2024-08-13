@@ -27,7 +27,7 @@ namespace bomberman {
 	public:
 		using FSMNodePtr = std::unique_ptr<FiniteStateMachine<LivingEntityInstruction>>;
 
-		LivingEntity(roingine::GameObject gameObject, FSMNodePtr &&pInitialState);
+		LivingEntity(roingine::GameObject gameObject, float size, FSMNodePtr &&pInitialState);
 
 		void Instruct(LivingEntityInstruction const &input);
 
@@ -41,6 +41,7 @@ namespace bomberman {
 
 		roingine::EventHandlerHandle<event_queue::EventQueue> m_hExplosionHandler;
 		FSMNodePtr                                            m_pCurrentState;
+		float                                                 m_Size;
 		bool                                                  m_IsInvulnerable{false};
 	};
 }// namespace bomberman

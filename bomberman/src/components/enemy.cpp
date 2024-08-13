@@ -116,7 +116,7 @@ namespace bomberman {
 	    , m_rpAnimRenderer{&gameObject.AddComponent<roingine::AnimationRenderer>(
 	              info.walkAnimInfo, c_Size, c_Size, roingine::ScalingMethod::NearestNeighbor
 	      )}
-	    , m_rpLivingEntity{&gameObject.AddComponent<LivingEntity>(std::make_unique<EnemyIdle>(*this))}
+	    , m_rpLivingEntity{&gameObject.AddComponent<LivingEntity>(c_Size, std::make_unique<EnemyIdle>(*this))}
 	    , deathAnimInfo{info.deathAnimInfo}
 	    , m_ScoreOnKill{info.scoreOnKill} {
 	}

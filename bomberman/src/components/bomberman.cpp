@@ -146,7 +146,9 @@ namespace bomberman {
 	              },
 	              c_Size, c_Size, roingine::ScalingMethod::NearestNeighbor
 	      )}
-	    , m_rpLivingEntityComponent{&gameObject.AddComponent<LivingEntity>(std::make_unique<BombermanIdle>(*this))}
+	    , m_rpLivingEntityComponent{&gameObject.AddComponent<LivingEntity>(
+	              c_Size, std::make_unique<BombermanIdle>(*this)
+	      )}
 	    , m_rpTransform{&GetGameObject().GetComponent<roingine::Transform>()}
 	    , m_pPlaceBombCommand{std::make_unique<PlaceBombCommand>(GetGameObject())} {
 		m_rpRectCollider->SetCallback([this](roingine::GameObject other, glm::vec2,
