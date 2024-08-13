@@ -172,7 +172,7 @@ if (WIN32)
 
     FetchContent_Declare(
             SDL2_mixer
-            URL https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-devel-2.0.4-VC.zip
+            URL https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-devel-2.6.2-VC.zip
             DOWNLOAD_NO_PROGRESS ON
             DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/downloads
     )

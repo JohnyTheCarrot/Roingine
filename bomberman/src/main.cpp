@@ -25,5 +25,11 @@ int main() {
 
 	bomberman::Game game{std::move(scene), WINDOW_WIDTH, WINDOW_HEIGHT};
 
-	roingine.Run([]() { bomberman::event_queue::EventQueue::GetInstance().Update(); });
+	roingine.Run([]() {
+		bomberman::event_queue::EventQueue::GetInstance().Update();
+		
+		if (KeyboardInput::GetService().GetKeyState(InputKeys::M) == KeyEventType::Down) {
+			GameInfo::GetInstance().ToggleMute();
+		}
+	});
 }

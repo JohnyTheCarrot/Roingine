@@ -20,8 +20,11 @@ namespace roingine {
 
 		void QuitGame();
 
+		void ToggleMute();
+
 	private:
 		float m_KeyHeldThresholdMs;
+		bool  m_IsMuted{false};
 		bool  m_IsRunning{true};
 	};
 }// namespace roingine
