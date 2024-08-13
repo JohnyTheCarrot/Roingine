@@ -1,6 +1,7 @@
 #include "bomberman.h"
 
 #include "../audio.h"
+#include "enemy.h"
 #include "moving_entity.h"
 #include "player.h"
 
@@ -13,7 +14,6 @@ namespace bomberman {
 	float const Bomberman::c_Size{70.f};
 	float const Bomberman::c_Speed{200.f};
 	float const Bomberman::c_WalkSoundDistance{50.f};
-	float const Bomberman::c_InvincibilityAfterHurtSec{5.f};
 
 	constexpr glm::vec2 c_UpVec{0, 1};
 	constexpr glm::vec2 c_DownVec{0, -1};
@@ -135,6 +135,19 @@ namespace bomberman {
 	    , m_rpLivingEntityComponent{&gameObject.AddComponent<LivingEntity>(std::make_unique<BombermanIdle>(*this))}
 	    , m_rpTransform{&GetGameObject().GetComponent<roingine::Transform>()}
 	    , m_pPlaceBombCommand{std::make_unique<PlaceBombCommand>(GetGameObject())} {
+		m_rpRectCollider->SetCallback([this](roingine::GameObject other, glm::vec2,
+		                                     roingine::RectCollider::HitDirection) {
+			auto *rpPlayer{GetGameObject().GetOptionalComponent<Player>()};
+			if (rpPlayer == nullptr)
+				return;
+
+			if (m_rpLivingEntityComponent->GetInvulnerable())
+				return;
+
+			// if other is an enemy, hurt the player
+			if (const auto *rpEnemy{other.GetOptionalComponent<Enemy>()}; rpEnemy != nullptr)
+				rpPlayer->Hurt();
+		});
 	}
 
 	roingine::AnimationRenderer &Bomberman::GetAnimRenderer() const {
@@ -150,7 +163,7 @@ namespace bomberman {
 	}
 
 	void Bomberman::PlaceBomb() const {
-		auto *rpPlayer{GetGameObject().GetOptionalComponent<Player>()};
+		auto const *rpPlayer{GetGameObject().GetOptionalComponent<Player>()};
 		if (rpPlayer == nullptr)
 			return;
 

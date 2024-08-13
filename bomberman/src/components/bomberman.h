@@ -78,7 +78,6 @@ namespace bomberman {
 		static float const c_Size;
 		static float const c_Speed;
 		static float const c_WalkSoundDistance;
-		static float const c_InvincibilityAfterHurtSec;
 
 	public:
 		Bomberman(roingine::GameObject gameObject, LevelFlyweight const &levelFlyweight);
