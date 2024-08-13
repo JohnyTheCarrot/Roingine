@@ -14,6 +14,8 @@ namespace bomberman {
 		int  m_Lives{4};
 		int  m_Score{0};
 		int  m_BombRange{1};
+		int  m_MaxBombs{1};
+		bool m_HasDetonator{false};
 		bool m_IsPlayer1{true};
 
 		void UnlockUpgrade(UpgradeType upgrade);

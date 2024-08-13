@@ -21,6 +21,8 @@ namespace bomberman {
 
 	class LevelFlyweight;
 
+	class Bomb;
+
 	class Bomberman;
 
 	// TODO (extra): Curiously recurring template pattern candidate?
@@ -91,6 +93,8 @@ namespace bomberman {
 		void Move(glm::vec2 const &direction) const;
 
 		void PlaceBomb() const;
+
+		void DetonateLastBomb() const;
 
 		void Die() const;
 

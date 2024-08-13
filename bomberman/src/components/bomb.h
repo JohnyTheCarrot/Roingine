@@ -16,6 +16,7 @@ namespace bomberman {
 	class Bomb final : public roingine::Component {
 		PlayerInfo                                           *m_rpBomber;
 		roingine::EventHandlerHandle<event_queue::EventQueue> m_hExplosionHandler;
+		int                                                   m_BombId{};
 
 		void OnCaughtInExplosion(event_queue::ExplosionData const &data);
 
@@ -23,6 +24,9 @@ namespace bomberman {
 		Bomb(roingine::GameObject gameObject, glm::vec2 location, PlayerInfo &bomber);
 
 		void Explode();
+
+		[[nodiscard]]
+		int GetBombId() const;
 	};
 }// namespace bomberman
 

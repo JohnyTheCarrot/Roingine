@@ -56,8 +56,14 @@ namespace bomberman {
 			return std::make_unique<BombermanDying>(GetBomberman());
 
 		if (std::holds_alternative<Action>(input)) {
-			if (auto const action{std::get<Action>(input)}; action == Action::Primary)
-				GetBomberman().PlaceBomb();
+			switch (std::get<Action>(input)) {
+				case Action::Primary:
+					GetBomberman().PlaceBomb();
+					break;
+				case Action::Secondary:
+					GetBomberman().DetonateLastBomb();
+					break;
+			}
 
 			return nullptr;
 		}
@@ -75,8 +81,14 @@ namespace bomberman {
 			return std::make_unique<BombermanDying>(GetBomberman());
 
 		if (std::holds_alternative<Action>(input)) {
-			if (auto const action{std::get<Action>(input)}; action == Action::Primary)
-				GetBomberman().PlaceBomb();
+			switch (std::get<Action>(input)) {
+				case Action::Primary:
+					GetBomberman().PlaceBomb();
+					break;
+				case Action::Secondary:
+					GetBomberman().DetonateLastBomb();
+					break;
+			}
 
 			return nullptr;
 		}
@@ -177,6 +189,19 @@ namespace bomberman {
 
 		event_queue::EventQueue::GetInstance().FireEvent<event_queue::EventType::BombPlaceRequest>(
 		        &rpPlayer->GetPlayerInfo(), GetTransform().GetWorldPosition()
+		);
+	}
+
+	void Bomberman::DetonateLastBomb() const {
+		auto const *rpPlayer{GetGameObject().GetOptionalComponent<Player>()};
+		if (rpPlayer == nullptr)
+			return;
+
+		if (!rpPlayer->GetPlayerInfo().m_HasDetonator)
+			return;
+
+		event_queue::EventQueue::GetInstance().FireEvent<event_queue::EventType::DetonateLastBombRequest>(
+		        &rpPlayer->GetPlayerInfo()
 		);
 	}
 

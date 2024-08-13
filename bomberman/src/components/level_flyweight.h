@@ -14,6 +14,8 @@ namespace roingine {
 }// namespace roingine
 
 namespace bomberman {
+	class Bomb;
+
 	class LevelFlyweight final : public roingine::Component {
 	public:
 		enum class TileType { Nothing, SolidWall, BrickWall };
@@ -52,8 +54,11 @@ namespace bomberman {
 	private:
 		roingine::EventHandlerHandle<event_queue::EventQueue> m_hBombPlaceRequestHandler;
 		roingine::EventHandlerHandle<event_queue::EventQueue> m_hBombDetonatedHandler;
+		roingine::EventHandlerHandle<event_queue::EventQueue> m_hLastBombDetonationHandler;
 
 		std::vector<TileType>               m_TileGrid;
+		std::vector<std::pair<int, Bomb *>> m_BombsPlayer1;
+		std::vector<std::pair<int, Bomb *>> m_BombsPlayer2;
 		std::pair<std::size_t, UpgradeType> m_Upgrade;
 		std::size_t                         m_DoorIndex;
 
@@ -67,7 +72,7 @@ namespace bomberman {
 
 		void BombDetonatedHandler(event_queue::BombDetonatedData const &data);
 
-		void BombPlaceRequestHandler(event_queue::BombPlaceRequestData const &data) const;
+		void BombPlaceRequestHandler(event_queue::BombPlaceRequestData const &data);
 
 		int ExplodeTiles(
 		        glm::vec2 startPos, bool isX, int range, std::function<bool(int, int)> const &comp, int xIndex,

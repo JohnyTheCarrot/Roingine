@@ -30,6 +30,9 @@ namespace bomberman {
 		constexpr float c_SecondsPerFrame{0.5f};
 		constexpr float c_DetonationTime{2.0f};
 
+		static int bombIdCounter{0};
+		m_BombId = bombIdCounter++;
+
 		gameObject.AddComponent<roingine::Transform>(location, 0.f);
 		gameObject.AddComponent<roingine::AnimationRenderer>(
 		        roingine::AnimationRenderer::AnimationInfo{
@@ -47,8 +50,12 @@ namespace bomberman {
 	void Bomb::Explode() {
 		auto const &transform{GetGameObject().GetComponent<roingine::Transform>()};
 		event_queue::EventQueue::GetInstance().FireEvent<event_queue::EventType::BombDetonated>(
-		        m_rpBomber, transform.GetWorldPosition()
+		        m_rpBomber, transform.GetWorldPosition(), m_BombId
 		);
 		GetGameObject().Destroy();
+	}
+
+	int Bomb::GetBombId() const {
+		return m_BombId;
 	}
 }// namespace bomberman

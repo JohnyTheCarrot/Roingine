@@ -93,6 +93,13 @@ namespace bomberman {
 	}
 
 	void LevelFlyweight::BombDetonatedHandler(event_queue::BombDetonatedData const &data) {
+		auto &bombs{data.rpBomber->m_IsPlayer1 ? m_BombsPlayer1 : m_BombsPlayer2};
+
+		if (auto const it{std::ranges::find_if(bombs, [&data](auto const &pair) { return pair.first == data.bombId; })};
+		    it != bombs.end()) {
+			bombs.erase(it);
+		}
+
 		auto const ownWorldPos{m_rpTransform->GetWorldPosition()};
 		auto const relativePos{data.position - ownWorldPos};
 		auto const xIndex{static_cast<int>(relativePos.x / c_TileSize)};
@@ -146,12 +153,22 @@ namespace bomberman {
 		);
 	}
 
-	void LevelFlyweight::BombPlaceRequestHandler(event_queue::BombPlaceRequestData const &data) const {
+	void LevelFlyweight::BombPlaceRequestHandler(event_queue::BombPlaceRequestData const &data) {
 		auto const activeScene{roingine::SceneManager::GetInstance().GetActive()};
+
+		auto const *rpPlayerInfo{data.rpBomber};
+		if (m_BombsPlayer1.size() + 1 > static_cast<size_t>(rpPlayerInfo->m_MaxBombs))
+			return;
 
 		auto const pos{SnapToGrid(data.position)};
 		auto       bomb{activeScene->AddGameObject()};
-		bomb.AddComponent<Bomb>(pos, *data.rpBomber);
+		auto      &bombComp{bomb.AddComponent<Bomb>(pos, *data.rpBomber)};
+
+		if (rpPlayerInfo->m_IsPlayer1) {
+			m_BombsPlayer1.emplace_back(bombComp.GetBombId(), &bombComp);
+		} else {
+			m_BombsPlayer2.emplace_back(bombComp.GetBombId(), &bombComp);
+		}
 	}
 
 	int LevelFlyweight::ExplodeTiles(
@@ -234,6 +251,20 @@ namespace bomberman {
 	                                      .AttachEventHandler<event_queue::EventType::BombDetonated>(
 	                                              [this](auto const &data) { BombDetonatedHandler(data); }
 	                                      )}
+	    , m_hLastBombDetonationHandler{event_queue::EventQueue::GetInstance()
+	                                           .AttachEventHandler<event_queue::EventType::DetonateLastBombRequest>(
+	                                                   [this](auto const &data) {
+		                                                   auto &bombs{
+		                                                           data.rpBomber->m_IsPlayer1 ? m_BombsPlayer1
+		                                                                                      : m_BombsPlayer2
+		                                                   };
+
+		                                                   if (bombs.empty())
+			                                                   return;
+
+		                                                   bombs.back().second->Explode();
+	                                                   }
+	                                           )}
 	    , m_SolidWallTexture{"res/img/wall.png", roingine::ScalingMethod::NearestNeighbor}
 	    , m_BrickWallTexture{"res/img/brick_wall.png", roingine::ScalingMethod::NearestNeighbor}
 	    , m_rpTransform{&gameObject.GetComponent<roingine::Transform>()} {

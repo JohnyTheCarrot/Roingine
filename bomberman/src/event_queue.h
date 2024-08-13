@@ -15,6 +15,7 @@ namespace roingine {
 namespace bomberman::event_queue {
 	enum class EventType {
 		BombPlaceRequest,
+		DetonateLastBombRequest,
 		BombDetonated,
 		Explosion,
 		PlayerControllerConnected,
@@ -31,8 +32,18 @@ struct roingine::EventTypeData<bomberman::event_queue::EventType, bomberman::eve
 	struct Data_t final {
 		bomberman::PlayerInfo *rpBomber;
 		glm::vec2              position;
+		int                    bombId;
 	};
-};// namespace roingine
+};
+
+template<>
+struct roingine::EventTypeData<
+        bomberman::event_queue::EventType, bomberman::event_queue::EventType::DetonateLastBombRequest>
+        final {
+	struct Data_t final {
+		bomberman::PlayerInfo *rpBomber;
+	};
+};
 
 template<>
 struct roingine::EventTypeData<bomberman::event_queue::EventType, bomberman::event_queue::EventType::BombPlaceRequest>
@@ -101,6 +112,7 @@ struct roingine::EventTypeData<bomberman::event_queue::EventType, bomberman::eve
 
 namespace bomberman::event_queue {
 	using BombPlaceRequestData    = roingine::EventTypeData<EventType, EventType::BombPlaceRequest>::Data_t;
+	using DetonateLastBombRequest = roingine::EventTypeData<EventType, EventType::DetonateLastBombRequest>::Data_t;
 	using BombDetonatedData       = roingine::EventTypeData<EventType, EventType::BombDetonated>::Data_t;
 	using ControllerConnectedData = roingine::EventTypeData<EventType, EventType::PlayerControllerConnected>::Data_t;
 	using ControllerDisconnectedData =
@@ -111,8 +123,8 @@ namespace bomberman::event_queue {
 	using DoorUsedData   = roingine::EventTypeData<EventType, EventType::DoorUsed>::Data_t;
 
 	using EventQueue = roingine::EventQueue<
-	        EventType, BombDetonatedData, BombPlaceRequestData, ControllerConnectedData, ControllerDisconnectedData,
-	        ExplosionData, EnemyDiedData, PlayerDiedData, DoorUsedData>;
+	        EventType, BombDetonatedData, DetonateLastBombRequest, BombPlaceRequestData, ControllerConnectedData,
+	        ControllerDisconnectedData, ExplosionData, EnemyDiedData, PlayerDiedData, DoorUsedData>;
 }// namespace bomberman::event_queue
 
 #endif//GAME_EVENT_QUEUE_H

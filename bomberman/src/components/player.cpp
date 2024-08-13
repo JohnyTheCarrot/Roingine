@@ -25,12 +25,14 @@ namespace bomberman {
 	constexpr auto c_DownKbButton{roingine::InputKeys::S};
 	constexpr auto c_RightKbButton{roingine::InputKeys::D};
 	constexpr auto c_BombKbButton{roingine::InputKeys::E};
+	constexpr auto c_DetonationKbButton{roingine::InputKeys::F};
 
 	constexpr auto c_LeftControllerButton{roingine::ControllerButton::DPadLeft};
 	constexpr auto c_RightControllerButton{roingine::ControllerButton::DPadRight};
 	constexpr auto c_UpControllerButton{roingine::ControllerButton::DPadUp};
 	constexpr auto c_DownControllerButton{roingine::ControllerButton::DPadDown};
 	constexpr auto c_BombControllerButton{roingine::ControllerButton::X};
+	constexpr auto c_DetonationControllerButton{roingine::ControllerButton::A};
 
 	struct AnimationFrameRange final {
 		int start{};
@@ -91,6 +93,10 @@ namespace bomberman {
 		if (IsKbOrControllerInputDown(c_BombKbButton, c_BombControllerButton, false)) {
 			m_pPrimaryActionCommand->Execute();
 		}
+
+		if (IsKbOrControllerInputDown(c_DetonationKbButton, c_DetonationControllerButton, false)) {
+			m_pSeconaryActionCommand->Execute();
+		}
 	}
 
 	Player::Player(
@@ -133,7 +139,7 @@ namespace bomberman {
 	}
 
 	void Player::Hurt() {
-		auto &[lives, score, bombRange, isPlayer1]{[this]() -> PlayerInfo & {
+		auto &playerInfo{[this]() -> PlayerInfo & {
 			if (IsPlayerOne())
 				return PlayerInfoContainer::GetInstance().m_Player1Info;
 
@@ -141,12 +147,13 @@ namespace bomberman {
 			return PlayerInfoContainer::GetInstance().m_Player2Info.value();
 		}()};
 
-		--lives;
-		if (lives == 0) {
+		--playerInfo.m_Lives;
+		if (playerInfo.m_Lives == 0) {
 			m_rpLivingEntityComponent->Instruct(DieInstruction{});
 			audio::AudioServiceLocator::GetService().Play(audio::Sound::PlayerDeath);
 			GetGameObject().AddComponent<TemporaryObject>(m_rpAnimRenderer->GetAnimationRangeDuration());
-			event_queue::EventQueue::GetInstance().FireEvent<event_queue::EventType::PlayerDied>(isPlayer1);
+			event_queue::EventQueue::GetInstance().FireEvent<event_queue::EventType::PlayerDied>(playerInfo.m_IsPlayer1
+			);
 			return;
 		}
 
