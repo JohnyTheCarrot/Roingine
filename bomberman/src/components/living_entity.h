@@ -31,9 +31,17 @@ namespace bomberman {
 
 		void Instruct(LivingEntityInstruction const &input);
 
+		[[nodiscard]]
+		bool GetInvulnerable() const;
+
+		void SetInvulnerable(bool isInvulnerable);
+
 	private:
+		void OnCaughtInExplosion(event_queue::ExplosionData const &data);
+
 		roingine::EventHandlerHandle<event_queue::EventQueue> m_hExplosionHandler;
 		FSMNodePtr                                            m_pCurrentState;
+		bool                                                  m_IsInvulnerable{false};
 	};
 }// namespace bomberman
 

@@ -12,6 +12,7 @@ namespace bomberman {
 	float const Bomberman::c_Size{70.f};
 	float const Bomberman::c_Speed{200.f};
 	float const Bomberman::c_WalkSoundDistance{50.f};
+	float const Bomberman::c_InvincibilityAfterHurtSec{5.f};
 
 	constexpr glm::vec2 c_UpVec{0, 1};
 	constexpr glm::vec2 c_DownVec{0, -1};
@@ -28,11 +29,11 @@ namespace bomberman {
 	constexpr AnimationFrameRange c_AnimWalkRight{6, 9};
 	constexpr AnimationFrameRange c_AnimWalkUp{9, 11};
 
-	Bomberman const &BombermanFSMNode::GetBomberman() const {
+	Bomberman &BombermanFSMNode::GetBomberman() const {
 		return *m_rpBomberman;
 	}
 
-	BombermanFSMNode::BombermanFSMNode(Bomberman const &bomberman)
+	BombermanFSMNode::BombermanFSMNode(Bomberman &bomberman)
 	    : m_rpBomberman{&bomberman} {
 	}
 
@@ -49,7 +50,7 @@ namespace bomberman {
 	std::unique_ptr<FiniteStateMachine<LivingEntityInstruction>>
 	BombermanIdle::Update(LivingEntityInstruction const &input) {
 		if (std::holds_alternative<DieInstruction>(input))
-			return nullptr;// TODO: Implement die state
+			return std::make_unique<BombermanDying>(GetBomberman());
 
 		if (std::holds_alternative<Action>(input)) {
 			if (auto const action{std::get<Action>(input)}; action == Action::Primary)
@@ -68,7 +69,7 @@ namespace bomberman {
 	std::unique_ptr<FiniteStateMachine<LivingEntityInstruction>>
 	BombermanWalking::Update(LivingEntityInstruction const &input) {
 		if (std::holds_alternative<DieInstruction>(input))
-			return nullptr;// TODO: Implement die state
+			return std::make_unique<BombermanDying>(GetBomberman());
 
 		if (std::holds_alternative<Action>(input)) {
 			if (auto const action{std::get<Action>(input)}; action == Action::Primary)
@@ -77,8 +78,8 @@ namespace bomberman {
 			return nullptr;
 		}
 
-		auto const &bomberman{GetBomberman()};
-		auto const  movementInstruction{std::get<MoveInstruction>(input)};
+		auto      &bomberman{GetBomberman()};
+		auto const movementInstruction{std::get<MoveInstruction>(input)};
 
 		if (movementInstruction == MoveInstruction::Idle)
 			return std::make_unique<BombermanIdle>(bomberman);
@@ -109,6 +110,15 @@ namespace bomberman {
 		return nullptr;
 	}
 
+	void BombermanDying::OnEnter() {
+		GetBomberman().Die();
+	}
+
+	std::unique_ptr<FiniteStateMachine<LivingEntityInstruction>>
+	BombermanDying::Update(std::variant<MoveInstruction, DieInstruction, Action> const &) {
+		return nullptr;
+	}
+
 	Bomberman::Bomberman(roingine::GameObject gameObject, LevelFlyweight const &levelFlyweight)
 	    : Component{gameObject}
 	    , m_rpRectCollider{&gameObject.AddComponent<roingine::RectCollider>(c_Size, c_Size)}
@@ -121,9 +131,9 @@ namespace bomberman {
 	              },
 	              c_Size, c_Size, roingine::ScalingMethod::NearestNeighbor
 	      )}
+	    , m_rpLivingEntityComponent{&gameObject.AddComponent<LivingEntity>(std::make_unique<BombermanIdle>(*this))}
 	    , m_rpTransform{&GetGameObject().GetComponent<roingine::Transform>()}
 	    , m_pPlaceBombCommand{std::make_unique<PlaceBombCommand>(*m_rpTransform)} {
-		gameObject.AddComponent<LivingEntity>(std::make_unique<BombermanIdle>(*this));
 	}
 
 	roingine::AnimationRenderer &Bomberman::GetAnimRenderer() const {
@@ -142,6 +152,14 @@ namespace bomberman {
 		event_queue::EventQueue::GetInstance().FireEvent<event_queue::EventType::BombPlaceRequest>(
 		        GetTransform().GetWorldPosition()
 		);
+	}
+
+	void Bomberman::Die() {
+		m_rpAnimRenderer->SetFrameRange(11, 18);
+	}
+
+	bool Bomberman::IsHurting() const {
+		return m_rpLivingEntityComponent->GetInvulnerable();
 	}
 
 	void Bomberman::Update() {

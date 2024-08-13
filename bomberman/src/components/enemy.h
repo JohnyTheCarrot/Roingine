@@ -87,7 +87,7 @@ namespace bomberman {
 		Enemy(roingine::GameObject gameObject, LevelFlyweight const &levelFlyweight, EnemyInfo const &info);
 
 		// returns false if there was a collision and it couldn't move
-		bool Move(glm::vec2 direction);
+		bool Move(glm::vec2 direction) const;
 
 		void FlipDirection() const;
 
@@ -95,6 +95,14 @@ namespace bomberman {
 		bool IsAnimationPaused() const;
 
 		void SetAnimationPaused(bool paused) const;
+
+		[[nodiscard]]
+		roingine::AnimationRenderer &GetAnimRenderer() const;
+
+		[[nodiscard]]
+		int GetScoreOnKill() const;
+
+		void Kill();
 
 		static void SpawnEnemy(
 		        roingine::Scene &scene, LevelFlyweight const &levelFlyweight, EnemyInfo const &info, glm::vec2 position
@@ -134,7 +142,7 @@ namespace bomberman {
 		        roingine::AnimationRenderer::AnimationInfo{
 		                .fileName        = "res/img/enemy_death_salmon_color.png",
 		                .numFrames       = 4,
-		                .secondsPerFrame = 0.1f
+		                .secondsPerFrame = 0.2f
 		        },
 		        Enemy::Speed::Slow, 100
 		};

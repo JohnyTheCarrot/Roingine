@@ -3,6 +3,7 @@
 #include "enemy_ai.h"
 #include "level_flyweight.h"
 #include "moving_entity.h"
+#include "temporary_object.h"
 
 #include <glm/common.hpp>
 #include <roingine/components/animation_renderer.h>
@@ -38,7 +39,7 @@ namespace bomberman {
 			return nullptr;
 
 		if (std::holds_alternative<DieInstruction>(input))
-			return nullptr;// TODO: death
+			return std::make_unique<NullFSM<LivingEntityInstruction>>();
 
 		switch (std::get<MoveInstruction>(input)) {
 			case MoveInstruction::Up:
@@ -61,7 +62,7 @@ namespace bomberman {
 			return nullptr;
 
 		if (std::holds_alternative<DieInstruction>(input))
-			return nullptr;// TODO: death
+			return std::make_unique<NullFSM<LivingEntityInstruction>>();
 
 		switch (std::get<MoveInstruction>(input)) {
 			case MoveInstruction::Up:
@@ -122,7 +123,7 @@ namespace bomberman {
 
 	float const Enemy::c_Size{70.f};
 
-	bool Enemy::Move(glm::vec2 direction) {
+	bool Enemy::Move(glm::vec2 direction) const {
 		return m_rpMovingEntity->Move(direction);
 	}
 
@@ -136,6 +137,28 @@ namespace bomberman {
 
 	void Enemy::SetAnimationPaused(bool paused) const {
 		m_rpAnimRenderer->SetPaused(paused);
+	}
+
+	roingine::AnimationRenderer &Enemy::GetAnimRenderer() const {
+		return *m_rpAnimRenderer;
+	}
+
+	int Enemy::GetScoreOnKill() const {
+		return m_ScoreOnKill;
+	}
+
+	void Enemy::Kill() {
+		m_rpLivingEntity->Instruct(DieInstruction{});
+
+		auto enemyGameObject{GetGameObject()};
+		enemyGameObject.DestroyComponent<roingine::AnimationRenderer>();
+
+		auto const &animRenderer{enemyGameObject.AddComponent<roingine::AnimationRenderer>(
+		        deathAnimInfo, c_Size, c_Size, roingine::ScalingMethod::NearestNeighbor
+		)};
+		enemyGameObject.AddComponent<TemporaryObject>(animRenderer.GetAnimationRangeDuration());
+
+		event_queue::EventQueue::GetInstance().FireEvent<event_queue::EventType::EnemyDied>(GetScoreOnKill());
 	}
 
 	void Enemy::SpawnEnemy(

@@ -5,12 +5,12 @@
 #include <roingine/Singleton.h>
 
 namespace bomberman {
-	class PlayerInfo final {
+	class Player;
+
+	struct PlayerInfo final {
+		int  m_Lives{4};
 		int  m_Score{0};
 		bool m_IsPlayer1{true};
-
-	public:
-		PlayerInfo();
 	};
 
 	struct PlayerInfoContainer final : roingine::Singleton<PlayerInfoContainer> {

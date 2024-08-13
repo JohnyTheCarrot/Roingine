@@ -121,9 +121,10 @@ namespace roingine {
 		template<class TComponent>
 		void DestroyComponent() {
 			ComponentHandle const hComponent{GetComponentHandle<TComponent>()};
-			auto                 &sceneComponent{GetSceneComponents()};
+			auto                 &sceneComponents{GetSceneComponents()};
 
-			sceneComponent.erase(hComponent);
+			auto &components{sceneComponents.at(GetHandle())};
+			components.erase(hComponent);
 		}
 
 		void Destroy();

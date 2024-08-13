@@ -41,6 +41,9 @@ namespace roingine {
 
 		void SetPaused(bool isPaused) noexcept;
 
+		[[nodiscard]]
+		float GetAnimationRangeDuration() const noexcept;
+
 	private:
 		Transform      &m_Transform;
 		UniqueGLTexture m_TextureID{};

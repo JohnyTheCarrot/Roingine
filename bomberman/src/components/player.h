@@ -45,11 +45,16 @@ namespace bomberman {
 		roingine::EventHandlerHandle<event_queue::EventQueue> m_hExplosionHandler;
 		roingine::Transform                                  *m_rpCameraTransform;
 		roingine::Transform                                  *m_rpTransform;
-		bool                                                  m_HasKeyboardSupport;
+		roingine::AnimationRenderer                          *m_rpAnimRenderer;
+		std::optional<float>                                  m_HurtingTimeLeft{std::nullopt};
+		float                                                 m_FlashTime{0.0f};
+		bool                                                  m_IsPlayerOne{false};
 
 		static float const c_WalkSoundDistance;
 		static float const c_Size;
 		static float const c_WalkSpeed;
+		static float const c_HurtingTimeSec;
+		static float const c_FlashDurationSec;
 
 		[[nodiscard]]
 		bool
@@ -59,7 +64,7 @@ namespace bomberman {
 
 	public:
 		Player(roingine::GameObject gameObject, roingine::Transform &cameraTransform,
-		       LevelFlyweight const &levelFlyweight, bool keyboardSupported);
+		       LevelFlyweight const &levelFlyweight, bool isPlayerOne);
 
 		void TieToController(roingine::Controller *rpController);
 
@@ -70,6 +75,11 @@ namespace bomberman {
 
 		[[nodiscard]]
 		bool HasConnectedController() const;
+
+		[[nodiscard]]
+		bool IsPlayerOne() const;
+
+		void Hurt();
 
 		void Update() override;
 	};

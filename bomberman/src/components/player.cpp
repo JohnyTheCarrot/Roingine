@@ -1,9 +1,12 @@
 #include "player.h"
 
 #include "../living_entity_command.h"
+#include "../player_info.h"
 #include "bomberman.h"
 #include "level_flyweight.h"
 #include "living_entity.h"
+#include "roingine/components/animation_renderer.h"
+#include "roingine/game_time.h"
 
 #include <roingine/components/rect_collider.h>
 #include <roingine/components/transform.h>
@@ -40,11 +43,13 @@ namespace bomberman {
 	float const Player::c_WalkSoundDistance{50.f};
 	float const Player::c_Size{LevelFlyweight::c_TileSize - 20};
 	float const Player::c_WalkSpeed{200.f};
+	float const Player::c_HurtingTimeSec{5.f};
+	float const Player::c_FlashDurationSec{0.2f};
 
 	bool Player::IsKbOrControllerInputDown(roingine::InputKeys key, roingine::ControllerButton button, bool checkIfHeld)
 	        const {
 		if (auto const state{roingine::KeyboardInput::GetService().GetKeyState(key)};
-		    m_HasKeyboardSupport &&
+		    m_IsPlayerOne &&// Player 2 can't use keyboard
 		    (checkIfHeld ? state == roingine::KeyEventType::Held || state == roingine::KeyEventType::LongPress
 		                 : state == roingine::KeyEventType::Down))
 			return true;
@@ -88,7 +93,7 @@ namespace bomberman {
 
 	Player::Player(
 	        roingine::GameObject gameObject, roingine::Transform &cameraTransform, LevelFlyweight const &,
-	        bool keyboardSupported
+	        bool isPlayerOne
 	)
 	    : Component{gameObject}
 	    , m_rpLivingEntityComponent{&gameObject.GetComponent<LivingEntity>()}
@@ -101,7 +106,8 @@ namespace bomberman {
 	    , m_pSeconaryActionCommand{std::make_unique<LivingEntityCommand>(*m_rpLivingEntityComponent, Action::Secondary)}
 	    , m_rpCameraTransform{&cameraTransform}
 	    , m_rpTransform{&gameObject.GetComponent<roingine::Transform>()}
-	    , m_HasKeyboardSupport{keyboardSupported} {
+	    , m_rpAnimRenderer{&gameObject.GetComponent<roingine::AnimationRenderer>()}
+	    , m_IsPlayerOne{isPlayerOne} {
 	}
 
 	void Player::TieToController(roingine::Controller *rpController) {
@@ -120,9 +126,51 @@ namespace bomberman {
 		return m_rpController != nullptr;
 	}
 
+	bool Player::IsPlayerOne() const {
+		return m_IsPlayerOne;
+	}
+
+	void Player::Hurt() {
+		auto &[lives, score, isPlayer1]{[this]() -> PlayerInfo & {
+			if (IsPlayerOne())
+				return PlayerInfoContainer::GetInstance().m_Player1Info;
+
+			// Player 2 info should not be std::nullopt if this event is fired
+			return PlayerInfoContainer::GetInstance().m_Player2Info.value();
+		}()};
+
+		--lives;
+		if (lives == 0) {
+			m_rpLivingEntityComponent->Instruct(DieInstruction{});
+			event_queue::EventQueue::GetInstance().FireEvent<event_queue::EventType::PlayerDied>(isPlayer1);
+			return;
+		}
+
+		m_HurtingTimeLeft = c_HurtingTimeSec;
+		m_rpLivingEntityComponent->SetInvulnerable(true);
+	}
+
 	void Player::Update() {
 		m_rpCameraTransform->SetLocalPosition(m_rpTransform->GetWorldPosition());
 
 		HandleInput();
+
+		if (!m_HurtingTimeLeft.has_value()) {
+			return;
+		}
+
+		auto const deltaTime{roingine::GameTime::GetInstance().GetDeltaTime()};
+		m_HurtingTimeLeft.value() -= deltaTime;
+		m_FlashTime += deltaTime;
+		if (m_FlashTime > c_FlashDurationSec) {
+			m_FlashTime = 0.f;
+			m_rpAnimRenderer->SetEnabled(!m_rpAnimRenderer->GetIsEnabled());
+		}
+
+		if (m_HurtingTimeLeft.value() <= 0.f) {
+			m_rpLivingEntityComponent->SetInvulnerable(false);
+			m_rpAnimRenderer->SetEnabled(true);
+			m_HurtingTimeLeft.reset();
+		}
 	}
 }// namespace bomberman

@@ -15,6 +15,8 @@ namespace bomberman::event_queue {
 		Explosion,
 		PlayerControllerConnected,
 		PlayerControllerDisconnected,
+		EnemyDied,
+		PlayerDied,
 	};
 }
 
@@ -60,7 +62,7 @@ struct roingine::EventTypeData<
         final {
 	struct Data_t final {
 		Controller *rpController;
-		bool        playerOne;
+		bool        isPlayerOne;
 	};
 };
 
@@ -73,17 +75,33 @@ struct roingine::EventTypeData<
 	};
 };
 
+template<>
+struct roingine::EventTypeData<bomberman::event_queue::EventType, bomberman::event_queue::EventType::EnemyDied> final {
+	struct Data_t final {
+		int score;
+	};
+};
+
+template<>
+struct roingine::EventTypeData<bomberman::event_queue::EventType, bomberman::event_queue::EventType::PlayerDied> final {
+	struct Data_t final {
+		bool isPlayerOne;
+	};
+};
+
 namespace bomberman::event_queue {
 	using BombPlaceRequestData    = roingine::EventTypeData<EventType, EventType::BombPlaceRequest>::Data_t;
 	using BombDetonatedData       = roingine::EventTypeData<EventType, EventType::BombDetonated>::Data_t;
 	using ControllerConnectedData = roingine::EventTypeData<EventType, EventType::PlayerControllerConnected>::Data_t;
 	using ControllerDisconnectedData =
 	        roingine::EventTypeData<EventType, EventType::PlayerControllerDisconnected>::Data_t;
-	using ExplosionData = roingine::EventTypeData<EventType, EventType::Explosion>::Data_t;
+	using ExplosionData  = roingine::EventTypeData<EventType, EventType::Explosion>::Data_t;
+	using EnemyDiedData  = roingine::EventTypeData<EventType, EventType::EnemyDied>::Data_t;
+	using PlayerDiedData = roingine::EventTypeData<EventType, EventType::PlayerDied>::Data_t;
 
 	using EventQueue = roingine::EventQueue<
 	        EventType, BombDetonatedData, BombPlaceRequestData, ControllerConnectedData, ControllerDisconnectedData,
-	        ExplosionData>;
+	        ExplosionData, EnemyDiedData, PlayerDiedData>;
 }// namespace bomberman::event_queue
 
 #endif//GAME_EVENT_QUEUE_H

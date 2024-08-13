@@ -18,6 +18,14 @@ namespace bomberman {
 
 		virtual ~FiniteStateMachine() = default;
 	};
+
+	template<typename Input>
+	class NullFSM final : public FiniteStateMachine<Input> {
+	public:
+		std::unique_ptr<FiniteStateMachine<Input>> Update(Input const &) override {
+			return nullptr;
+		}
+	};
 };// namespace bomberman
 
 #endif//FINITE_STATE_MACHINE_H

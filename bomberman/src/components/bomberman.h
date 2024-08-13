@@ -25,14 +25,14 @@ namespace bomberman {
 
 	// TODO (extra): Curiously recurring template pattern candidate?
 	class BombermanFSMNode : public FiniteStateMachine<LivingEntityInstruction> {
-		Bomberman const *m_rpBomberman;
+		Bomberman *m_rpBomberman;
 
 	protected:
 		[[nodiscard]]
-		Bomberman const &GetBomberman() const;
+		Bomberman &GetBomberman() const;
 
 	public:
-		explicit BombermanFSMNode(Bomberman const &bomberman);
+		explicit BombermanFSMNode(Bomberman &bomberman);
 	};
 
 	class BombermanIdle final : public BombermanFSMNode {
@@ -55,18 +55,30 @@ namespace bomberman {
 		std::unique_ptr<FiniteStateMachine> Update(LivingEntityInstruction const &input) override;
 	};
 
+	class BombermanDying final : public BombermanFSMNode {
+		using BombermanFSMNode::BombermanFSMNode;
+
+		void OnEnter() override;
+
+		std::unique_ptr<FiniteStateMachine> Update(std::variant<MoveInstruction, DieInstruction, Action> const &input
+		) override;
+	};
+
 	class Bomberman final : public roingine::Component {
 		roingine::EventHandlerHandle<event_queue::EventQueue> m_hExplosionHandler;
 		roingine::RectCollider                               *m_rpRectCollider;
 		MovingEntity                                         *m_rpMovingEntityComponent;
 		roingine::AnimationRenderer                          *m_rpAnimRenderer;
+		LivingEntity                                         *m_rpLivingEntityComponent;
 		roingine::Transform                                  *m_rpTransform;
 		std::unique_ptr<PlaceBombCommand>                     m_pPlaceBombCommand;
 		glm::vec2                                             m_PreviousWalkSoundPosition{0.f, 0.f};
+		float                                                 m_InvincibilityPeriodSinceSec{0.f};
 
 		static float const c_Size;
 		static float const c_Speed;
 		static float const c_WalkSoundDistance;
+		static float const c_InvincibilityAfterHurtSec;
 
 	public:
 		Bomberman(roingine::GameObject gameObject, LevelFlyweight const &levelFlyweight);
@@ -80,6 +92,11 @@ namespace bomberman {
 		void Move(glm::vec2 const &direction) const;
 
 		void PlaceBomb() const;
+
+		void Die();
+
+		[[nodiscard]]
+		bool IsHurting() const;
 
 		void Update() override;
 	};

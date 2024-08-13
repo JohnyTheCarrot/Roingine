@@ -110,4 +110,8 @@ namespace roingine {
 	void AnimationRenderer::SetPaused(bool isPaused) noexcept {
 		m_IsPaused = isPaused;
 	}
+
+	float AnimationRenderer::GetAnimationRangeDuration() const noexcept {
+		return static_cast<float>(m_EndFrame - m_StartFrame) * m_SecondsPerFrame;
+	}
 }// namespace roingine
