@@ -90,18 +90,7 @@ namespace bomberman {
 	        roingine::GameObject gameObject, roingine::Transform &cameraTransform, LevelFlyweight const &,
 	        bool keyboardSupported
 	)
-	    : Component{gameObject}// , m_hExplosionHandler{event_queue::EventQueue::GetInstance()
-	    //                               .AttachEventHandler<event_queue::EventType::Explosion>(
-	    //                                       [this](event_queue::ExplosionData const &data) {
-	    //                                        auto const &pos{
-	    //                                                m_rpTransform->GetWorldPosition() + glm::vec2{c_Size, c_Size}
-	    //                                        };
-	    //
-	    //                                        if (data.IsInExplosion(pos)) {
-	    //                                         std::cout << "dieded" << std::endl;
-	    //                                        }
-	    //                                       }
-	    //                               )}
+	    : Component{gameObject}
 	    , m_rpLivingEntityComponent{&gameObject.GetComponent<LivingEntity>()}
 	    , m_pMoveUpCommand{std::make_unique<LivingEntityCommand>(*m_rpLivingEntityComponent, MoveInstruction::Up)}
 	    , m_pMoveDownCommand{std::make_unique<LivingEntityCommand>(*m_rpLivingEntityComponent, MoveInstruction::Down)}

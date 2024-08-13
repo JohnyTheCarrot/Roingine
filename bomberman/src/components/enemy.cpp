@@ -3,12 +3,12 @@
 #include "enemy_ai.h"
 #include "level_flyweight.h"
 #include "moving_entity.h"
-#include "roingine/scene.h"
 
 #include <glm/common.hpp>
 #include <roingine/components/animation_renderer.h>
 #include <roingine/components/rect_collider.h>
 #include <roingine/components/transform.h>
+#include <roingine/scene.h>
 
 namespace bomberman {
 	glm::vec2 Enemy::DirectionToVec(Direction direction) {
@@ -69,11 +69,11 @@ namespace bomberman {
 	Enemy::FreeDirections Enemy::GetFreeDirection() const {
 		auto const &levelFlyweight{m_rpMovingEntity->GetLevelFlyweight()};
 		auto const &transform{GetGameObject().GetComponent<roingine::Transform>()};
-		auto const  gridPos{levelFlyweight.PositionToGrid(transform.GetWorldPosition())};
+		auto const [posX, posY]{levelFlyweight.PositionToGrid(transform.GetWorldPosition())};
 
 		auto const isFree{[&](int offsetX, int offsetY) {
 			return levelFlyweight.GetTileType(
-			               static_cast<int>(gridPos.first) + offsetX, static_cast<int>(gridPos.second) + offsetY
+			               static_cast<int>(posX) + offsetX, static_cast<int>(posY) + offsetY
 			       ) == LevelFlyweight::TileType::Nothing;
 		}};
 
